@@ -6,6 +6,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Column;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 @Entity
 @Table (name = "categories")
 public class Category {
@@ -15,6 +17,8 @@ public class Category {
 	private Long id;
 	@Column(name = "name", nullable = false,
 			unique = true, length = 100)
+	@NotBlank
+	@Size(max = 100)
 	private String name;
 	@Column(columnDefinition = "TEXT")
 	private String description;
