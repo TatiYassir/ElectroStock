@@ -6,6 +6,8 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import com.electrostock.backend.repository.CategoryRepository;
 import com.electrostock.backend.model.Category;
+import com.electrostock.backend.exception.CategoryNotFoundException;
+import com.electrostock.backend.exception.CategoryAlreadyExistsException;
 
 @Service
 public class CategoryService {
@@ -26,7 +28,7 @@ public class CategoryService {
 			throw new IllegalArgumentException ("Category name cannot exceed 100 characters");
 		}
 		if ( categoryRepository.existsByName(name)) {
-			throw new IllegalArgumentException ("Category already exists");
+			throw new CategoryAlreadyExistsException ("Category already exists");
 		}
 		Category category = new Category(name, description);
 
@@ -39,7 +41,7 @@ public class CategoryService {
 	// find a category by it's Id :
 	public Category getCategoryById(Long id) {
 		return categoryRepository.findById(id).
-				orElseThrow(() -> new IllegalArgumentException("Category not found"));
+				orElseThrow(() -> new CategoryNotFoundException("Category not found"));
 	}
 	//update the name of the category
 	public Category updateCategory(String newName, Long id, String description) {
@@ -52,7 +54,7 @@ public class CategoryService {
 		}
 		Category category = getCategoryById(id);
 		if (categoryRepository.existsByNameAndIdNot(newName, id)) {
-		    throw new IllegalArgumentException("Category already exists");
+		    throw new CategoryAlreadyExistsException("Category already exists");
 		}
 		category.setName(newName);
 		category.setDescription(description);
