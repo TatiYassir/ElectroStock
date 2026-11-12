@@ -8,10 +8,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import com.electrostock.backend.dto.CreateCategoryRequest;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.http.HttpStatus;
 
+import com.electrostock.backend.dto.CreateCategoryRequest;
 import com.electrostock.backend.service.CategoryService;
 import com.electrostock.backend.model.Category;
 
@@ -38,5 +39,10 @@ public class CategoryRestController {
 	public Category createCategory(@RequestBody CreateCategoryRequest request ) {
 		return categoryService.
 				createCategory(request.getName() , request.getDescription());
+	}
+	@PutMapping("/{id}")
+	public Category updateCategory(@PathVariable Long id,
+			@RequestBody CreateCategoryRequest request) {
+		return categoryService.updateCategory(request.getName(), id, request.getDescription());
 	}
 }

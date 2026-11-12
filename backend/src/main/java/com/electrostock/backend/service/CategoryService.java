@@ -45,9 +45,12 @@ public class CategoryService {
 	}
 	//update the name of the category
 	public Category updateCategory(String newName, Long id, String description) {
-		if (newName == null|| id == null || newName.isBlank()) {
-			throw new IllegalArgumentException ("Category name and id cannot be blank");
+		if (newName == null || newName.isBlank()) {
+			throw new IllegalArgumentException ("Category name cannot be blank");
 		}
+		if (id == null) {
+			throw new IllegalArgumentException ("Category ID cannot be null");
+		} 
 		newName = newName.strip();
 		if (newName.length() > 100) {
 			throw new IllegalArgumentException ("Category name cannot exceed 100 characters");
