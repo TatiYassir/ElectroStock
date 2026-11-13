@@ -5,17 +5,22 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 import com.electrostock.backend.repository.CategoryRepository;
+import com.electrostock.backend.repository.ProductRepository;
 import com.electrostock.backend.model.Category;
 import com.electrostock.backend.exception.CategoryNotFoundException;
 import com.electrostock.backend.exception.CategoryAlreadyExistsException;
+import com.electrostock.backend.exception.CategoryInUseException;
 
 @Service
 public class CategoryService {
 	// ATTRIBUTES :
 	private final CategoryRepository categoryRepository;
+	private final ProductRepository productRepository;
 	//constructor-based dependency injection : 
-	public CategoryService(CategoryRepository categoryRepository) {
+	public CategoryService(CategoryRepository categoryRepository ,
+			ProductRepository productRepository) {
 		this.categoryRepository = categoryRepository;
+		this.productRepository = productRepository;
 	}
 	// methods :
 	// create a category :
@@ -63,4 +68,44 @@ public class CategoryService {
 		category.setDescription(description);
 		return categoryRepository.save(category);
 	}
+	//Delete category :
+	public void deleteCategory(Long id) {
+	    if(id == null) {
+	    	throw new IllegalArgumentException("Category ID cannot be null");
+	    }
+	    Category category = getCategoryById(id);
+	    if(productRepository.existsByCategory_Id(id)) {
+	    	throw new CategoryInUseException("Cannot Delete a category that have products");
+	    }
+	    categoryRepository.delete(category);
+	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
