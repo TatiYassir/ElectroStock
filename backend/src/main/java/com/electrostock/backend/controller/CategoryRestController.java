@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 
 import com.electrostock.backend.dto.CreateCategoryRequest;
 import com.electrostock.backend.service.CategoryService;
@@ -45,4 +46,10 @@ public class CategoryRestController {
 			@RequestBody CreateCategoryRequest request) {
 		return categoryService.updateCategory(request.getName(), id, request.getDescription());
 	}
+	@DeleteMapping("/{id}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void deleteCategory(@PathVariable Long id) {
+		categoryService.deleteCategory(id);
+	}
+			
 }
