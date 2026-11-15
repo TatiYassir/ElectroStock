@@ -5,6 +5,7 @@ import com.electrostock.backend.dto.CreatePurchaseRequest;
 import com.electrostock.backend.model.Purchase;
 import com.electrostock.backend.model.PurchaseItem;
 import com.electrostock.backend.service.PurchaseService;
+import com.electrostock.backend.dto.PurchaseResponse;
 
 import jakarta.validation.Valid;
 
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.GetMapping;
 
 @RestController
 @RequestMapping("/api/purchases")
@@ -51,5 +53,10 @@ public class PurchaseController {
     			request.getQuantity(),
     			request.getUnitPriceCurrency());
     	return  purchaseItem.getId();
+    }
+    @GetMapping("/{purchaseId}")
+    public PurchaseResponse getPurchase(
+            @PathVariable("purchaseId") Long purchaseId) {
+        return purchaseService.getPurchase(purchaseId);
     }
 }

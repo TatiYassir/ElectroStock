@@ -2,8 +2,13 @@ package com.electrostock.backend.service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
 
 import org.springframework.stereotype.Service;
+
+import org.springframework.transaction.annotation.Transactional;
 
 import com.electrostock.backend.exception.ProductNotFoundException;
 import com.electrostock.backend.exception.SupplierNotFoundException;
@@ -17,7 +22,9 @@ import com.electrostock.backend.repository.PurchaseRepository;
 import com.electrostock.backend.repository.PurchaseItemRepository;
 import com.electrostock.backend.repository.SupplierRepository;
 import com.electrostock.backend.repository.CurrencyRepository;
-import org.springframework.transaction.annotation.Transactional;
+import com.electrostock.backend.dto.PurchaseItemResponse;
+import com.electrostock.backend.dto.PurchaseResponse;
+
 @Service
 public class PurchaseService {
 	//Attributes :
@@ -35,8 +42,7 @@ public class PurchaseService {
 	    this.productRepository = productRepository;
 	    this.purchaseItemRepository = purchaseItemRepository;
 	    this.supplierRepository = supplierRepository;
-	    this.currencyRepository = currencyRepository;
-	    
+	    this.currencyRepository = currencyRepository;	    
 	}
 	public Purchase createDraft(Long supplierId,String currencyCode,
 			LocalDate purchaseDate) {
@@ -61,5 +67,33 @@ public class PurchaseService {
 	    PurchaseItem item = purchase.addItem(product, quantity, unitPriceCurrency);
 
 	    return purchaseItemRepository.save(item);
+	}
+	public PurchaseResponse getPurchase(Long purchaseId) {
+	    Purchase purchase = purchaseRepository.findById(purchaseId)
+	            .orElseThrow(() -> new IllegalArgumentException(
+	                    "Purchase not found: " + purchaseId));
+
+	    List<PurchaseItem> items =
+	            purchaseItemRepository.findByPurchase_Id(purchaseId);
+
+	    List<PurchaseItemResponse> itemResponses = new ArrayList<>();
+
+	    for (PurchaseItem item : items) {
+	        PurchaseItemResponse itemResponse = new PurchaseItemResponse(
+	                item.getId(),
+	                item.getProduct().getId(),
+	                item.getQuantity(),
+	                item.getUnitPriceCurrency(),
+	                item.getLineTotalCurrency());
+
+	        itemResponses.add(itemResponse);
+	    }
+
+	    return new PurchaseResponse(
+	            purchase.getId(),
+	            purchase.getStatus(),
+	            purchase.getCurrency().getCode(),
+	            purchase.getTotalCurrency(),
+	            itemResponses);
 	}
 }
