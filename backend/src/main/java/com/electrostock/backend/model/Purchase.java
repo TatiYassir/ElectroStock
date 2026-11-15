@@ -131,4 +131,21 @@ public class Purchase {
 	public LocalDateTime getCancelledAt() {
 		return cancelledAt;
 	}
+	//Methods :
+	public PurchaseItem addItem(Product product, int quantity,
+            BigDecimal unitPriceCurrency) {
+		if (status != PurchaseStatus.DRAFT) {
+			throw new IllegalStateException("Items can only be added to a draft purchase");
+		}
+
+		PurchaseItem item = new PurchaseItem(this, product, quantity, unitPriceCurrency);
+		totalCurrency = totalCurrency.add(item.getLineTotalCurrency());
+
+		return item;
+	}
 }
+
+
+
+
+

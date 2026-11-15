@@ -33,6 +33,7 @@ import com.electrostock.backend.model.Product;
 import com.electrostock.backend.repository.ProductRepository;
 import com.electrostock.backend.repository.PurchaseItemRepository;
 import com.electrostock.backend.model.PurchaseItem;
+import com.electrostock.backend.service.PurchaseService;
 @SpringBootTest
 class BackendApplicationTests {
 	// Add inside BackendApplicationTests
@@ -49,7 +50,8 @@ class BackendApplicationTests {
 
 	@Autowired
 	private PurchaseRepository purchaseRepository;
-
+	@Autowired
+	private PurchaseService purchaseService;
 	@PersistenceContext
 	private EntityManager entityManager;
 	@Test
@@ -128,6 +130,42 @@ class BackendApplicationTests {
 	    assertNull(reloaded.getTotalMad());
 	    assertNull(reloaded.getConfirmedAt());
 	    assertNull(reloaded.getCancelledAt());
+	}
+	@Test
+	@Transactional
+	void addingItemUpdatesPurchaseTotal() {
+
+	    Supplier supplier = supplierRepository.save(
+	            new Supplier("Purchase Service Test Supplier", null, null, null));
+
+	    Product product = productRepository.findAll().stream()
+	            .findFirst()
+	            .orElseThrow(() -> new AssertionError("Add a product before running this test"));
+
+	    Purchase draft = purchaseService.createDraft(
+	            supplier.getId(), "MAD", LocalDate.of(2026, 11, 15));
+
+	    Long purchaseId = draft.getId();
+
+	    assertEquals(PurchaseStatus.DRAFT, draft.getStatus());
+	    assertEquals(0, BigDecimal.ZERO.compareTo(draft.getTotalCurrency()));
+
+	    PurchaseItem item = purchaseService.addItem(
+	            purchaseId, product.getId(), 3, new BigDecimal("7000.00"));
+	    Long itemId = item.getId();
+
+	    // Send pending changes to the database, then discard the in-memory copies.
+	    entityManager.flush();
+	    entityManager.clear();
+
+	    Purchase reloadedPurchase = purchaseRepository.findById(purchaseId).orElseThrow();
+	    PurchaseItem reloadedItem = purchaseItemRepository.findById(itemId).orElseThrow();
+
+	    BigDecimal expected = new BigDecimal("21000.00");
+	    assertEquals(purchaseId, reloadedItem.getPurchase().getId());
+	    assertEquals(0, expected.compareTo(reloadedItem.getLineTotalCurrency()));
+	    assertEquals(0, expected.compareTo(reloadedPurchase.getTotalCurrency()));
+	    assertEquals(PurchaseStatus.DRAFT, reloadedPurchase.getStatus());
 	}
 	@Test
 	void contextLoads() {
