@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.PatchMapping;
 
-import com.electrostock.backend.dto.SupplierRequest;
+import com.electrostock.backend.dto.supplier.SupplierRequest;
 import com.electrostock.backend.model.Supplier;
 import com.electrostock.backend.service.SupplierService;
 @RestController

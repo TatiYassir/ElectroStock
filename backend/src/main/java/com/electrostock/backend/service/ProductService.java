@@ -9,8 +9,8 @@ import com.electrostock.backend.model.Product;
 import com.electrostock.backend.model.Category;
 import com.electrostock.backend.repository.ProductRepository;
 import com.electrostock.backend.exception.ProductNotFoundException;
+import com.electrostock.backend.dto.product.ProductStockResponse;
 import com.electrostock.backend.exception.ProductAlreadyExistsException;
-import com.electrostock.backend.dto.ProductStockResponse;
 import com.electrostock.backend.repository.StockMovementRepository;
 @Service
 public class ProductService {

@@ -13,11 +13,11 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import org.springframework.http.HttpStatus;
 
+import com.electrostock.backend.dto.product.CreateProductRequest;
+import com.electrostock.backend.dto.product.ProductStockResponse;
+import com.electrostock.backend.dto.product.UpdateProductRequest;
 import com.electrostock.backend.model.Product;
-import com.electrostock.backend.dto.CreateProductRequest;
-import com.electrostock.backend.dto.UpdateProductRequest;
 import com.electrostock.backend.service.ProductService;
-import com.electrostock.backend.dto.ProductStockResponse;
 @RestController
 @RequestMapping("/api/products")
 public class ProductRestController {

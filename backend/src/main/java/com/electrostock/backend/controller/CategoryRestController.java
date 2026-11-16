@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 
-import com.electrostock.backend.dto.CreateCategoryRequest;
 import com.electrostock.backend.service.CategoryService;
+import com.electrostock.backend.dto.category.CreateCategoryRequest;
 import com.electrostock.backend.model.Category;
 
 @RestController

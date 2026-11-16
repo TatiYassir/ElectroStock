@@ -1,4 +1,4 @@
-package com.electrostock.backend.dto;
+package com.electrostock.backend.dto.product;
 
 public record ProductStockResponse(Long productId, long stockQuantity) {
 }

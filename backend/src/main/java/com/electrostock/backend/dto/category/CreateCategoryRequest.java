@@ -1,4 +1,4 @@
-package com.electrostock.backend.dto;
+package com.electrostock.backend.dto.category;
 
 public class CreateCategoryRequest {
 	//ATTRIBUTES :
