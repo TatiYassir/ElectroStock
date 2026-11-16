@@ -34,8 +34,8 @@ import com.electrostock.backend.repository.PurchaseItemRepository;
 import com.electrostock.backend.repository.SupplierRepository;
 import com.electrostock.backend.repository.CurrencyRepository;
 import com.electrostock.backend.repository.StockMovementRepository;
-import com.electrostock.backend.dto.PurchaseItemResponse;
-import com.electrostock.backend.dto.PurchaseResponse;
+import com.electrostock.backend.dto.purchase.PurchaseItemResponse;
+import com.electrostock.backend.dto.purchase.PurchaseResponse;
 
 @Service
 public class PurchaseService {

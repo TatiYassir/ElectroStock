@@ -1,12 +1,12 @@
 package com.electrostock.backend.controller;
 
-import com.electrostock.backend.dto.AddPurchaseItemRequest;
-import com.electrostock.backend.dto.ConfirmPurchaseRequest;
-import com.electrostock.backend.dto.CreatePurchaseRequest;
+import com.electrostock.backend.dto.purchase.AddPurchaseItemRequest;
+import com.electrostock.backend.dto.purchase.ConfirmPurchaseRequest;
+import com.electrostock.backend.dto.purchase.CreatePurchaseRequest;
+import com.electrostock.backend.dto.purchase.PurchaseResponse;
 import com.electrostock.backend.model.Purchase;
 import com.electrostock.backend.model.PurchaseItem;
 import com.electrostock.backend.service.PurchaseService;
-import com.electrostock.backend.dto.PurchaseResponse;
 
 import jakarta.validation.Valid;
 

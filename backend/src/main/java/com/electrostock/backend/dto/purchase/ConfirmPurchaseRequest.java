@@ -1,4 +1,4 @@
-package com.electrostock.backend.dto;
+package com.electrostock.backend.dto.purchase;
 
 import java.util.List;
 import java.util.Map;

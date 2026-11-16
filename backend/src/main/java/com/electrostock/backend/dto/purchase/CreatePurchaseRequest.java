@@ -1,4 +1,4 @@
-package com.electrostock.backend.dto;
+package com.electrostock.backend.dto.purchase;
 
 import java.time.LocalDate;
 import jakarta.validation.constraints.NotNull;
