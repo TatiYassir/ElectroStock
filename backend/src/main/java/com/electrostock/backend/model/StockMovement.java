@@ -200,4 +200,45 @@ public class StockMovement {
 	    reversal.movementAt = movementAt;
 	    return reversal;
 	}
+	public static StockMovement forOpeningStock(
+	        Product product,
+	        ProductUnit productUnit,
+	        int quantityAdded,
+	        BigDecimal inventoryValueMad,
+	        LocalDateTime movementAt) {
+
+	    if (product == null) {
+	        throw new IllegalArgumentException("Product is required");
+	    }
+	    if (quantityAdded <= 0) {
+	        throw new IllegalArgumentException("Opening quantity must be positive");
+	    }
+	    if (product.isTracksSerials() && (productUnit == null || quantityAdded != 1)) {
+	        throw new IllegalArgumentException(
+	                "Opening stock for a tracked product requires one unit per movement");
+	    }
+	    if (!product.isTracksSerials() && productUnit != null) {
+	        throw new IllegalArgumentException(
+	                "Untracked products cannot have a product unit");
+	    }
+	    if (productUnit != null && !product.getId().equals(productUnit.getProduct().getId())) {
+	        throw new IllegalArgumentException("Unit must belong to the selected product");
+	    }
+	    if (inventoryValueMad == null || inventoryValueMad.signum() < 0) {
+	        throw new IllegalArgumentException(
+	                "Inventory value is required and cannot be negative");
+	    }
+	    if (movementAt == null) {
+	        throw new IllegalArgumentException("Movement time is required");
+	    }
+
+	    StockMovement movement = new StockMovement();
+	    movement.product = product;
+	    movement.productUnit = productUnit;
+	    movement.movementType = MovementType.OPENING_STOCK;
+	    movement.quantityChange = quantityAdded;
+	    movement.valueChangeMad = inventoryValueMad;
+	    movement.movementAt = movementAt;
+	    return movement;
+	}
 }
