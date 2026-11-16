@@ -1,4 +1,4 @@
-package com.electrostock.backend.dto;
+package com.electrostock.backend.dto.sale;
 
 import java.time.LocalDate;
 

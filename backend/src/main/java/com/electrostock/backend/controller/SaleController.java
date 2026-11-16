@@ -12,10 +12,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import jakarta.validation.Valid;
-import com.electrostock.backend.dto.AddSaleItemRequest;
-import com.electrostock.backend.dto.ConfirmSaleRequest;
-import com.electrostock.backend.dto.SaleResponse;
-import com.electrostock.backend.dto.CreateSaleRequest;
+
+import com.electrostock.backend.dto.sale.AddSaleItemRequest;
+import com.electrostock.backend.dto.sale.ConfirmSaleRequest;
+import com.electrostock.backend.dto.sale.CreateSaleRequest;
+import com.electrostock.backend.dto.sale.SaleResponse;
 import com.electrostock.backend.model.Sale;
 import com.electrostock.backend.model.SaleItem;
 import com.electrostock.backend.service.SaleService;
