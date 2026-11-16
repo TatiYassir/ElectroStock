@@ -106,6 +106,7 @@ public class SaleService {
                 sale.getCurrency().getCode(),
                 sale.getSaleDate(),
                 sale.getTotalCurrency(),
+                sale.getHandedOverAt(),
                 itemResponses);
     }
     private ProductUnit requireAvailableUnit(SaleItem item, String serialNumber) {
@@ -286,5 +287,18 @@ public class SaleService {
         }
 
         sale.confirmInMad(confirmedAt);
+    }
+    @Transactional
+    public void handOverSale(Long saleId) {
+        Sale sale = saleRepository.findById(saleId)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Sale not found: " + saleId));
+
+        LocalDateTime handedOverAt = LocalDateTime.now();
+        sale.markHandedOver(handedOverAt);
+
+        for (SaleItemUnit link : saleItemUnitRepository.findBySaleItem_Sale_Id(saleId)) {
+            link.getProductUnit().startWarrantyAtHandover(handedOverAt.toLocalDate());
+        }
     }
 }

@@ -67,4 +67,9 @@ public class SaleController {
 
         saleService.confirmSaleInMad(saleId, request.serialsByItemId());
     }
+    @PostMapping("/{saleId}/handover")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void handOverSale(@PathVariable("saleId") Long saleId) {
+        saleService.handOverSale(saleId);
+    }
 }

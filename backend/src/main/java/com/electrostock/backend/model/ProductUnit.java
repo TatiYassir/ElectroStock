@@ -105,4 +105,25 @@ public class ProductUnit {
 
 	    this.status = UnitStatus.SOLD;
 	}
+	public void startWarrantyAtHandover(LocalDate handoverDate) {
+	    if (handoverDate == null) {
+	        throw new IllegalArgumentException("Handover date is required");
+	    }
+
+	    if (status != UnitStatus.SOLD) {
+	        throw new IllegalStateException("Only sold units can start a warranty");
+	    }
+
+	    if (warrantyStart != null || warrantyEnd != null) {
+	        throw new IllegalStateException("Warranty dates have already been set");
+	    }
+
+	    int warrantyMonths = product.getWarrantyMonths();
+	    if (warrantyMonths == 0) {
+	        return; // No warranty configured. Leave both dates unset.
+	    }
+
+	    this.warrantyStart = handoverDate;
+	    this.warrantyEnd = handoverDate.plusMonths(warrantyMonths);
+	}
 }

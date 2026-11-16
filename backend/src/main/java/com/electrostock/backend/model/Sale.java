@@ -46,6 +46,8 @@ public class Sale {
 
     @Column(name = "confirmed_at")
     private LocalDateTime confirmedAt;
+    @Column(name = "handed_over_at")
+    private LocalDateTime handedOverAt;
     //NO-ARGUMENT CONSTRUCTOR for JPA :
     protected Sale() {
     }
@@ -78,6 +80,9 @@ public class Sale {
 	public BigDecimal getTotalCurrency() {
 		return totalCurrency;
 	}
+	public LocalDateTime getHandedOverAt() {
+	    return handedOverAt;
+	}
 	//methods:
 	public SaleItem addItem(Product product, int quantity, BigDecimal unitPriceCurrency) {
 	    if (status != SaleStatus.DRAFT) {
@@ -106,5 +111,19 @@ public class Sale {
 	    this.totalMad = this.totalCurrency;
 	    this.confirmedAt = confirmedAt;
 	    this.status = SaleStatus.CONFIRMED;
+	}
+	public void markHandedOver(LocalDateTime handedOverAt) {
+	    if (status != SaleStatus.CONFIRMED) {
+	        throw new IllegalStateException("Only confirmed sales can be handed over");
+	    }
+	    if (this.handedOverAt != null) {
+	        throw new IllegalStateException("Sale has already been handed over");
+	    }
+	    if (handedOverAt == null || handedOverAt.isBefore(confirmedAt)) {
+	        throw new IllegalArgumentException(
+	                "Handover time must be at or after confirmation");
+	    }
+
+	    this.handedOverAt = handedOverAt;
 	}
 }
