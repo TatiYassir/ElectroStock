@@ -31,6 +31,7 @@ import com.electrostock.backend.repository.StockMovementRepository;
 import com.electrostock.backend.dto.SaleItemResponse;
 import com.electrostock.backend.dto.SaleResponse;
 import com.electrostock.backend.enums.UnitStatus;
+import com.electrostock.backend.enums.MovementType;
 import com.electrostock.backend.enums.SaleStatus;
 
 @Service
@@ -299,6 +300,33 @@ public class SaleService {
 
         for (SaleItemUnit link : saleItemUnitRepository.findBySaleItem_Sale_Id(saleId)) {
             link.getProductUnit().startWarrantyAtHandover(handedOverAt.toLocalDate());
+        }
+    }
+    @Transactional
+    public void cancelSale(Long saleId) {
+        Sale sale = saleRepository.findById(saleId)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Sale not found: " + saleId));
+
+        LocalDateTime cancelledAt = LocalDateTime.now();
+        sale.cancelBeforeHandover(cancelledAt);
+
+        List<StockMovement> originalMovements =
+                stockMovementRepository.findBySaleItem_Sale_IdAndMovementType(
+                        saleId, MovementType.SALE);
+
+        if (originalMovements.isEmpty()) {
+            throw new IllegalStateException("No stock movements found for sale " + saleId);
+        }
+
+        for (StockMovement original : originalMovements) {
+            ProductUnit unit = original.getProductUnit();
+            if (unit != null) {
+                unit.returnToStockAfterSaleCancellation();
+            }
+
+            stockMovementRepository.save(
+                    StockMovement.reverseSale(original, cancelledAt));
         }
     }
 }

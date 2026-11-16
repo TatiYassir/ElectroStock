@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import com.electrostock.backend.enums.SaleStatus;
+import com.electrostock.backend.exception.SaleCancellationNotAllowedException;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -48,6 +49,8 @@ public class Sale {
     private LocalDateTime confirmedAt;
     @Column(name = "handed_over_at")
     private LocalDateTime handedOverAt;
+    @Column(name = "cancelled_at")
+    private LocalDateTime cancelledAt;
     //NO-ARGUMENT CONSTRUCTOR for JPA :
     protected Sale() {
     }
@@ -82,6 +85,9 @@ public class Sale {
 	}
 	public LocalDateTime getHandedOverAt() {
 	    return handedOverAt;
+	}
+	public LocalDateTime getCancelledAt() {
+	    return cancelledAt;
 	}
 	//methods:
 	public SaleItem addItem(Product product, int quantity, BigDecimal unitPriceCurrency) {
@@ -125,5 +131,22 @@ public class Sale {
 	    }
 
 	    this.handedOverAt = handedOverAt;
+	}
+	public void cancelBeforeHandover(LocalDateTime cancelledAt) {
+	    if (status != SaleStatus.CONFIRMED) {
+	        throw new SaleCancellationNotAllowedException("Only confirmed sales can be cancelled");
+	    }
+
+	    if (handedOverAt != null) {
+	        throw new SaleCancellationNotAllowedException("Cannot cancel a sale after handover");
+	    }
+
+	    if (cancelledAt == null || cancelledAt.isBefore(confirmedAt)) {
+	        throw new IllegalArgumentException(
+	                "Cancellation time must be at or after confirmation");
+	    }
+
+	    this.cancelledAt = cancelledAt;
+	    this.status = SaleStatus.CANCELLED;
 	}
 }

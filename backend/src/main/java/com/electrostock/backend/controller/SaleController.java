@@ -72,4 +72,9 @@ public class SaleController {
     public void handOverSale(@PathVariable("saleId") Long saleId) {
         saleService.handOverSale(saleId);
     }
+    @PostMapping("/{saleId}/cancel")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void cancelSale(@PathVariable("saleId") Long saleId) {
+        saleService.cancelSale(saleId);
+    }
 }

@@ -4,13 +4,13 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.EnumType;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import com.electrostock.backend.enums.MovementType;
@@ -45,6 +45,9 @@ public class StockMovement {
 	private BigDecimal valueChangeMad;
 	@Column(name = "movement_at" , nullable = false)
 	private LocalDateTime movementAt;
+	@OneToOne
+	@JoinColumn(name = "reversal_of_movement_id", unique = true)
+	private StockMovement reversalOfMovement;
 	//NO-ARGUMNET CONSTRUCTOR for JPA:
 	protected StockMovement() {
 		
@@ -73,6 +76,12 @@ public class StockMovement {
 		}
 		public LocalDateTime getMovementAt() {
 			return movementAt;
+		}
+		public SaleItem getSaleItem() {
+		    return saleItem;
+		}
+		public StockMovement getReversalOfMovement() {
+		    return reversalOfMovement;
 		}
 	//Methods:
 	public static StockMovement forPurchase(
@@ -145,9 +154,27 @@ public class StockMovement {
 	    movement.movementAt = movementAt;
 	    return movement;
 	}
+	public static StockMovement reverseSale(
+	        StockMovement original, LocalDateTime movementAt) {
 
-	public SaleItem getSaleItem() {
-	    return saleItem;
+	    if (original == null || original.getId() == null
+	            || original.getMovementType() != MovementType.SALE) {
+	        throw new IllegalArgumentException("A saved sale movement is required");
+	    }
+
+	    if (movementAt == null || movementAt.isBefore(original.getMovementAt())) {
+	        throw new IllegalArgumentException(
+	                "Reversal time must be at or after the original movement");
+	    }
+
+	    StockMovement reversal = new StockMovement();
+	    reversal.reversalOfMovement = original;
+	    reversal.product = original.product;
+	    reversal.productUnit = original.productUnit;
+	    reversal.movementType = MovementType.REVERSAL;
+	    reversal.quantityChange = -original.quantityChange;
+	    reversal.valueChangeMad = original.valueChangeMad.negate();
+	    reversal.movementAt = movementAt;
+	    return reversal;
 	}
-	
 }

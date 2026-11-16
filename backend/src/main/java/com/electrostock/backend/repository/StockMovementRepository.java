@@ -1,5 +1,6 @@
 package com.electrostock.backend.repository;
 
+import com.electrostock.backend.enums.MovementType;
 import com.electrostock.backend.model.StockMovement;
 
 import java.math.BigDecimal;
@@ -23,4 +24,6 @@ public interface StockMovementRepository
 		    WHERE m.product.id = :productId
 		    """)
 		BigDecimal getStockValueMad(@Param("productId") Long productId);
+	List<StockMovement> findBySaleItem_Sale_IdAndMovementType(
+	        Long saleId, MovementType movementType);
 }

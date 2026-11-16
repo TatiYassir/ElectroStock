@@ -126,4 +126,16 @@ public class ProductUnit {
 	    this.warrantyStart = handoverDate;
 	    this.warrantyEnd = handoverDate.plusMonths(warrantyMonths);
 	}
+	public void returnToStockAfterSaleCancellation() {
+	    if (status != UnitStatus.SOLD) {
+	        throw new IllegalStateException("Only sold units can be returned to stock");
+	    }
+
+	    if (warrantyStart != null || warrantyEnd != null) {
+	        throw new IllegalStateException(
+	                "Cannot return a unit to stock after its warranty has started");
+	    }
+
+	    this.status = UnitStatus.IN_STOCK;
+	}
 }
