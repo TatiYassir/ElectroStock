@@ -15,8 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.electrostock.backend.exception.PurchaseCancellationNotAllowedException;
-import com.electrostock.backend.exception.ProductNotFoundException;
 import com.electrostock.backend.exception.SupplierNotFoundException;
+import com.electrostock.backend.exception.product.ProductNotFoundException;
 import com.electrostock.backend.model.Currency;
 import com.electrostock.backend.model.Product;
 import com.electrostock.backend.model.ProductUnit;

@@ -6,10 +6,10 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import com.electrostock.backend.repository.CategoryRepository;
 import com.electrostock.backend.repository.ProductRepository;
+import com.electrostock.backend.exception.category.CategoryAlreadyExistsException;
+import com.electrostock.backend.exception.category.CategoryInUseException;
+import com.electrostock.backend.exception.category.CategoryNotFoundException;
 import com.electrostock.backend.model.Category;
-import com.electrostock.backend.exception.CategoryNotFoundException;
-import com.electrostock.backend.exception.CategoryAlreadyExistsException;
-import com.electrostock.backend.exception.CategoryInUseException;
 
 @Service
 public class CategoryService {

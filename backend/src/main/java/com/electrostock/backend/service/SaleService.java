@@ -13,7 +13,6 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.electrostock.backend.exception.ProductNotFoundException;
 import com.electrostock.backend.model.Currency;
 import com.electrostock.backend.model.Product;
 import com.electrostock.backend.model.ProductUnit;
@@ -29,6 +28,7 @@ import com.electrostock.backend.repository.SaleItemUnitRepository;
 import com.electrostock.backend.repository.SaleRepository;
 import com.electrostock.backend.repository.StockMovementRepository;
 import com.electrostock.backend.enums.UnitStatus;
+import com.electrostock.backend.exception.product.ProductNotFoundException;
 import com.electrostock.backend.dto.sale.SaleItemResponse;
 import com.electrostock.backend.dto.sale.SaleResponse;
 import com.electrostock.backend.enums.MovementType;

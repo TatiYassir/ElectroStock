@@ -1,11 +1,11 @@
-package com.electrostock.backend.exception;
+package com.electrostock.backend.exception.product;
 
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.http.HttpStatus;
 
 @ResponseStatus(HttpStatus.NOT_FOUND)
-public class CategoryNotFoundException extends RuntimeException {
-	public CategoryNotFoundException(String message) {
+public class ProductNotFoundException extends RuntimeException{
+	public ProductNotFoundException(String message) {
 		super(message);
 	}
 }
