@@ -161,6 +161,19 @@ public class Purchase {
 	    this.confirmedAt = confirmedAt;
 	    this.status = PurchaseStatus.CONFIRMED;
 	}
+	public void cancelAfterConfirmation(LocalDateTime cancelledAt) {
+	    if (status != PurchaseStatus.CONFIRMED) {
+	        throw new IllegalStateException("Only confirmed purchases can be cancelled");
+	    }
+
+	    if (cancelledAt == null || cancelledAt.isBefore(confirmedAt)) {
+	        throw new IllegalArgumentException(
+	                "Cancellation time must be at or after confirmation");
+	    }
+
+	    this.cancelledAt = cancelledAt;
+	    this.status = PurchaseStatus.CANCELLED;
+	}
 }
 
 

@@ -202,4 +202,7 @@ public class Product {
 
 	    this.averageCostMad = averageCostMad;
 	}
+	public void clearAverageCostMad() {
+	    this.averageCostMad = null;
+	}
 }

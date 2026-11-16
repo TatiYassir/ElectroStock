@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
 
+import com.electrostock.backend.exception.PurchaseCancellationNotAllowedException;
 import com.electrostock.backend.exception.ProductNotFoundException;
 import com.electrostock.backend.exception.SupplierNotFoundException;
 import com.electrostock.backend.model.Currency;
@@ -22,7 +24,9 @@ import com.electrostock.backend.model.Purchase;
 import com.electrostock.backend.model.PurchaseItem;
 import com.electrostock.backend.model.StockMovement;
 import com.electrostock.backend.model.Supplier;
+import com.electrostock.backend.enums.MovementType;
 import com.electrostock.backend.enums.PurchaseStatus;
+import com.electrostock.backend.enums.UnitStatus;
 import com.electrostock.backend.repository.ProductRepository;
 import com.electrostock.backend.repository.ProductUnitRepository;
 import com.electrostock.backend.repository.PurchaseRepository;
@@ -260,5 +264,98 @@ public class PurchaseService {
 	    }
 
 	    purchase.confirmInMad(confirmedAt);
+	}
+	private void validateStockForPurchaseCancellation(List<StockMovement> movements) {
+	    if (movements.isEmpty()) {
+	        throw new IllegalStateException("No stock movements found for this purchase");
+	    }
+
+	    Map<Long, Long> quantityToRemove = new HashMap<>();
+	    Map<Long, BigDecimal> valueToRemove = new HashMap<>();
+
+	    for (StockMovement movement : movements) {
+	        ProductUnit unit = movement.getProductUnit();
+
+	        if (unit != null && unit.getStatus() != UnitStatus.IN_STOCK) {
+	            throw new PurchaseCancellationNotAllowedException(
+	                    "Cannot cancel purchase: unit " + unit.getSerialNumber()
+	                            + " is not in stock");
+	        }
+
+	        Long productId = movement.getProduct().getId();
+
+	        quantityToRemove.merge(
+	                productId, (long) movement.getQuantityChange(), Long::sum);
+	        valueToRemove.merge(
+	                productId, movement.getValueChangeMad(), BigDecimal::add);
+	    }
+
+	    for (Map.Entry<Long, Long> entry : quantityToRemove.entrySet()) {
+	        Long productId = entry.getKey();
+	        long remainingQuantity =
+	                stockMovementRepository.getStockQuantity(productId) - entry.getValue();
+
+	        BigDecimal remainingValue = stockMovementRepository.getStockValueMad(productId)
+	                .subtract(valueToRemove.get(productId));
+
+	        if (remainingQuantity < 0 || remainingValue.signum() < 0
+	                || (remainingQuantity == 0 && remainingValue.signum() != 0)) {
+	            throw new PurchaseCancellationNotAllowedException(
+	                    "Cannot cancel purchase: reversing receipts would leave "
+	                            + "an invalid stock balance for product " + productId);
+	        }
+	    }
+	}
+	@Transactional
+	public void cancelPurchase(Long purchaseId) {
+	    Purchase purchase = purchaseRepository.findById(purchaseId)
+	            .orElseThrow(() -> new IllegalArgumentException(
+	                    "Purchase not found: " + purchaseId));
+
+	    if (purchase.getStatus() != PurchaseStatus.CONFIRMED) {
+	        throw new PurchaseCancellationNotAllowedException(
+	        		"Only confirmed purchases can be cancelled");
+	    }
+
+	    List<StockMovement> originalMovements =
+	            stockMovementRepository.findByPurchaseItem_Purchase_IdAndMovementType(
+	                    purchaseId, MovementType.PURCHASE);
+
+	    validateStockForPurchaseCancellation(originalMovements);
+
+	    LocalDateTime cancelledAt = LocalDateTime.now();
+	    Map<Long, Product> untrackedProducts = new HashMap<>();
+
+	    for (StockMovement original : originalMovements) {
+	        ProductUnit unit = original.getProductUnit();
+	        Product product = original.getProduct();
+
+	        if (unit != null) {
+	            unit.voidForPurchaseCancellation();
+	        }
+
+	        if (!product.isTracksSerials()) {
+	            untrackedProducts.put(product.getId(), product);
+	        }
+
+	        stockMovementRepository.save(
+	                StockMovement.reversePurchase(original, cancelledAt));
+	    }
+
+	    stockMovementRepository.flush();
+
+	    for (Product product : untrackedProducts.values()) {
+	        long remainingQuantity =
+	                stockMovementRepository.getStockQuantity(product.getId());
+
+	        if (remainingQuantity == 0) {
+	            product.clearAverageCostMad();
+	        } else {
+	            product.updateAverageCostMad(
+	                    costingService.calculateAverageCostMad(product.getId()));
+	        }
+	    }
+
+	    purchase.cancelAfterConfirmation(cancelledAt);
 	}
 }

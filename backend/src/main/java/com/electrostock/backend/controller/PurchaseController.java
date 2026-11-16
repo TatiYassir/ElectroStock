@@ -69,4 +69,9 @@ public class PurchaseController {
         purchaseService.confirmPurchaseInMad(
                 purchaseId, request.getSerialsByItemId());
     }
+    @PostMapping("/{purchaseId}/cancel")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void cancelPurchase(@PathVariable("purchaseId") Long purchaseId) {
+        purchaseService.cancelPurchase(purchaseId);
+    }
 }

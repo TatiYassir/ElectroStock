@@ -16,4 +16,10 @@ public class GlobalExceptionHandler {
 	    return ResponseEntity.status(HttpStatus.CONFLICT)
 	            .body(exception.getMessage());
 	}
+	@ExceptionHandler(PurchaseCancellationNotAllowedException.class)
+	public ResponseEntity<String> handlePurchaseCancellationNotAllowed(
+	        PurchaseCancellationNotAllowedException exception) {
+	    return ResponseEntity.status(HttpStatus.CONFLICT)
+	            .body(exception.getMessage());
+	}
 }

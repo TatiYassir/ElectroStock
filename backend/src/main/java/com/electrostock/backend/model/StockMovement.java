@@ -177,4 +177,27 @@ public class StockMovement {
 	    reversal.movementAt = movementAt;
 	    return reversal;
 	}
+	public static StockMovement reversePurchase(
+	        StockMovement original, LocalDateTime movementAt) {
+
+	    if (original == null || original.getId() == null
+	            || original.getMovementType() != MovementType.PURCHASE) {
+	        throw new IllegalArgumentException("A saved purchase movement is required");
+	    }
+
+	    if (movementAt == null || movementAt.isBefore(original.getMovementAt())) {
+	        throw new IllegalArgumentException(
+	                "Reversal time must be at or after the original movement");
+	    }
+
+	    StockMovement reversal = new StockMovement();
+	    reversal.reversalOfMovement = original;
+	    reversal.product = original.product;
+	    reversal.productUnit = original.productUnit;
+	    reversal.movementType = MovementType.REVERSAL;
+	    reversal.quantityChange = -original.quantityChange;
+	    reversal.valueChangeMad = original.valueChangeMad.negate();
+	    reversal.movementAt = movementAt;
+	    return reversal;
+	}
 }

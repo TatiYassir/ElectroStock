@@ -26,4 +26,6 @@ public interface StockMovementRepository
 		BigDecimal getStockValueMad(@Param("productId") Long productId);
 	List<StockMovement> findBySaleItem_Sale_IdAndMovementType(
 	        Long saleId, MovementType movementType);
+	List<StockMovement> findByPurchaseItem_Purchase_IdAndMovementType(
+	        Long purchaseId, MovementType movementType);
 }

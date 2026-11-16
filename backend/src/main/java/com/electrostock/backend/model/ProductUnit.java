@@ -138,4 +138,12 @@ public class ProductUnit {
 
 	    this.status = UnitStatus.IN_STOCK;
 	}
+	public void voidForPurchaseCancellation() {
+	    if (status != UnitStatus.IN_STOCK) {
+	        throw new IllegalStateException(
+	                "Cannot cancel purchase: unit " + serialNumber + " is not in stock");
+	    }
+
+	    this.status = UnitStatus.VOIDED;
+	}
 }
