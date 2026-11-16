@@ -17,6 +17,7 @@ import com.electrostock.backend.model.Product;
 import com.electrostock.backend.dto.CreateProductRequest;
 import com.electrostock.backend.dto.UpdateProductRequest;
 import com.electrostock.backend.service.ProductService;
+import com.electrostock.backend.dto.ProductStockResponse;
 @RestController
 @RequestMapping("/api/products")
 public class ProductRestController {
@@ -56,5 +57,9 @@ public class ProductRestController {
 			@RequestBody UpdateProductRequest request) {
 		return productservice.updateProduct(id, request.getSku(), request.getName(),
 				request.getDescription(), request.getSellingPriceMad());
+	}
+	@GetMapping("/{id}/stock")
+	public ProductStockResponse getProductStock(@PathVariable Long id) {
+	    return productservice.getProductStock(id);
 	}
 }

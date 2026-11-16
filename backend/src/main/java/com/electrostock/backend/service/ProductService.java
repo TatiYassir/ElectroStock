@@ -10,17 +10,22 @@ import com.electrostock.backend.model.Category;
 import com.electrostock.backend.repository.ProductRepository;
 import com.electrostock.backend.exception.ProductNotFoundException;
 import com.electrostock.backend.exception.ProductAlreadyExistsException;
+import com.electrostock.backend.dto.ProductStockResponse;
+import com.electrostock.backend.repository.StockMovementRepository;
 @Service
 public class ProductService {
 	// ATTRIBUTES :
 	private final ProductRepository productRepository;
 	private final CategoryService categoryService;
+	private final StockMovementRepository stockMovementRepository;
 	
 	//CONSTRATCORS :
 	public ProductService( ProductRepository productRepository,
-			CategoryService categoryService) {
+			CategoryService categoryService,
+			StockMovementRepository stockMovementRepository) {
 		this.categoryService = categoryService;
 		this.productRepository = productRepository;
+		this.stockMovementRepository = stockMovementRepository;
 	}
 	// Methods :
 	//create product :
@@ -75,6 +80,12 @@ public class ProductService {
 		product.setDescription(description);
 		product.setSellingPriceMad(sellingPriceMad);
 		return productRepository.save(product);
+	}
+	public ProductStockResponse getProductStock(Long productId) {
+	    getProductById(productId);
+
+	    long quantity = stockMovementRepository.getStockQuantity(productId);
+	    return new ProductStockResponse(productId, quantity);
 	}
 }
 
