@@ -5,7 +5,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 //Add alongside the existing imports
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.List;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.electrostock.backend.model.Currency;
@@ -320,6 +323,60 @@ class BackendApplicationTests {
 	    assertEquals(1, reloaded.getQuantityChange());
 	    assertEquals(0, cost.compareTo(reloaded.getValueChangeMad()));
 	    assertEquals(movementAt, reloaded.getMovementAt());
+	}
+	@Test
+	@Transactional
+	void rejectsTooFewSerialNumbersForTrackedPurchaseItem() {
+	    Product product = productRepository.findAll().stream()
+	            .filter(p -> "MON-001".equals(p.getSku()))
+	            .findFirst()
+	            .orElseThrow(() -> new AssertionError("Test product MON-001 was not found"));
+
+	    Supplier supplier = supplierRepository.save(
+	            new Supplier("Serial Count Test Supplier", null, null, null));
+
+	    Purchase draft = purchaseService.createDraft(
+	            supplier.getId(), "MAD", LocalDate.of(2026, 11, 16));
+
+	    PurchaseItem item = purchaseService.addItem(
+	            draft.getId(), product.getId(), 3, new BigDecimal("1000.00"));
+
+	    IllegalArgumentException error = assertThrows(
+	            IllegalArgumentException.class,
+	            () -> purchaseService.validatePurchaseConfirmation(
+	                    draft.getId(),
+	                    Map.of(item.getId(), List.of("SN-A", "SN-B"))));
+
+	    assertEquals("Expected 3 serial numbers for MON-001, but got 2",
+	            error.getMessage());
+	}
+	@Test
+	@Transactional
+	void acceptsThreeDistinctSerialNumbersForTrackedPurchaseItem() {
+	    Product product = productRepository.findAll().stream()
+	            .filter(p -> "MON-001".equals(p.getSku()))
+	            .findFirst()
+	            .orElseThrow(() -> new AssertionError("Test product MON-001 was not found"));
+
+	    Supplier supplier = supplierRepository.save(
+	            new Supplier("Valid Serials Test Supplier", null, null, null));
+
+	    Purchase draft = purchaseService.createDraft(
+	            supplier.getId(), "MAD", LocalDate.of(2026, 11, 16));
+
+	    PurchaseItem item = purchaseService.addItem(
+	            draft.getId(), product.getId(), 3, new BigDecimal("1000.00"));
+
+	    String prefix = "TEST-" + UUID.randomUUID();
+
+	    purchaseService.validatePurchaseConfirmation(
+	            draft.getId(),
+	            Map.of(item.getId(), List.of(
+	                    prefix + "-A",
+	                    prefix + "-B",
+	                    prefix + "-C")));
+
+	    assertEquals(PurchaseStatus.DRAFT, draft.getStatus());
 	}
 	@Test
 	void contextLoads() {
