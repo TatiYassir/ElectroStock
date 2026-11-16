@@ -1,0 +1,101 @@
+package com.electrostock.backend.model;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.EnumType;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+import jakarta.persistence.Column;
+
+import com.electrostock.backend.enums.UnitStatus;
+
+@Entity
+@Table(name ="product_units")
+public class ProductUnit {
+	//Attributes :
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
+	@ManyToOne(optional = false)
+	@JoinColumn(name ="product_id", nullable = false)
+	private Product product;
+	@ManyToOne(optional = true)
+	@JoinColumn(name ="purchase_item_id")
+	private PurchaseItem purchaseItem;
+	@Column(name = "serial_number", nullable = false , unique = true, length = 150)
+	private String serialNumber;
+	@Column(name = "acquisition_cost_mad", nullable = false , 
+			precision = 19, scale = 4)
+	private BigDecimal acquisitionCostMad;
+	@Enumerated(EnumType.STRING)
+	@Column(name = "status", nullable = false, length = 30)
+	private UnitStatus status = UnitStatus.IN_STOCK;
+	@Column(name = "warranty_start")
+	private LocalDate warrantyStart;
+	@Column(name = "warranty_end")
+	private LocalDate warrantyEnd;
+	//NO-ARGUMNET CONSTRUCTOR for JPA :
+	protected ProductUnit() {
+		
+	}
+	//Argument Constructor :
+	public ProductUnit(Product product, PurchaseItem purchaseItem,
+            String serialNumber, BigDecimal acquisitionCostMad) {
+			if (product == null) {
+				throw new IllegalArgumentException("Product is required");
+			}
+
+			if (serialNumber == null || serialNumber.isBlank()) {
+				throw new IllegalArgumentException("Serial number is required");
+			}
+
+			String normalizedSerialNumber = serialNumber.strip();
+			if (normalizedSerialNumber.length() > 150) {
+				throw new IllegalArgumentException(
+						"Serial number must be at most 150 characters");
+			}
+
+			if (acquisitionCostMad == null
+					|| acquisitionCostMad.compareTo(BigDecimal.ZERO) < 0) {
+				throw new IllegalArgumentException(
+						"Acquisition cost is required and cannot be negative");
+			}
+
+			this.product = product;
+			this.purchaseItem = purchaseItem;
+			this.serialNumber = normalizedSerialNumber;
+			this.acquisitionCostMad = acquisitionCostMad;
+	}
+	//Getters:
+	public Long getId() {
+		return id;
+	}
+	public Product getProduct() {
+		return product;
+	}
+	public PurchaseItem getPurchaseItem() {
+		return purchaseItem;
+	}
+	public String getSerialNumber() {
+		return serialNumber;
+	}
+	public BigDecimal getAcquisitionCostMad() {
+		return acquisitionCostMad;
+	}
+	public UnitStatus getStatus() {
+		return status;
+	}
+	public LocalDate getWarrantyStart() {
+		return warrantyStart;
+	}
+	public LocalDate getWarrantyEnd() {
+		return warrantyEnd;
+	}
+}

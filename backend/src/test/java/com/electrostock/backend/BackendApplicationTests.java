@@ -17,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.UUID;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -24,13 +25,16 @@ import jakarta.persistence.PersistenceContext;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.electrostock.backend.enums.PurchaseStatus;
+import com.electrostock.backend.enums.UnitStatus;
 import com.electrostock.backend.model.Purchase;
 import com.electrostock.backend.model.Supplier;
 import com.electrostock.backend.repository.PurchaseRepository;
 import com.electrostock.backend.repository.SupplierRepository;
 
 import com.electrostock.backend.model.Product;
+import com.electrostock.backend.model.ProductUnit;
 import com.electrostock.backend.repository.ProductRepository;
+import com.electrostock.backend.repository.ProductUnitRepository;
 import com.electrostock.backend.repository.PurchaseItemRepository;
 import com.electrostock.backend.model.PurchaseItem;
 import com.electrostock.backend.service.PurchaseService;
@@ -39,7 +43,8 @@ class BackendApplicationTests {
 	// Add inside BackendApplicationTests
 	@Autowired
 	private ProductRepository productRepository;
-
+	@Autowired
+	private ProductUnitRepository productUnitRepository;
 	@Autowired
 	private PurchaseItemRepository purchaseItemRepository;
 	@Autowired
@@ -166,6 +171,65 @@ class BackendApplicationTests {
 	    assertEquals(0, expected.compareTo(reloadedItem.getLineTotalCurrency()));
 	    assertEquals(0, expected.compareTo(reloadedPurchase.getTotalCurrency()));
 	    assertEquals(PurchaseStatus.DRAFT, reloadedPurchase.getStatus());
+	}
+	@Test
+	@Transactional
+	void savesAndReloadsOpeningStockUnit() {
+	    Product product = productRepository.findAll().stream()
+	            .filter(p -> "MON-001".equals(p.getSku()))
+	            .findFirst()
+	            .orElseThrow(() -> new AssertionError("Test product MON-001 was not found"));
+
+	    Long productId = product.getId();
+	    String serial = "TEST-" + UUID.randomUUID();
+	    BigDecimal cost = new BigDecimal("1000.00");
+
+	    ProductUnit unit = new ProductUnit(product, null, "  " + serial + "  ", cost);
+	    Long unitId = productUnitRepository.saveAndFlush(unit).getId();
+
+	    entityManager.clear();
+
+	    ProductUnit reloaded = productUnitRepository.findById(unitId).orElseThrow();
+
+	    assertEquals(productId, reloaded.getProduct().getId());
+	    assertNull(reloaded.getPurchaseItem());
+	    assertEquals(serial, reloaded.getSerialNumber());
+	    assertEquals(0, cost.compareTo(reloaded.getAcquisitionCostMad()));
+	    assertEquals(UnitStatus.IN_STOCK, reloaded.getStatus());
+	    assertNull(reloaded.getWarrantyStart());
+	    assertNull(reloaded.getWarrantyEnd());
+	}
+	@Test
+	@Transactional
+	void savesAndReloadsUnitLinkedToPurchaseItem() {
+	    Product product = productRepository.findAll().stream()
+	            .filter(p -> "MON-001".equals(p.getSku()))
+	            .findFirst()
+	            .orElseThrow(() -> new AssertionError("Test product MON-001 was not found"));
+
+	    Supplier supplier = supplierRepository.save(
+	            new Supplier("Product Unit Test Supplier", null, null, null));
+
+	    Purchase draft = purchaseService.createDraft(
+	            supplier.getId(), "MAD", LocalDate.of(2026, 11, 15));
+
+	    BigDecimal cost = new BigDecimal("1000.00");
+	    PurchaseItem savedItem = purchaseService.addItem(
+	            draft.getId(), product.getId(), 1, cost);
+	    Long savedItemId = savedItem.getId();
+
+	    String serial = "TEST-" + UUID.randomUUID();
+	    ProductUnit unit = new ProductUnit(
+	            savedItem.getProduct(), savedItem, serial, cost);
+	    Long unitId = productUnitRepository.saveAndFlush(unit).getId();
+
+	    entityManager.clear();
+
+	    ProductUnit reloaded = productUnitRepository.findById(unitId).orElseThrow();
+
+	    assertNotNull(reloaded.getPurchaseItem());
+	    assertEquals(savedItemId, reloaded.getPurchaseItem().getId());
+	    assertEquals(product.getId(), reloaded.getProduct().getId());
 	}
 	@Test
 	void contextLoads() {
