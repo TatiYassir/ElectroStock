@@ -98,4 +98,11 @@ public class ProductUnit {
 	public LocalDate getWarrantyEnd() {
 		return warrantyEnd;
 	}
+	public void markSold() {
+	    if (status != UnitStatus.IN_STOCK) {
+	        throw new IllegalStateException("Only in-stock units can be marked as sold");
+	    }
+
+	    this.status = UnitStatus.SOLD;
+	}
 }

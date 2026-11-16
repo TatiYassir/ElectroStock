@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 import jakarta.validation.Valid;
 import com.electrostock.backend.dto.AddSaleItemRequest;
+import com.electrostock.backend.dto.ConfirmSaleRequest;
 import com.electrostock.backend.dto.SaleResponse;
 import com.electrostock.backend.dto.CreateSaleRequest;
 import com.electrostock.backend.model.Sale;
@@ -57,5 +58,13 @@ public class SaleController {
     @GetMapping("/{saleId}")
     public SaleResponse getSale(@PathVariable("saleId") Long saleId) {
         return saleService.getSale(saleId);
+    }
+    @PostMapping("/{saleId}/confirm")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void confirmSale(
+            @PathVariable("saleId") Long saleId,
+            @Valid @RequestBody ConfirmSaleRequest request) {
+
+        saleService.confirmSaleInMad(saleId, request.serialsByItemId());
     }
 }

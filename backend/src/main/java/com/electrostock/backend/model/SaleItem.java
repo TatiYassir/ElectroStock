@@ -104,4 +104,21 @@ public class SaleItem {
     public BigDecimal getCostOfGoodsSoldMad() {
         return costOfGoodsSoldMad;
     }
+    public void snapshotAmountsInMad(BigDecimal costOfGoodsSoldMad) {
+        if (sale.getStatus() != com.electrostock.backend.enums.SaleStatus.DRAFT) {
+            throw new IllegalStateException("Only draft sale items can be updated");
+        }
+
+        if (!"MAD".equals(sale.getCurrency().getCode())) {
+            throw new IllegalStateException("Only MAD sale lines are supported for now");
+        }
+
+        if (costOfGoodsSoldMad == null || costOfGoodsSoldMad.signum() < 0) {
+            throw new IllegalArgumentException(
+                    "Cost of goods sold is required and cannot be negative");
+        }
+
+        this.lineTotalMad = this.lineTotalCurrency;
+        this.costOfGoodsSoldMad = costOfGoodsSoldMad;
+    }
 }

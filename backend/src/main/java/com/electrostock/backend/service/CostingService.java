@@ -29,4 +29,20 @@ public class CostingService {
                 6,
                 RoundingMode.HALF_UP);
     }
+    public BigDecimal calculateUntrackedSaleCostMad(Long productId, int quantitySold) {
+        if (quantitySold <= 0) {
+            throw new IllegalArgumentException("Quantity sold must be positive");
+        }
+
+        long stockQuantity = stockMovementRepository.getStockQuantity(productId);
+
+        if (quantitySold > stockQuantity) {
+            throw new IllegalStateException("Not enough stock for product " + productId);
+        }
+
+        BigDecimal stockValue = stockMovementRepository.getStockValueMad(productId);
+
+        return stockValue.multiply(BigDecimal.valueOf(quantitySold))
+                .divide(BigDecimal.valueOf(stockQuantity), 4, RoundingMode.HALF_UP);
+    }
 }

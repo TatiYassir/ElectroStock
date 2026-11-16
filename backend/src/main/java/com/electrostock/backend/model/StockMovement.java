@@ -30,10 +30,12 @@ public class StockMovement {
 	@ManyToOne(optional = true)
 	@JoinColumn(name = "product_unit_id")
 	private ProductUnit productUnit;
-
 	@ManyToOne(optional = true)
 	@JoinColumn(name = "purchase_item_id")
 	private PurchaseItem purchaseItem;
+	@ManyToOne
+	@JoinColumn(name = "sale_item_id")
+	private SaleItem saleItem;
 	@Column(name = "quantity_change" , nullable = false)
 	private int quantityChange;
 	@Enumerated(EnumType.STRING)
@@ -47,6 +49,31 @@ public class StockMovement {
 	protected StockMovement() {
 		
 	}
+	//Getters :
+		public Long getId() {
+			return id;
+		}
+		public Product getProduct() {
+			return product;
+		}
+		public ProductUnit getProductUnit() {
+			return productUnit;
+		}
+		public PurchaseItem getPurchaseItem() {
+			return purchaseItem;
+		}
+		public int getQuantityChange() {
+			return quantityChange;
+		}
+		public MovementType getMovementType() {
+			return movementType;
+		}
+		public BigDecimal getValueChangeMad() {
+			return valueChangeMad;
+		}
+		public LocalDateTime getMovementAt() {
+			return movementAt;
+		}
 	//Methods:
 	public static StockMovement forPurchase(
 	        PurchaseItem purchaseItem,
@@ -83,30 +110,44 @@ public class StockMovement {
 	    movement.movementAt = movementAt;
 	    return movement;
 	}
-	//Getters :
-	public Long getId() {
-		return id;
+	public static StockMovement forSale(
+	        SaleItem saleItem,
+	        ProductUnit productUnit,
+	        int quantitySold,
+	        BigDecimal inventoryCostMad,
+	        LocalDateTime movementAt) {
+
+	    if (saleItem == null) {
+	        throw new IllegalArgumentException("Sale item is required");
+	    }
+	    if (quantitySold <= 0) {
+	        throw new IllegalArgumentException("Quantity sold must be positive");
+	    }
+	    if (productUnit != null && quantitySold != 1) {
+	        throw new IllegalArgumentException(
+	                "A movement for one physical unit must remove exactly one");
+	    }
+	    if (inventoryCostMad == null || inventoryCostMad.signum() < 0) {
+	        throw new IllegalArgumentException(
+	                "Inventory cost is required and cannot be negative");
+	    }
+	    if (movementAt == null) {
+	        throw new IllegalArgumentException("Movement time is required");
+	    }
+
+	    StockMovement movement = new StockMovement();
+	    movement.saleItem = saleItem;
+	    movement.product = saleItem.getProduct();
+	    movement.productUnit = productUnit;
+	    movement.movementType = MovementType.SALE;
+	    movement.quantityChange = -quantitySold;
+	    movement.valueChangeMad = inventoryCostMad.negate();
+	    movement.movementAt = movementAt;
+	    return movement;
 	}
-	public Product getProduct() {
-		return product;
-	}
-	public ProductUnit getProductUnit() {
-		return productUnit;
-	}
-	public PurchaseItem getPurchaseItem() {
-		return purchaseItem;
-	}
-	public int getQuantityChange() {
-		return quantityChange;
-	}
-	public MovementType getMovementType() {
-		return movementType;
-	}
-	public BigDecimal getValueChangeMad() {
-		return valueChangeMad;
-	}
-	public LocalDateTime getMovementAt() {
-		return movementAt;
+
+	public SaleItem getSaleItem() {
+	    return saleItem;
 	}
 	
 }
