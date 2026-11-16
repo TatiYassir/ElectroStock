@@ -22,6 +22,7 @@ import com.electrostock.backend.repository.ProductUnitRepository;
 import com.electrostock.backend.repository.StockMovementRepository;
 import com.electrostock.backend.dto.product.ProductUnitStatusResponse;
 import com.electrostock.backend.dto.product.StockMovementResponse;
+import com.electrostock.backend.dto.report.SerialUnitTraceResponse;
 @Service
 public class StockService {
 
@@ -340,5 +341,47 @@ public class StockService {
         }
 
         return history;
+    }
+    @Transactional(readOnly = true)
+    public Optional<SerialUnitTraceResponse> findSerialUnitTrace(String serialNumber) {
+        if (serialNumber == null || serialNumber.isBlank()) {
+            throw new IllegalArgumentException("Serial number is required");
+        }
+
+        return productUnitRepository.findBySerialNumber(serialNumber.strip())
+                .map(unit -> {
+                    Product product = unit.getProduct();
+
+                    List<StockMovementResponse> movements = stockMovementRepository
+                            .findByProductUnit_IdOrderByMovementAtAscIdAsc(unit.getId())
+                            .stream()
+                            .map(this::toStockMovementResponse)
+                            .toList();
+
+                    return new SerialUnitTraceResponse(
+                            unit.getId(),
+                            product.getId(),
+                            product.getSku(),
+                            product.getName(),
+                            unit.getSerialNumber(),
+                            unit.getStatus(),
+                            unit.getAcquisitionCostMad(),
+                            movements);
+                });
+    }
+    private StockMovementResponse toStockMovementResponse(StockMovement movement) {
+        ProductUnit unit = movement.getProductUnit();
+        StockMovement original = movement.getReversalOfMovement();
+
+        return new StockMovementResponse(
+                movement.getId(),
+                movement.getMovementType(),
+                movement.getQuantityChange(),
+                movement.getValueChangeMad(),
+                movement.getMovementAt(),
+                unit == null ? null : unit.getSerialNumber(),
+                movement.getAdjustmentReason(),
+                movement.getExplanation(),
+                original == null ? null : original.getId());
     }
 }

@@ -84,4 +84,5 @@ public interface StockMovementRepository
 		List<StockMovementReportRow> findMovementReport(
 		        @Param("fromInclusive") LocalDateTime fromInclusive,
 		        @Param("toExclusive") LocalDateTime toExclusive);
+	List<StockMovement> findByProductUnit_IdOrderByMovementAtAscIdAsc(Long unitId);
 }

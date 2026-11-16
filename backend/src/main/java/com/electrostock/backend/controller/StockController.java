@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.electrostock.backend.dto.product.TrackedStockRemovalRequest;
 import com.electrostock.backend.dto.product.TrackedStockAdditionRequest;
 import com.electrostock.backend.dto.product.TrackedStockRecoveryRequest;
+import com.electrostock.backend.dto.report.SerialUnitTraceResponse;
 @RestController
 @RequestMapping("/api/products")
 public class StockController {
@@ -107,5 +108,11 @@ public class StockController {
             @PathVariable("productId") Long productId) {
 
         return stockService.getStockMovementHistory(productId);
+    }
+    @GetMapping("/units/trace")
+    public ResponseEntity<SerialUnitTraceResponse> getSerialUnitTrace(
+            @RequestParam("serialNumber") String serialNumber) {
+
+        return ResponseEntity.of(stockService.findSerialUnitTrace(serialNumber));
     }
 }
