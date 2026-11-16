@@ -18,6 +18,12 @@ import com.electrostock.backend.repository.CurrencyRepository;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -66,8 +72,9 @@ class BackendApplicationTests {
 	private PurchaseService purchaseService;
 	@PersistenceContext
 	private EntityManager entityManager;
-	@Autowired
+	@MockitoSpyBean
 	private StockMovementRepository stockMovementRepository;
+	
 	@Test
 	@Transactional
 	void savesAndReloadsPurchaseItem() {
@@ -377,6 +384,155 @@ class BackendApplicationTests {
 	                    prefix + "-C")));
 
 	    assertEquals(PurchaseStatus.DRAFT, draft.getStatus());
+	}
+	@Test
+	@Transactional
+	void confirmsMadPurchaseWithTrackedAndUntrackedItems() {
+	    List<Product> products = productRepository.findAll();
+
+	    Product tracked = products.stream()
+	            .filter(product -> "MON-001".equals(product.getSku()))
+	            .findFirst()
+	            .orElseThrow(() -> new AssertionError("Test product MON-001 was not found"));
+
+	    Product untracked = products.stream()
+	            .filter(product -> "MON-002".equals(product.getSku()))
+	            .findFirst()
+	            .orElseThrow(() -> new AssertionError("Test product MON-002 was not found"));
+
+	    Supplier supplier = supplierRepository.save(
+	            new Supplier("Purchase Confirmation Test Supplier", null, null, null));
+
+	    Purchase draft = purchaseService.createDraft(
+	            supplier.getId(), "MAD", LocalDate.of(2026, 11, 16));
+	    Long purchaseId = draft.getId();
+
+	    BigDecimal unitCost = new BigDecimal("1000.00");
+	    Long trackedItemId = purchaseService.addItem(
+	            purchaseId, tracked.getId(), 2, unitCost).getId();
+	    Long untrackedItemId = purchaseService.addItem(
+	            purchaseId, untracked.getId(), 3, unitCost).getId();
+
+	    String prefix = "TEST-" + UUID.randomUUID();
+	    List<String> serials = List.of(prefix + "-A", prefix + "-B");
+
+	    purchaseService.confirmPurchaseInMad(
+	            purchaseId, Map.of(trackedItemId, serials));
+
+	    entityManager.flush();
+	    entityManager.clear();
+
+	    // Check the purchase and its saved costs.
+	    Purchase confirmed = purchaseRepository.findById(purchaseId).orElseThrow();
+	    assertEquals(PurchaseStatus.CONFIRMED, confirmed.getStatus());
+	    assertEquals(0, BigDecimal.ONE.compareTo(confirmed.getRateToMadSnapshot()));
+	    assertEquals(0, new BigDecimal("5000.00").compareTo(confirmed.getTotalMad()));
+	    assertNotNull(confirmed.getConfirmedAt());
+
+	    PurchaseItem trackedItem = purchaseItemRepository.findById(trackedItemId).orElseThrow();
+	    PurchaseItem untrackedItem = purchaseItemRepository.findById(untrackedItemId).orElseThrow();
+	    assertEquals(0, unitCost.compareTo(trackedItem.getUnitCostMadSnapshot()));
+	    assertEquals(0, new BigDecimal("2000.00").compareTo(trackedItem.getLineTotalMad()));
+	    assertEquals(0, unitCost.compareTo(untrackedItem.getUnitCostMadSnapshot()));
+	    assertEquals(0, new BigDecimal("3000.00").compareTo(untrackedItem.getLineTotalMad()));
+
+	    // Tracked line: two physical units and one movement per unit.
+	    List<ProductUnit> units = productUnitRepository.findByPurchaseItem_Id(trackedItemId);
+	    assertEquals(serials, units.stream().map(ProductUnit::getSerialNumber).sorted().toList());
+
+	    List<StockMovement> trackedMovements =
+	            stockMovementRepository.findByPurchaseItem_Id(trackedItemId);
+	    assertEquals(2, trackedMovements.size());
+
+	    for (ProductUnit unit : units) {
+	        assertEquals(UnitStatus.IN_STOCK, unit.getStatus());
+	        assertEquals(0, unitCost.compareTo(unit.getAcquisitionCostMad()));
+
+	        List<StockMovement> movementsForUnit = trackedMovements.stream()
+	                .filter(movement -> movement.getProductUnit() != null
+	                        && unit.getId().equals(movement.getProductUnit().getId()))
+	                .toList();
+
+	        assertEquals(1, movementsForUnit.size());
+	        StockMovement movement = movementsForUnit.get(0);
+	        assertEquals(MovementType.PURCHASE, movement.getMovementType());
+	        assertEquals(1, movement.getQuantityChange());
+	        assertEquals(0, unitCost.compareTo(movement.getValueChangeMad()));
+	        assertEquals(confirmed.getConfirmedAt(), movement.getMovementAt());
+	    }
+
+	    // Untracked line: no physical units and one movement for all three.
+	    assertEquals(0, productUnitRepository.findByPurchaseItem_Id(untrackedItemId).size());
+
+	    List<StockMovement> untrackedMovements =
+	            stockMovementRepository.findByPurchaseItem_Id(untrackedItemId);
+	    assertEquals(1, untrackedMovements.size());
+
+	    StockMovement movement = untrackedMovements.get(0);
+	    assertNull(movement.getProductUnit());
+	    assertEquals(MovementType.PURCHASE, movement.getMovementType());
+	    assertEquals(3, movement.getQuantityChange());
+	    assertEquals(0, new BigDecimal("3000.00").compareTo(movement.getValueChangeMad()));
+	    assertEquals(confirmed.getConfirmedAt(), movement.getMovementAt());
+	}
+	@Test
+	void rollsBackMadConfirmationWhenMovementWriteFails() {
+	    Product product = productRepository.findAll().stream()
+	            .filter(p -> "MON-001".equals(p.getSku()))
+	            .findFirst()
+	            .orElseThrow();
+
+	    Supplier supplier = supplierRepository.save(
+	            new Supplier("Confirmation Rollback Test Supplier", null, null, null));
+
+	    Purchase draft = purchaseService.createDraft(
+	            supplier.getId(), "MAD", LocalDate.of(2026, 11, 16));
+	    Long purchaseId = draft.getId();
+
+	    PurchaseItem item = purchaseService.addItem(
+	            purchaseId, product.getId(), 1, new BigDecimal("1000.00"));
+	    Long itemId = item.getId();
+	    String serial = "TEST-" + UUID.randomUUID();
+
+	    try {
+	        doAnswer(invocation -> {
+	            StockMovement movement = invocation.getArgument(0);
+
+	            // Write for real, then fail before confirmation can finish.
+	            entityManager.persist(movement);
+	            entityManager.flush();
+
+	            throw new IllegalStateException("Forced failure after movement flush");
+	        }).when(stockMovementRepository).save(any(StockMovement.class));
+
+	        IllegalStateException error = assertThrows(
+	                IllegalStateException.class,
+	                () -> purchaseService.confirmPurchaseInMad(
+	                        purchaseId, Map.of(itemId, List.of(serial))));
+
+	        assertEquals("Forced failure after movement flush", error.getMessage());
+
+	        Purchase reloaded = purchaseRepository.findById(purchaseId).orElseThrow();
+	        assertEquals(PurchaseStatus.DRAFT, reloaded.getStatus());
+	        assertNull(reloaded.getConfirmedAt());
+	        assertNull(reloaded.getTotalMad());
+
+	        PurchaseItem reloadedItem = purchaseItemRepository.findById(itemId).orElseThrow();
+	        assertNull(reloadedItem.getUnitCostMadSnapshot());
+	        assertNull(reloadedItem.getLineTotalMad());
+
+	        assertTrue(productUnitRepository.findByPurchaseItem_Id(itemId).isEmpty());
+	        assertTrue(stockMovementRepository.findByPurchaseItem_Id(itemId).isEmpty());
+	    } finally {
+	        // The test setup was saved outside the confirmation transaction.
+	        stockMovementRepository.deleteAll(
+	                stockMovementRepository.findByPurchaseItem_Id(itemId));
+	        productUnitRepository.deleteAll(
+	                productUnitRepository.findByPurchaseItem_Id(itemId));
+	        purchaseItemRepository.deleteById(itemId);
+	        purchaseRepository.deleteById(purchaseId);
+	        supplierRepository.deleteById(supplier.getId());
+	    }
 	}
 	@Test
 	void contextLoads() {

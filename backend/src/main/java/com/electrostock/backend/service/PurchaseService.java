@@ -2,6 +2,7 @@ package com.electrostock.backend.service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -16,8 +17,10 @@ import com.electrostock.backend.exception.ProductNotFoundException;
 import com.electrostock.backend.exception.SupplierNotFoundException;
 import com.electrostock.backend.model.Currency;
 import com.electrostock.backend.model.Product;
+import com.electrostock.backend.model.ProductUnit;
 import com.electrostock.backend.model.Purchase;
 import com.electrostock.backend.model.PurchaseItem;
+import com.electrostock.backend.model.StockMovement;
 import com.electrostock.backend.model.Supplier;
 import com.electrostock.backend.enums.PurchaseStatus;
 import com.electrostock.backend.repository.ProductRepository;
@@ -26,6 +29,7 @@ import com.electrostock.backend.repository.PurchaseRepository;
 import com.electrostock.backend.repository.PurchaseItemRepository;
 import com.electrostock.backend.repository.SupplierRepository;
 import com.electrostock.backend.repository.CurrencyRepository;
+import com.electrostock.backend.repository.StockMovementRepository;
 import com.electrostock.backend.dto.PurchaseItemResponse;
 import com.electrostock.backend.dto.PurchaseResponse;
 
@@ -38,19 +42,22 @@ public class PurchaseService {
 	private final SupplierRepository supplierRepository;
 	private final CurrencyRepository currencyRepository;
 	private final ProductUnitRepository productUnitRepository;
+	private final StockMovementRepository stockMovementRepository;
 	//Constructor :
 	public PurchaseService(PurchaseRepository purchaseRepository,
 	                       ProductRepository productRepository,
 	                       PurchaseItemRepository purchaseItemRepository,
 	                       SupplierRepository supplierRepository,
 	                       CurrencyRepository currencyRepository,
-	                       ProductUnitRepository productUnitRepository) {
+	                       ProductUnitRepository productUnitRepository,
+	                       StockMovementRepository stockMovementRepository) {
 	    this.purchaseRepository = purchaseRepository;
 	    this.productRepository = productRepository;
 	    this.purchaseItemRepository = purchaseItemRepository;
 	    this.supplierRepository = supplierRepository;
 	    this.currencyRepository = currencyRepository;
 	    this.productUnitRepository = productUnitRepository;
+	    this.stockMovementRepository = stockMovementRepository;
 	}
 	//Methods:
 	public Purchase createDraft(Long supplierId,String currencyCode,
@@ -201,5 +208,49 @@ public class PurchaseService {
 	                    "Serial number is already registered: " + serialNumber);
 	        }
 	    }
+	}
+	@Transactional
+	public void confirmPurchaseInMad(
+	        Long purchaseId, Map<Long, List<String>> serialsByItemId) {
+
+	    Purchase purchase = purchaseRepository.findById(purchaseId)
+	            .orElseThrow(() -> new IllegalArgumentException(
+	                    "Purchase not found: " + purchaseId));
+
+	    List<PurchaseItem> items =
+	            purchaseItemRepository.findByPurchase_Id(purchaseId);
+
+	    validateConfirmation(purchase, items);
+
+	    if (!"MAD".equals(purchase.getCurrency().getCode())) {
+	        throw new IllegalStateException("Only MAD purchases can be confirmed for now");
+	    }
+
+	    validatePurchaseSerials(items, serialsByItemId);
+
+	    LocalDateTime confirmedAt = LocalDateTime.now();
+
+	    for (PurchaseItem item : items) {
+	        item.snapshotCostsInMad();
+
+	        Product product = item.getProduct();
+
+	        if (product.isTracksSerials()) {
+	            for (String serialNumber : serialsByItemId.get(item.getId())) {
+	                ProductUnit unit = productUnitRepository.save(
+	                        new ProductUnit(product, item, serialNumber,
+	                                item.getUnitCostMadSnapshot()));
+
+	                stockMovementRepository.save(StockMovement.forPurchase(
+	                        item, unit, 1, item.getUnitCostMadSnapshot(), confirmedAt));
+	            }
+	        } else {
+	            stockMovementRepository.save(StockMovement.forPurchase(
+	                    item, null, item.getQuantity(),
+	                    item.getLineTotalMad(), confirmedAt));
+	        }
+	    }
+
+	    purchase.confirmInMad(confirmedAt);
 	}
 }

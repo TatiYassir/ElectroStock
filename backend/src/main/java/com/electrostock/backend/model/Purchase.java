@@ -143,6 +143,24 @@ public class Purchase {
 
 		return item;
 	}
+	public void confirmInMad(LocalDateTime confirmedAt) {
+	    if (status != PurchaseStatus.DRAFT) {
+	        throw new IllegalStateException("Only draft purchases can be confirmed");
+	    }
+
+	    if (!"MAD".equals(currency.getCode())) {
+	        throw new IllegalStateException("This method only confirms purchases in MAD");
+	    }
+
+	    if (confirmedAt == null) {
+	        throw new IllegalArgumentException("Confirmation time is required");
+	    }
+
+	    this.rateToMadSnapshot = BigDecimal.ONE;
+	    this.totalMad = this.totalCurrency;
+	    this.confirmedAt = confirmedAt;
+	    this.status = PurchaseStatus.CONFIRMED;
+	}
 }
 
 

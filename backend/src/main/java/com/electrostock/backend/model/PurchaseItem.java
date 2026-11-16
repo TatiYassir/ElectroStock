@@ -91,5 +91,14 @@ public class PurchaseItem {
 	public BigDecimal getLineTotalMad() {
 		return lineTotalMad;
 	}
-	
+	//Methods:
+	public void snapshotCostsInMad() {
+	    if (!"MAD".equals(purchase.getCurrency().getCode())) {
+	        throw new IllegalStateException(
+	                "Only MAD purchase lines can be copied without conversion");
+	    }
+
+	    this.unitCostMadSnapshot = this.unitPriceCurrency;
+	    this.lineTotalMad = this.lineTotalCurrency;
+	}
 }
