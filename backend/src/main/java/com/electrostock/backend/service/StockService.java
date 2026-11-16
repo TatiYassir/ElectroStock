@@ -274,4 +274,42 @@ public class StockService {
                         unit.getSerialNumber(),
                         unit.getStatus()));
     }
+    @Transactional
+    public void recoverLostTrackedUnit(
+            Long productId, String serialNumber, String explanation) {
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ProductNotFoundException(
+                        "Product not found: " + productId));
+
+        if (product.getStatus() != ProductStatus.ACTIVE) {
+            throw new IllegalStateException(
+                    "Stock adjustment requires an active product");
+        }
+
+        if (!product.isTracksSerials()) {
+            throw new IllegalArgumentException(
+                    "This adjustment requires a product with serial tracking");
+        }
+
+        if (serialNumber == null || serialNumber.isBlank()) {
+            throw new IllegalArgumentException("Serial number is required");
+        }
+
+        String cleanedSerial = serialNumber.strip();
+        ProductUnit unit = productUnitRepository.findBySerialNumber(cleanedSerial)
+                .filter(found -> productId.equals(found.getProduct().getId()))
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Serial number not found for this product: " + cleanedSerial));
+
+        unit.restoreLostUnitToStock();
+
+        StockMovement movement = StockMovement.forTrackedUnitAddition(
+                unit,
+                AdjustmentReason.COUNTING_CORRECTION,
+                explanation,
+                LocalDateTime.now());
+
+        stockMovementRepository.save(movement);
+    }
 }

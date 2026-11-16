@@ -161,4 +161,12 @@ public class ProductUnit {
 	            ? UnitStatus.LOST
 	            : UnitStatus.VOIDED;
 	}
+	public void restoreLostUnitToStock() {
+	    if (status != UnitStatus.LOST) {
+	        throw new IllegalStateException(
+	                "Cannot restore unit " + serialNumber + ": it is not marked LOST");
+	    }
+
+	    this.status = UnitStatus.IN_STOCK;
+	}
 }

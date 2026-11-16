@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import com.electrostock.backend.dto.product.TrackedStockRemovalRequest;
 import com.electrostock.backend.dto.product.TrackedStockAdditionRequest;
+import com.electrostock.backend.dto.product.TrackedStockRecoveryRequest;
 @RestController
 @RequestMapping("/api/products")
 public class StockController {
@@ -85,6 +86,17 @@ public class StockController {
                 request.serialNumber(),
                 request.unitCostMad(),
                 request.reason(),
+                request.explanation());
+    }
+    @PostMapping("/{productId}/stock-adjustments/tracked-recovery")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void recoverLostTrackedUnit(
+            @PathVariable("productId") Long productId,
+            @Valid @RequestBody TrackedStockRecoveryRequest request) {
+
+        stockService.recoverLostTrackedUnit(
+                productId,
+                request.serialNumber(),
                 request.explanation());
     }
 }
