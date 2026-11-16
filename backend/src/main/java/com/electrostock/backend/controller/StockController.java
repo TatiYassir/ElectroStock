@@ -7,6 +7,9 @@ import com.electrostock.backend.dto.product.ProductUnitStatusResponse;
 
 import jakarta.validation.Valid;
 
+import java.util.List;
+import com.electrostock.backend.dto.product.StockMovementResponse;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -98,5 +101,11 @@ public class StockController {
                 productId,
                 request.serialNumber(),
                 request.explanation());
+    }
+    @GetMapping("/{productId}/stock-movements")
+    public List<StockMovementResponse> getStockMovementHistory(
+            @PathVariable("productId") Long productId) {
+
+        return stockService.getStockMovementHistory(productId);
     }
 }

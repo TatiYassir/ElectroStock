@@ -28,4 +28,6 @@ public interface StockMovementRepository
 	        Long saleId, MovementType movementType);
 	List<StockMovement> findByPurchaseItem_Purchase_IdAndMovementType(
 	        Long purchaseId, MovementType movementType);
+	List<StockMovement> findByProduct_IdOrderByMovementAtDescIdDesc(Long productId);
+
 }

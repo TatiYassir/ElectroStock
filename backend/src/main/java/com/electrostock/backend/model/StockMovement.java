@@ -89,6 +89,13 @@ public class StockMovement {
 		public StockMovement getReversalOfMovement() {
 		    return reversalOfMovement;
 		}
+		public AdjustmentReason getAdjustmentReason() {
+		    return adjustmentReason;
+		}
+
+		public String getExplanation() {
+		    return explanation;
+		}
 	//Methods:
 	public static StockMovement forPurchase(
 	        PurchaseItem purchaseItem,

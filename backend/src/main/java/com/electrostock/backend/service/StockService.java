@@ -21,6 +21,7 @@ import com.electrostock.backend.repository.ProductRepository;
 import com.electrostock.backend.repository.ProductUnitRepository;
 import com.electrostock.backend.repository.StockMovementRepository;
 import com.electrostock.backend.dto.product.ProductUnitStatusResponse;
+import com.electrostock.backend.dto.product.StockMovementResponse;
 @Service
 public class StockService {
 
@@ -311,5 +312,33 @@ public class StockService {
                 LocalDateTime.now());
 
         stockMovementRepository.save(movement);
+    }
+    @Transactional(readOnly = true)
+    public List<StockMovementResponse> getStockMovementHistory(Long productId) {
+        if (!productRepository.existsById(productId)) {
+            throw new ProductNotFoundException("Product not found: " + productId);
+        }
+
+        List<StockMovementResponse> history = new ArrayList<>();
+
+        for (StockMovement movement :
+                stockMovementRepository.findByProduct_IdOrderByMovementAtDescIdDesc(productId)) {
+
+            ProductUnit unit = movement.getProductUnit();
+            StockMovement original = movement.getReversalOfMovement();
+
+            history.add(new StockMovementResponse(
+                    movement.getId(),
+                    movement.getMovementType(),
+                    movement.getQuantityChange(),
+                    movement.getValueChangeMad(),
+                    movement.getMovementAt(),
+                    unit == null ? null : unit.getSerialNumber(),
+                    movement.getAdjustmentReason(),
+                    movement.getExplanation(),
+                    original == null ? null : original.getId()));
+        }
+
+        return history;
     }
 }
