@@ -5,6 +5,7 @@ import com.electrostock.backend.model.StockMovement;
 import com.electrostock.backend.dto.report.InventoryValuationRow;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -44,4 +45,14 @@ public interface StockMovementRepository
 		    ORDER BY p.sku, p.id
 		    """)
 		List<InventoryValuationRow> findInventoryValuation();
+	@Query("""
+	        SELECT m
+	        FROM StockMovement m
+	        WHERE m.movementAt >= :fromInclusive
+	          AND m.movementAt < :toExclusive
+	        ORDER BY m.movementAt DESC, m.id DESC
+	        """)
+	List<StockMovement> findMovementsInPeriod(
+	        @Param("fromInclusive") LocalDateTime fromInclusive,
+	        @Param("toExclusive") LocalDateTime toExclusive);
 }
