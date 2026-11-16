@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,7 +20,7 @@ import com.electrostock.backend.model.StockMovement;
 import com.electrostock.backend.repository.ProductRepository;
 import com.electrostock.backend.repository.ProductUnitRepository;
 import com.electrostock.backend.repository.StockMovementRepository;
-
+import com.electrostock.backend.dto.product.ProductUnitStatusResponse;
 @Service
 public class StockService {
 
@@ -183,5 +184,59 @@ public class StockService {
             product.updateAverageCostMad(
                     costingService.calculateAverageCostMad(productId));
         }
+    }
+    @Transactional
+    public void removeTrackedUnitFromStock(
+            Long productId,
+            String serialNumber,
+            AdjustmentReason reason,
+            String explanation) {
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ProductNotFoundException(
+                        "Product not found: " + productId));
+
+        if (product.getStatus() != ProductStatus.ACTIVE) {
+            throw new IllegalStateException("Stock adjustment requires an active product");
+        }
+
+        if (!product.isTracksSerials()) {
+            throw new IllegalArgumentException(
+                    "This adjustment requires a product with serial tracking");
+        }
+
+        if (serialNumber == null || serialNumber.isBlank()) {
+            throw new IllegalArgumentException("Serial number is required");
+        }
+
+        String cleanedSerial = serialNumber.strip();
+        ProductUnit unit = productUnitRepository.findBySerialNumber(cleanedSerial)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Serial number not found: " + cleanedSerial));
+
+        if (!product.getId().equals(unit.getProduct().getId())) {
+            throw new IllegalArgumentException(
+                    "Serial number belongs to a different product: " + cleanedSerial);
+        }
+
+        StockMovement movement = StockMovement.forTrackedUnitRemoval(
+                unit, reason, explanation, LocalDateTime.now());
+
+        unit.removeFromStockForAdjustment(reason);
+        stockMovementRepository.save(movement);
+    }
+    @Transactional(readOnly = true)
+    public Optional<ProductUnitStatusResponse> findUnitStatus(
+            Long productId, String serialNumber) {
+
+        if (serialNumber == null || serialNumber.isBlank()) {
+            throw new IllegalArgumentException("Serial number is required");
+        }
+
+        return productUnitRepository.findBySerialNumber(serialNumber.strip())
+                .filter(unit -> productId.equals(unit.getProduct().getId()))
+                .map(unit -> new ProductUnitStatusResponse(
+                        unit.getSerialNumber(),
+                        unit.getStatus()));
     }
 }

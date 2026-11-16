@@ -14,6 +14,7 @@ import java.time.LocalDate;
 
 import jakarta.persistence.Column;
 
+import com.electrostock.backend.enums.AdjustmentReason;
 import com.electrostock.backend.enums.UnitStatus;
 
 @Entity
@@ -145,5 +146,19 @@ public class ProductUnit {
 	    }
 
 	    this.status = UnitStatus.VOIDED;
+	}
+	public void removeFromStockForAdjustment(AdjustmentReason reason) {
+	    if (reason == null) {
+	        throw new IllegalArgumentException("Adjustment reason is required");
+	    }
+
+	    if (status != UnitStatus.IN_STOCK) {
+	        throw new IllegalStateException(
+	                "Cannot adjust unit " + serialNumber + ": it is not in stock");
+	    }
+
+	    this.status = reason == AdjustmentReason.MISSING
+	            ? UnitStatus.LOST
+	            : UnitStatus.VOIDED;
 	}
 }

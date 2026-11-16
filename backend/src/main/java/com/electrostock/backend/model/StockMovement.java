@@ -295,4 +295,41 @@ public class StockMovement {
 	    movement.movementAt = movementAt;
 	    return movement;
 	}
+	public static StockMovement forTrackedUnitRemoval(
+	        ProductUnit unit,
+	        AdjustmentReason reason,
+	        String explanation,
+	        LocalDateTime movementAt) {
+
+	    if (unit == null || !unit.getProduct().isTracksSerials()) {
+	        throw new IllegalArgumentException(
+	                "A serial-tracked unit is required");
+	    }
+
+	    if (reason == null) {
+	        throw new IllegalArgumentException("Adjustment reason is required");
+	    }
+
+	    String cleanedExplanation = explanation == null ? null : explanation.strip();
+
+	    if (reason == AdjustmentReason.OTHER
+	            && (cleanedExplanation == null || cleanedExplanation.isEmpty())) {
+	        throw new IllegalArgumentException("Explain why you selected OTHER");
+	    }
+
+	    if (movementAt == null) {
+	        throw new IllegalArgumentException("Movement time is required");
+	    }
+
+	    StockMovement movement = new StockMovement();
+	    movement.product = unit.getProduct();
+	    movement.productUnit = unit;
+	    movement.movementType = MovementType.ADJUSTMENT;
+	    movement.quantityChange = -1;
+	    movement.valueChangeMad = unit.getAcquisitionCostMad().negate();
+	    movement.adjustmentReason = reason;
+	    movement.explanation = cleanedExplanation;
+	    movement.movementAt = movementAt;
+	    return movement;
+	}
 }
