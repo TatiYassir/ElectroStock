@@ -2,6 +2,7 @@ package com.electrostock.backend.repository;
 
 import com.electrostock.backend.enums.MovementType;
 import com.electrostock.backend.model.StockMovement;
+import com.electrostock.backend.dto.report.InventoryValuationRow;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -29,5 +30,18 @@ public interface StockMovementRepository
 	List<StockMovement> findByPurchaseItem_Purchase_IdAndMovementType(
 	        Long purchaseId, MovementType movementType);
 	List<StockMovement> findByProduct_IdOrderByMovementAtDescIdDesc(Long productId);
-
+	@Query("""
+		    SELECT new com.electrostock.backend.dto.report.InventoryValuationRow(
+		        p.id,
+		        p.sku,
+		        p.name,
+		        COALESCE(SUM(m.quantityChange), 0L),
+		        COALESCE(SUM(m.valueChangeMad), 0.0BD)
+		    )
+		    FROM Product p
+		    LEFT JOIN StockMovement m ON m.product = p
+		    GROUP BY p.id, p.sku, p.name
+		    ORDER BY p.sku, p.id
+		    """)
+		List<InventoryValuationRow> findInventoryValuation();
 }
