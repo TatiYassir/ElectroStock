@@ -35,6 +35,6 @@ public class InventoryReportController {
             @RequestParam("to")
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
 
-        return inventoryReportService.getStockMovements(from, to);
+        return inventoryReportService.getStockMovementReport(from, to);
     }
 }

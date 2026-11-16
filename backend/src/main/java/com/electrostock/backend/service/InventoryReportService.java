@@ -25,23 +25,19 @@ public class InventoryReportService {
     }
 
     @Transactional(readOnly = true)
-    public List<StockMovementReportRow> getStockMovements(LocalDate from, LocalDate to) {
-        if (from == null || to == null || from.isAfter(to)) {
-            throw new IllegalArgumentException(
-                    "Provide a start date and an end date on or after it");
+    public List<StockMovementReportRow> getStockMovementReport(
+            LocalDate from, LocalDate to) {
+
+        if (from == null || to == null) {
+            throw new IllegalArgumentException("Both from and to dates are required");
         }
 
-        return stockMovementRepository.findMovementsInPeriod(
-                        from.atStartOfDay(),
-                        to.plusDays(1).atStartOfDay())
-                .stream()
-                .map(movement -> new StockMovementReportRow(
-                        movement.getId(),
-                        movement.getProduct().getSku(),
-                        movement.getMovementType(),
-                        movement.getQuantityChange(),
-                        movement.getValueChangeMad(),
-                        movement.getMovementAt()))
-                .toList();
+        if (from.isAfter(to)) {
+            throw new IllegalArgumentException("The from date cannot be after the to date");
+        }
+
+        return stockMovementRepository.findMovementReport(
+                from.atStartOfDay(),
+                to.plusDays(1).atStartOfDay());
     }
 }
