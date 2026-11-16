@@ -194,4 +194,12 @@ public class Product {
 		}
 		return name;
 	}
+	public void updateAverageCostMad(BigDecimal averageCostMad) {
+	    if (averageCostMad == null || averageCostMad.signum() < 0) {
+	        throw new IllegalArgumentException(
+	                "Average cost cannot be null or negative");
+	    }
+
+	    this.averageCostMad = averageCostMad;
+	}
 }

@@ -1,6 +1,7 @@
 package com.electrostock.backend.controller;
 
 import com.electrostock.backend.dto.AddPurchaseItemRequest;
+import com.electrostock.backend.dto.ConfirmPurchaseRequest;
 import com.electrostock.backend.dto.CreatePurchaseRequest;
 import com.electrostock.backend.model.Purchase;
 import com.electrostock.backend.model.PurchaseItem;
@@ -58,5 +59,14 @@ public class PurchaseController {
     public PurchaseResponse getPurchase(
             @PathVariable("purchaseId") Long purchaseId) {
         return purchaseService.getPurchase(purchaseId);
+    }
+    @PostMapping("/{purchaseId}/confirm")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void confirmPurchase(
+            @PathVariable("purchaseId") Long purchaseId,
+            @Valid @RequestBody ConfirmPurchaseRequest request) {
+
+        purchaseService.confirmPurchaseInMad(
+                purchaseId, request.getSerialsByItemId());
     }
 }

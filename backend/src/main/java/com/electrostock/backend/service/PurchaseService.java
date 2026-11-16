@@ -43,6 +43,7 @@ public class PurchaseService {
 	private final CurrencyRepository currencyRepository;
 	private final ProductUnitRepository productUnitRepository;
 	private final StockMovementRepository stockMovementRepository;
+	private final CostingService costingService;
 	//Constructor :
 	public PurchaseService(PurchaseRepository purchaseRepository,
 	                       ProductRepository productRepository,
@@ -50,7 +51,8 @@ public class PurchaseService {
 	                       SupplierRepository supplierRepository,
 	                       CurrencyRepository currencyRepository,
 	                       ProductUnitRepository productUnitRepository,
-	                       StockMovementRepository stockMovementRepository) {
+	                       StockMovementRepository stockMovementRepository,
+	                       CostingService costingService) {
 	    this.purchaseRepository = purchaseRepository;
 	    this.productRepository = productRepository;
 	    this.purchaseItemRepository = purchaseItemRepository;
@@ -58,6 +60,7 @@ public class PurchaseService {
 	    this.currencyRepository = currencyRepository;
 	    this.productUnitRepository = productUnitRepository;
 	    this.stockMovementRepository = stockMovementRepository;
+	    this.costingService = costingService;
 	}
 	//Methods:
 	public Purchase createDraft(Long supplierId,String currencyCode,
@@ -248,6 +251,11 @@ public class PurchaseService {
 	            stockMovementRepository.save(StockMovement.forPurchase(
 	                    item, null, item.getQuantity(),
 	                    item.getLineTotalMad(), confirmedAt));
+
+	            BigDecimal averageCost =
+	                    costingService.calculateAverageCostMad(product.getId());
+
+	            product.updateAverageCostMad(averageCost);
 	        }
 	    }
 
