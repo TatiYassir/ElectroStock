@@ -1,6 +1,7 @@
 package com.electrostock.backend.controller;
 
 import com.electrostock.backend.dto.product.OpeningStockRequest;
+import com.electrostock.backend.dto.product.StockAdjustmentRequest;
 import com.electrostock.backend.service.StockService;
 
 import jakarta.validation.Valid;
@@ -34,5 +35,18 @@ public class StockController {
                 request.quantity(),
                 request.unitCostMad(),
                 request.serialNumbers());
+    }
+    @PostMapping("/{productId}/stock-adjustments")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void adjustStock(
+            @PathVariable("productId") Long productId,
+            @Valid @RequestBody StockAdjustmentRequest request) {
+
+        stockService.adjustUntrackedStock(
+                productId,
+                request.quantityChange(),
+                request.unitCostMad(),
+                request.reason(),
+                request.explanation());
     }
 }

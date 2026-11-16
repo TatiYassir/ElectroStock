@@ -12,7 +12,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.EnumType;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-
+import com.electrostock.backend.enums.AdjustmentReason;
 import com.electrostock.backend.enums.MovementType;
 
 import jakarta.persistence.Column;
@@ -48,6 +48,12 @@ public class StockMovement {
 	@OneToOne
 	@JoinColumn(name = "reversal_of_movement_id", unique = true)
 	private StockMovement reversalOfMovement;
+	@Enumerated(EnumType.STRING)
+	@Column(name = "adjustment_reason", length = 30)
+	private AdjustmentReason adjustmentReason;
+
+	@Column(name = "explanation", columnDefinition = "TEXT")
+	private String explanation;
 	//NO-ARGUMNET CONSTRUCTOR for JPA:
 	protected StockMovement() {
 		
@@ -238,6 +244,54 @@ public class StockMovement {
 	    movement.movementType = MovementType.OPENING_STOCK;
 	    movement.quantityChange = quantityAdded;
 	    movement.valueChangeMad = inventoryValueMad;
+	    movement.movementAt = movementAt;
+	    return movement;
+	}
+	public static StockMovement forAdjustment(
+	        Product product,
+	        int quantityChange,
+	        BigDecimal valueChangeMad,
+	        AdjustmentReason reason,
+	        String explanation,
+	        LocalDateTime movementAt) {
+
+	    if (product == null || product.isTracksSerials()) {
+	        throw new IllegalArgumentException(
+	                "This adjustment requires a product without serial tracking");
+	    }
+	    if (quantityChange == 0) {
+	        throw new IllegalArgumentException("Adjustment quantity cannot be zero");
+	    }
+	    if (reason == null) {
+	        throw new IllegalArgumentException("Adjustment reason is required");
+	    }
+
+	    String cleanedExplanation = explanation == null || explanation.isBlank()
+	            ? null
+	            : explanation.strip();
+
+	    if (reason == AdjustmentReason.OTHER && cleanedExplanation == null) {
+	        throw new IllegalArgumentException("Explain why you selected OTHER");
+	    }
+
+	    if (valueChangeMad == null
+	            || (quantityChange > 0 && valueChangeMad.signum() < 0)
+	            || (quantityChange < 0 && valueChangeMad.signum() > 0)) {
+	        throw new IllegalArgumentException(
+	                "Inventory value must move in the same direction as quantity, or be zero");
+	    }
+
+	    if (movementAt == null) {
+	        throw new IllegalArgumentException("Movement time is required");
+	    }
+
+	    StockMovement movement = new StockMovement();
+	    movement.product = product;
+	    movement.movementType = MovementType.ADJUSTMENT;
+	    movement.quantityChange = quantityChange;
+	    movement.valueChangeMad = valueChangeMad;
+	    movement.adjustmentReason = reason;
+	    movement.explanation = cleanedExplanation;
 	    movement.movementAt = movementAt;
 	    return movement;
 	}

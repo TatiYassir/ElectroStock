@@ -29,7 +29,7 @@ public class CostingService {
                 6,
                 RoundingMode.HALF_UP);
     }
-    public BigDecimal calculateUntrackedSaleCostMad(Long productId, int quantitySold) {
+    public BigDecimal calculateUntrackedSaleCostMad(Long productId, long quantitySold) {
         if (quantitySold <= 0) {
             throw new IllegalArgumentException("Quantity sold must be positive");
         }

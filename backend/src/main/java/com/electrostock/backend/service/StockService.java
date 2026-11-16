@@ -10,6 +10,7 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.electrostock.backend.enums.AdjustmentReason;
 import com.electrostock.backend.enums.ProductStatus;
 import com.electrostock.backend.exception.product.ProductNotFoundException;
 import com.electrostock.backend.model.Product;
@@ -123,5 +124,64 @@ public class StockService {
         }
 
         return cleanedSerials;
+    }
+    @Transactional
+    public void adjustUntrackedStock(
+            Long productId,
+            int quantityChange,
+            BigDecimal unitCostMad,
+            AdjustmentReason reason,
+            String explanation) {
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ProductNotFoundException(
+                        "Product not found: " + productId));
+
+        if (product.getStatus() != ProductStatus.ACTIVE) {
+            throw new IllegalStateException("Stock adjustment requires an active product");
+        }
+        if (product.isTracksSerials()) {
+            throw new IllegalArgumentException(
+                    "This adjustment only supports products without serial tracking");
+        }
+        if (quantityChange == 0) {
+            throw new IllegalArgumentException("Adjustment quantity cannot be zero");
+        }
+
+        BigDecimal valueChangeMad;
+
+        if (quantityChange > 0) {
+            if (unitCostMad == null || unitCostMad.signum() < 0) {
+                throw new IllegalArgumentException(
+                        "Adding stock requires a nonnegative unit cost");
+            }
+
+            valueChangeMad = unitCostMad.multiply(BigDecimal.valueOf(quantityChange));
+        } else {
+            if (unitCostMad != null) {
+                throw new IllegalArgumentException(
+                        "Do not supply a unit cost when removing stock");
+            }
+
+            long quantityToRemove = -(long) quantityChange;
+            valueChangeMad = costingService
+                    .calculateUntrackedSaleCostMad(productId, quantityToRemove)
+                    .negate();
+        }
+
+        StockMovement movement = StockMovement.forAdjustment(
+                product, quantityChange, valueChangeMad,
+                reason, explanation, LocalDateTime.now());
+
+        stockMovementRepository.saveAndFlush(movement);
+
+        long remainingQuantity = stockMovementRepository.getStockQuantity(productId);
+
+        if (remainingQuantity == 0) {
+            product.clearAverageCostMad();
+        } else {
+            product.updateAverageCostMad(
+                    costingService.calculateAverageCostMad(productId));
+        }
     }
 }
