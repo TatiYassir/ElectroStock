@@ -41,6 +41,11 @@ public class SaleItem {
 
     @Column(name = "cost_of_goods_sold_mad", precision = 19, scale = 4)
     private BigDecimal costOfGoodsSoldMad;
+    @Column(name = "category_id_snapshot")
+    private Long categoryIdSnapshot;
+
+    @Column(name = "category_name_snapshot", length = 100)
+    private String categoryNameSnapshot;
     //NO-ARGUMENT CONSTRUCTOR for JPA
     protected SaleItem() {
         // For JPA
@@ -120,5 +125,10 @@ public class SaleItem {
 
         this.lineTotalMad = this.lineTotalCurrency;
         this.costOfGoodsSoldMad = costOfGoodsSoldMad;
+    }
+    public void snapshotCategory() {
+        Category category = product.getCategory();
+        this.categoryIdSnapshot = category.getId();
+        this.categoryNameSnapshot = category.getName();
     }
 }

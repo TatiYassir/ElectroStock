@@ -261,7 +261,7 @@ public class SaleService {
 
         for (SaleItem item : items) {
             Product product = item.getProduct();
-
+            item.snapshotCategory();
             if (product.isTracksSerials()) {
                 BigDecimal lineCost = BigDecimal.ZERO;
 

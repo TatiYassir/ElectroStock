@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import com.electrostock.backend.dto.report.SalesByProductRow;
 import org.springframework.data.jpa.repository.JpaRepository;
-
+import com.electrostock.backend.dto.report.SalesByCategoryRow;
 import com.electrostock.backend.model.SaleItem;
 
 public interface SaleItemRepository extends JpaRepository<SaleItem, Long> {
@@ -23,4 +23,20 @@ public interface SaleItemRepository extends JpaRepository<SaleItem, Long> {
             ORDER BY SUM(si.quantity) DESC, p.sku, p.id
             """)
     List<SalesByProductRow> findSalesByProduct();
+    @Query("""
+            SELECT new com.electrostock.backend.dto.report.SalesByCategoryRow(
+                si.categoryIdSnapshot,
+                COALESCE(si.categoryNameSnapshot, 'Unknown category'),
+                SUM(si.quantity),
+                SUM(si.lineTotalMad)
+            )
+            FROM SaleItem si
+            JOIN si.sale s
+            WHERE s.status = com.electrostock.backend.enums.SaleStatus.CONFIRMED
+            GROUP BY si.categoryIdSnapshot, si.categoryNameSnapshot
+            ORDER BY SUM(si.quantity) DESC,
+                     COALESCE(si.categoryNameSnapshot, 'Unknown category'),
+                     si.categoryIdSnapshot
+            """)
+    List<SalesByCategoryRow> findSalesByCategory();
 }

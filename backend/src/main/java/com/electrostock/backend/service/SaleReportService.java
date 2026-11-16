@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.electrostock.backend.dto.report.SalesByProductRow;
 import com.electrostock.backend.repository.SaleItemRepository;
+import com.electrostock.backend.dto.report.SalesByCategoryRow;
 
 @Service
 public class SaleReportService {
@@ -20,5 +21,9 @@ public class SaleReportService {
     @Transactional(readOnly = true)
     public List<SalesByProductRow> getSalesByProduct() {
         return saleItemRepository.findSalesByProduct();
+    }
+    @Transactional(readOnly = true)
+    public List<SalesByCategoryRow> getSalesByCategory() {
+        return saleItemRepository.findSalesByCategory();
     }
 }

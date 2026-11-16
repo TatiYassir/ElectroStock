@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.electrostock.backend.dto.report.SalesByProductRow;
 import com.electrostock.backend.service.SaleReportService;
+import com.electrostock.backend.dto.report.SalesByCategoryRow;
 
 @RestController
 @RequestMapping("/api/reports")
@@ -22,5 +23,9 @@ public class SaleReportController {
     @GetMapping("/sales-by-product")
     public List<SalesByProductRow> getSalesByProduct() {
         return saleReportService.getSalesByProduct();
+    }
+    @GetMapping("/sales-by-category")
+    public List<SalesByCategoryRow> getSalesByCategory() {
+        return saleReportService.getSalesByCategory();
     }
 }
