@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import com.electrostock.backend.dto.product.TrackedStockRemovalRequest;
+import com.electrostock.backend.dto.product.TrackedStockAdditionRequest;
 @RestController
 @RequestMapping("/api/products")
 public class StockController {
@@ -72,5 +73,18 @@ public class StockController {
             @RequestParam("serialNumber") String serialNumber) {
 
         return ResponseEntity.of(stockService.findUnitStatus(productId, serialNumber));
+    }
+    @PostMapping("/{productId}/stock-adjustments/tracked-addition")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void addTrackedUnit(
+            @PathVariable("productId") Long productId,
+            @Valid @RequestBody TrackedStockAdditionRequest request) {
+
+        stockService.addTrackedUnitToStock(
+                productId,
+                request.serialNumber(),
+                request.unitCostMad(),
+                request.reason(),
+                request.explanation());
     }
 }

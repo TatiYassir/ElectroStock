@@ -332,4 +332,43 @@ public class StockMovement {
 	    movement.movementAt = movementAt;
 	    return movement;
 	}
+	public static StockMovement forTrackedUnitAddition(
+	        ProductUnit unit,
+	        AdjustmentReason reason,
+	        String explanation,
+	        LocalDateTime movementAt) {
+
+	    if (unit == null || !unit.getProduct().isTracksSerials()) {
+	        throw new IllegalArgumentException("A serial-tracked unit is required");
+	    }
+
+	    if (reason != AdjustmentReason.COUNTING_CORRECTION
+	            && reason != AdjustmentReason.OTHER) {
+	        throw new IllegalArgumentException(
+	                "Adding a tracked unit requires COUNTING_CORRECTION or OTHER");
+	    }
+
+	    String cleanedExplanation = explanation == null || explanation.isBlank()
+	            ? null
+	            : explanation.strip();
+
+	    if (reason == AdjustmentReason.OTHER && cleanedExplanation == null) {
+	        throw new IllegalArgumentException("Explain why you selected OTHER");
+	    }
+
+	    if (movementAt == null) {
+	        throw new IllegalArgumentException("Movement time is required");
+	    }
+
+	    StockMovement movement = new StockMovement();
+	    movement.product = unit.getProduct();
+	    movement.productUnit = unit;
+	    movement.movementType = MovementType.ADJUSTMENT;
+	    movement.quantityChange = 1;
+	    movement.valueChangeMad = unit.getAcquisitionCostMad();
+	    movement.adjustmentReason = reason;
+	    movement.explanation = cleanedExplanation;
+	    movement.movementAt = movementAt;
+	    return movement;
+	}
 }

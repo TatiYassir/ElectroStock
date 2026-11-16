@@ -225,6 +225,41 @@ public class StockService {
         unit.removeFromStockForAdjustment(reason);
         stockMovementRepository.save(movement);
     }
+    @Transactional
+    public void addTrackedUnitToStock(
+            Long productId,
+            String serialNumber,
+            BigDecimal unitCostMad,
+            AdjustmentReason reason,
+            String explanation) {
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ProductNotFoundException(
+                        "Product not found: " + productId));
+
+        if (product.getStatus() != ProductStatus.ACTIVE) {
+            throw new IllegalStateException(
+                    "Stock adjustment requires an active product");
+        }
+
+        if (!product.isTracksSerials()) {
+            throw new IllegalArgumentException(
+                    "This adjustment requires a product with serial tracking");
+        }
+
+        ProductUnit unit = new ProductUnit(product, null, serialNumber, unitCostMad);
+
+        if (productUnitRepository.existsBySerialNumber(unit.getSerialNumber())) {
+            throw new IllegalArgumentException(
+                    "Serial number is already registered: " + unit.getSerialNumber());
+        }
+
+        StockMovement movement = StockMovement.forTrackedUnitAddition(
+                unit, reason, explanation, LocalDateTime.now());
+
+        productUnitRepository.save(unit);
+        stockMovementRepository.save(movement);
+    }
     @Transactional(readOnly = true)
     public Optional<ProductUnitStatusResponse> findUnitStatus(
             Long productId, String serialNumber) {
