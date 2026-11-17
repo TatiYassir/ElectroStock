@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
-
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.http.HttpStatus;
 
 import com.electrostock.backend.dto.product.CreateProductRequest;
@@ -39,10 +39,15 @@ public class ProductRestController {
 			throw new IllegalArgumentException(
 			        "Serial tracking must be explicitly selected");
 		}
-		return productservice.
-				createProduct(request.getCategoryId(), request.getSku(),
-						request.getName(), request.getTracksSerials(),
-						request.getDescription(), request.getSellingPriceMad());
+		return productservice.createProduct(
+		        request.getCategoryId(),
+		        request.getSku(),
+		        request.getName(),
+		        request.getTracksSerials(),
+		        request.getDescription(),
+		        request.getSellingPriceMad(),
+		        request.getWarrantyMonths(),
+		        request.getLowStockThreshold());
 	}
 	@GetMapping
 	public List<Product> getAllProducts(){
@@ -61,5 +66,14 @@ public class ProductRestController {
 	@GetMapping("/{id}/stock")
 	public ProductStockResponse getProductStock(@PathVariable Long id) {
 	    return productservice.getProductStock(id);
+	}
+	@PatchMapping("/{id}/deactivate")
+	public Product deactivateProduct(@PathVariable Long id) {
+	    return productservice.deactivateProduct(id);
+	}
+
+	@PatchMapping("/{id}/reactivate")
+	public Product reactivateProduct(@PathVariable Long id) {
+	    return productservice.reactivateProduct(id);
 	}
 }

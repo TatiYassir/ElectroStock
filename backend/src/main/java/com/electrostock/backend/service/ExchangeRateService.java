@@ -24,7 +24,7 @@ public class ExchangeRateService {
             ExchangeRateCacheRepository cacheRepository) {
 
         this.restClient = RestClient.builder()
-        		.baseUrl("https://offline-test.invalid")
+        		.baseUrl("https://api.frankfurter.dev")
                 .build();
 
         this.cacheRepository = cacheRepository;

@@ -22,4 +22,11 @@ public class GlobalExceptionHandler {
 	    return ResponseEntity.status(HttpStatus.CONFLICT)
 	            .body(exception.getMessage());
 	}
+	@ExceptionHandler(IllegalStateException.class)
+	public ResponseEntity<String> handleIllegalState(
+	        IllegalStateException exception) {
+
+	    return ResponseEntity.status(HttpStatus.CONFLICT)
+	            .body(exception.getMessage());
+	}
 }

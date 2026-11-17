@@ -35,7 +35,9 @@ public class ProductService {
 	        String name,
 	        boolean tracksSerials,
 	        String description,
-	        BigDecimal sellingPriceMad) {
+	        BigDecimal sellingPriceMad,
+	        int warrantyMonths,
+	        int lowStockThreshold) {
 
 	    // Your implementation
 		Category category = categoryService.getCategoryById(categoryId);
@@ -47,6 +49,8 @@ public class ProductService {
 		    throw new ProductAlreadyExistsException(
 		        "Product SKU already exists");
 		}
+		product.setWarrantyMonths(warrantyMonths);
+		product.setLowStockThreshold(lowStockThreshold);
 		return productRepository.save(product);
 	}
 	//get all the products :
@@ -86,6 +90,17 @@ public class ProductService {
 
 	    long quantity = stockMovementRepository.getStockQuantity(productId);
 	    return new ProductStockResponse(productId, quantity);
+	}
+	public Product deactivateProduct(Long productId) {
+	    Product product = getProductById(productId);
+	    product.deactivate();
+	    return productRepository.save(product);
+	}
+
+	public Product reactivateProduct(Long productId) {
+	    Product product = getProductById(productId);
+	    product.reactivate();
+	    return productRepository.save(product);
 	}
 }
 

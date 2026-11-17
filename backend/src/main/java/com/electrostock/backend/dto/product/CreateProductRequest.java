@@ -10,6 +10,8 @@ public class CreateProductRequest {
 	private Boolean tracksSerials;
 	private String description ; 
 	private BigDecimal sellingPriceMad;
+	private int warrantyMonths;
+	private int lowStockThreshold;
 	//Getters :
 	public Long getCategoryId() {
 		return categoryId;
@@ -28,6 +30,13 @@ public class CreateProductRequest {
 	}
 	public BigDecimal getSellingPriceMad() {
 		return sellingPriceMad;
+	}
+	public int getWarrantyMonths() {
+	    return warrantyMonths;
+	}
+
+	public int getLowStockThreshold() {
+	    return lowStockThreshold;
 	}
 	//Setters :
 	
@@ -48,5 +57,12 @@ public class CreateProductRequest {
 	}
 	public void setSellingPriceMad(BigDecimal sellingPriceMad) {
 		this.sellingPriceMad = sellingPriceMad;
+	}
+	public void setWarrantyMonths(int warrantyMonths) {
+	    this.warrantyMonths = warrantyMonths;
+	}
+
+	public void setLowStockThreshold(int lowStockThreshold) {
+	    this.lowStockThreshold = lowStockThreshold;
 	}
 }

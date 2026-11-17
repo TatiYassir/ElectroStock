@@ -205,4 +205,11 @@ public class Product {
 	public void clearAverageCostMad() {
 	    this.averageCostMad = null;
 	}
+	public void deactivate() {
+	    this.status = ProductStatus.INACTIVE;
+	}
+
+	public void reactivate() {
+	    this.status = ProductStatus.ACTIVE;
+	}
 }
