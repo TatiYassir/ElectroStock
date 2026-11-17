@@ -120,6 +120,11 @@ public class PurchaseService {
 	            purchase.getStatus(),
 	            purchase.getCurrency().getCode(),
 	            purchase.getTotalCurrency(),
+	            purchase.getTotalMad(),
+	            purchase.getRateToMadSnapshot(),
+	            purchase.getRateSourceSnapshot(),
+	            purchase.getRateRetrievedAtSnapshot(),
+	            purchase.isRateFromCacheSnapshot(),
 	            itemResponses);
 	}
 	@Transactional(readOnly = true)

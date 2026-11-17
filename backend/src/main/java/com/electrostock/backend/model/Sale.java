@@ -100,6 +100,25 @@ public class Sale {
 	public LocalDateTime getCancelledAt() {
 	    return cancelledAt;
 	}
+	public BigDecimal getTotalMad() {
+	    return totalMad;
+	}
+
+	public BigDecimal getRateToMadSnapshot() {
+	    return rateToMadSnapshot;
+	}
+
+	public String getRateSourceSnapshot() {
+	    return rateSourceSnapshot;
+	}
+
+	public LocalDateTime getRateRetrievedAtSnapshot() {
+	    return rateRetrievedAtSnapshot;
+	}
+
+	public boolean isRateFromCacheSnapshot() {
+	    return rateFromCacheSnapshot;
+	}
 	//methods:
 	public SaleItem addItem(Product product, int quantity, BigDecimal unitPriceCurrency) {
 	    if (status != SaleStatus.DRAFT) {

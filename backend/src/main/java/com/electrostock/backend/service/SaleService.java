@@ -110,6 +110,11 @@ public class SaleService {
                 sale.getCurrency().getCode(),
                 sale.getSaleDate(),
                 sale.getTotalCurrency(),
+                sale.getTotalMad(),
+                sale.getRateToMadSnapshot(),
+                sale.getRateSourceSnapshot(),
+                sale.getRateRetrievedAtSnapshot(),
+                sale.isRateFromCacheSnapshot(),
                 sale.getHandedOverAt(),
                 itemResponses);
     }

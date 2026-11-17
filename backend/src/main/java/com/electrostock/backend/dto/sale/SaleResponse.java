@@ -13,6 +13,11 @@ public record SaleResponse(
         String currencyCode,
         LocalDate saleDate,
         BigDecimal totalCurrency,
+        BigDecimal totalMad,
+        BigDecimal rateToMadSnapshot,
+        String rateSourceSnapshot,
+        LocalDateTime rateRetrievedAtSnapshot,
+        boolean rateFromCacheSnapshot,
         LocalDateTime handedOverAt,
         List<SaleItemResponse> items) {
 }

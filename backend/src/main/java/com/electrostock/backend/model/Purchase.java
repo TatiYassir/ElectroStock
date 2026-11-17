@@ -134,6 +134,9 @@ public class Purchase {
 	public LocalDateTime getCancelledAt() {
 		return cancelledAt;
 	}
+	public boolean isRateFromCacheSnapshot() {
+	    return rateFromCacheSnapshot;
+	}	
 	//Methods :
 	public PurchaseItem addItem(Product product, int quantity,
             BigDecimal unitPriceCurrency) {
