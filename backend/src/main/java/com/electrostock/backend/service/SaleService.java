@@ -45,6 +45,7 @@ public class SaleService {
     private final StockMovementRepository stockMovementRepository;
     private final CostingService costingService;
     private final SaleItemUnitRepository saleItemUnitRepository;
+    private final ExchangeRateService exchangeRateService;
     public SaleService(SaleRepository saleRepository,
             CurrencyRepository currencyRepository,
             ProductRepository productRepository,
@@ -52,7 +53,8 @@ public class SaleService {
             ProductUnitRepository productUnitRepository,
             StockMovementRepository stockMovementRepository,
             CostingService costingService,
-            SaleItemUnitRepository saleItemUnitRepository) {
+            SaleItemUnitRepository saleItemUnitRepository,
+            ExchangeRateService exchangeRateService) {
     	this.saleRepository = saleRepository;
     	this.currencyRepository = currencyRepository;
     	this.productRepository = productRepository;
@@ -61,6 +63,7 @@ public class SaleService {
     	this.stockMovementRepository = stockMovementRepository;
     	this.costingService = costingService;
     	this.saleItemUnitRepository = saleItemUnitRepository;
+    	this.exchangeRateService = exchangeRateService;
     }
 
     public Sale createDraft(String currencyCode, LocalDate saleDate) {
@@ -248,12 +251,6 @@ public class SaleService {
             throw new IllegalStateException(
                     "Only draft sales can be confirmed");
         }
-
-        if (!"MAD".equals(sale.getCurrency().getCode())) {
-            throw new IllegalStateException(
-                    "Only MAD sales can be confirmed for now");
-        }
-
         List<SaleItem> items =
                 saleItemRepository.findBySale_Id(saleId);
 
@@ -268,7 +265,11 @@ public class SaleService {
         validateStockAvailability(items);
 
         LocalDateTime confirmedAt = LocalDateTime.now();
-        BigDecimal rateToMad = BigDecimal.ONE;
+        ExchangeRateQuote quote =
+                exchangeRateService.getRateToMad(
+                        sale.getCurrency().getCode());
+
+        BigDecimal rateToMad = quote.rateToMad();
         BigDecimal totalMad = BigDecimal.ZERO;
 
         for (SaleItem item : items) {
@@ -321,6 +322,9 @@ public class SaleService {
         sale.confirmWithRate(
                 rateToMad,
                 totalMad,
+                quote.source(),
+                quote.retrievedAt(),
+                quote.fromCache(),
                 confirmedAt);
     }
     @Transactional

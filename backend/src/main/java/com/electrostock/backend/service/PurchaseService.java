@@ -48,6 +48,7 @@ public class PurchaseService {
 	private final ProductUnitRepository productUnitRepository;
 	private final StockMovementRepository stockMovementRepository;
 	private final CostingService costingService;
+	private final ExchangeRateService exchangeRateService;
 	//Constructor :
 	public PurchaseService(PurchaseRepository purchaseRepository,
 	                       ProductRepository productRepository,
@@ -56,7 +57,8 @@ public class PurchaseService {
 	                       CurrencyRepository currencyRepository,
 	                       ProductUnitRepository productUnitRepository,
 	                       StockMovementRepository stockMovementRepository,
-	                       CostingService costingService) {
+	                       CostingService costingService,
+	                       ExchangeRateService exchangeRateService) {
 	    this.purchaseRepository = purchaseRepository;
 	    this.productRepository = productRepository;
 	    this.purchaseItemRepository = purchaseItemRepository;
@@ -65,6 +67,7 @@ public class PurchaseService {
 	    this.productUnitRepository = productUnitRepository;
 	    this.stockMovementRepository = stockMovementRepository;
 	    this.costingService = costingService;
+	    this.exchangeRateService = exchangeRateService;
 	}
 	//Methods:
 	public Purchase createDraft(Long supplierId,String currencyCode,
@@ -228,16 +231,15 @@ public class PurchaseService {
 	            purchaseItemRepository.findByPurchase_Id(purchaseId);
 
 	    validateConfirmation(purchase, items);
-
-	    if (!"MAD".equals(purchase.getCurrency().getCode())) {
-	        throw new IllegalStateException("Only MAD purchases can be confirmed for now");
-	    }
-
 	    validatePurchaseSerials(items, serialsByItemId);
 
 	    LocalDateTime confirmedAt = LocalDateTime.now();
 	    
-	    BigDecimal rateToMad = BigDecimal.ONE;
+	    ExchangeRateQuote quote =
+	            exchangeRateService.getRateToMad(
+	                    purchase.getCurrency().getCode());
+
+	    BigDecimal rateToMad = quote.rateToMad();
 	    BigDecimal totalMad = BigDecimal.ZERO;
 	    for (PurchaseItem item : items) {
 	        item.snapshotCostsInMad(rateToMad);
@@ -266,7 +268,13 @@ public class PurchaseService {
 	        }
 	    }
 
-	    purchase.confirmWithRate(rateToMad, totalMad, confirmedAt);
+	    purchase.confirmWithRate(
+	            rateToMad,
+	            totalMad,
+	            quote.source(),
+	            quote.retrievedAt(),
+	            quote.fromCache(),
+	            confirmedAt);
 	}
 	private void validateStockForPurchaseCancellation(List<StockMovement> movements) {
 	    if (movements.isEmpty()) {

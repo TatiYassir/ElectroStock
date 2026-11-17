@@ -145,7 +145,7 @@ CREATE TABLE purchases (
     rate_source_snapshot VARCHAR(100),
     rate_retrieved_at_snapshot DATETIME,
     rate_overridden_snapshot BOOLEAN NOT NULL DEFAULT FALSE,
-
+    rate_from_cache_snapshot TINYINT(1) NOT NULL DEFAULT 0,
     total_currency DECIMAL(19,4) NOT NULL DEFAULT 0,
     total_mad DECIMAL(19,4),
 
@@ -312,7 +312,7 @@ CREATE TABLE sales (
     rate_source_snapshot VARCHAR(100),
     rate_retrieved_at_snapshot DATETIME,
     rate_overridden_snapshot BOOLEAN NOT NULL DEFAULT FALSE,
-
+    rate_from_cache_snapshot TINYINT(1) NOT NULL DEFAULT 0,
     total_currency DECIMAL(19,4) NOT NULL DEFAULT 0,
     total_mad DECIMAL(19,4),
 

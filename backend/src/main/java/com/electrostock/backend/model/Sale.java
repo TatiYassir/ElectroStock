@@ -41,6 +41,17 @@ public class Sale {
     private BigDecimal totalCurrency = BigDecimal.ZERO;
     @Column(name = "rate_to_mad_snapshot", precision = 20, scale = 10)
     private BigDecimal rateToMadSnapshot;
+    @Column(name = "rate_source_snapshot", length = 100)
+    private String rateSourceSnapshot;
+
+    @Column(name = "rate_retrieved_at_snapshot")
+    private LocalDateTime rateRetrievedAtSnapshot;
+
+    @Column(name = "rate_overridden_snapshot", nullable = false)
+    private boolean rateOverriddenSnapshot = false;
+    @Column(name = "rate_from_cache_snapshot",
+            nullable = false)
+    private boolean rateFromCacheSnapshot = false;
 
     @Column(name = "total_mad", precision = 19, scale = 4)
     private BigDecimal totalMad;
@@ -121,6 +132,9 @@ public class Sale {
 	public void confirmWithRate(
 	        BigDecimal rateToMad,
 	        BigDecimal convertedTotalMad,
+	        String rateSource,
+	        LocalDateTime rateRetrievedAt,
+	        boolean rateFromCache,
 	        LocalDateTime confirmedAt) {
 
 	    if (status != SaleStatus.DRAFT) {
@@ -153,8 +167,21 @@ public class Sale {
 	        throw new IllegalArgumentException(
 	                "Confirmation time is required");
 	    }
+	    if (rateSource == null || rateSource.isBlank()) {
+	        throw new IllegalArgumentException(
+	                "Rate source is required");
+	    }
+
+	    if (rateRetrievedAt == null) {
+	        throw new IllegalArgumentException(
+	                "Rate retrieval time is required");
+	    }
 
 	    this.rateToMadSnapshot = rateToMad;
+	    this.rateSourceSnapshot = rateSource;
+	    this.rateRetrievedAtSnapshot = rateRetrievedAt;
+	    this.rateOverriddenSnapshot = false;
+	    this.rateFromCacheSnapshot = rateFromCache;
 	    this.totalMad = convertedTotalMad;
 	    this.confirmedAt = confirmedAt;
 	    this.status = SaleStatus.CONFIRMED;
