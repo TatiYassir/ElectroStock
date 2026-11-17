@@ -4,6 +4,13 @@ import java.math.BigDecimal;
 
 import com.electrostock.frontend.api.ProductApiClient;
 import com.electrostock.frontend.model.ProductRow;
+import java.util.Locale;
+
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
+import javafx.scene.control.TextField;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -29,7 +36,14 @@ public class ElectroStockApp extends Application {
         // Each row in this table represents one product.
         TableView<ProductRow> table = new TableView<>();
         table.setPlaceholder(new Label("No products to display."));
+        
+        ObservableList<ProductRow> allProducts = FXCollections.observableArrayList();
+        FilteredList<ProductRow> filteredProducts = new FilteredList<>(allProducts);
+        SortedList<ProductRow> displayedProducts = new SortedList<>(filteredProducts);
 
+        displayedProducts.comparatorProperty().bind(table.comparatorProperty());
+        table.setItems(displayedProducts);
+        
         // Read the SKU from each ProductRow and show it as text.
         TableColumn<ProductRow, String> skuColumn = new TableColumn<>("SKU");
         skuColumn.setCellValueFactory(cell ->
@@ -59,10 +73,21 @@ public class ElectroStockApp extends Application {
 
         // Clicking Refresh calls the same method as the initial load.
         refreshButton.setOnAction(event ->
-                loadProducts(table, refreshButton, statusLabel));
+        		loadProducts(allProducts, refreshButton, statusLabel));
+        
+        TextField searchField = new TextField();
+        searchField.setPromptText("Search by SKU or product name");
 
+        searchField.textProperty().addListener((observable, oldText, newText) -> {
+            String query = newText.strip().toLowerCase(Locale.ROOT);
+
+            filteredProducts.setPredicate(product ->
+                    query.isEmpty()
+                            || product.sku().toLowerCase(Locale.ROOT).contains(query)
+                            || product.name().toLowerCase(Locale.ROOT).contains(query));
+        });
         // HBox places the button and message side by side.
-        HBox toolbar = new HBox(8, refreshButton, statusLabel);
+        HBox toolbar = new HBox(8, searchField, refreshButton, statusLabel);
 
         // VBox puts the toolbar above the table.
         VBox root = new VBox(8, toolbar, table);
@@ -75,11 +100,11 @@ public class ElectroStockApp extends Application {
         stage.show();
 
         // Load from Spring Boot as soon as the window opens.
-        loadProducts(table, refreshButton, statusLabel);
+        loadProducts(allProducts, refreshButton, statusLabel);
     }
 
     private void loadProducts(
-            TableView<ProductRow> table,
+    		ObservableList<ProductRow> allProducts,
             Button refreshButton,
             Label statusLabel) {
 
@@ -101,7 +126,7 @@ public class ElectroStockApp extends Application {
                     }
 
                     // Replace the old rows only after a successful response.
-                    table.getItems().setAll(products);
+                    allProducts.setAll(products);
                     statusLabel.setText(products.isEmpty()
                             ? "No products found."
                             : "Products loaded.");
