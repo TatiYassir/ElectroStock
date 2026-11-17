@@ -366,6 +366,8 @@ public class StockService {
                             unit.getSerialNumber(),
                             unit.getStatus(),
                             unit.getAcquisitionCostMad(),
+                            unit.getWarrantyStart(),
+                            unit.getWarrantyEnd(),
                             movements);
                 });
     }
