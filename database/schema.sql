@@ -130,6 +130,26 @@ CREATE TABLE exchange_rates (
 
 
 -- ======================================================
+-- 5A. EXCHANGE RATE CACHE
+-- ======================================================
+
+CREATE TABLE exchange_rate_cache (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    base_currency_code VARCHAR(3) NOT NULL,
+    quote_currency_code VARCHAR(3) NOT NULL,
+    rate DECIMAL(20,10) NOT NULL,
+    source VARCHAR(100) NOT NULL,
+    retrieved_at DATETIME NOT NULL,
+
+    UNIQUE KEY uk_exchange_rate_pair
+        (base_currency_code, quote_currency_code),
+
+    CONSTRAINT chk_exchange_rate_positive
+        CHECK (rate > 0)
+) ENGINE=InnoDB;
+
+
+-- ======================================================
 -- 6. PURCHASES
 -- ======================================================
 
@@ -383,6 +403,8 @@ CREATE TABLE sale_items (
     line_total_currency DECIMAL(19,4) NOT NULL,
     line_total_mad DECIMAL(19,4),
     cost_of_goods_sold_mad DECIMAL(19,4),
+    category_id_snapshot BIGINT NULL,
+    category_name_snapshot VARCHAR(100) NULL,
 
     INDEX idx_sale_items_sale (sale_id),
     INDEX idx_sale_items_product (product_id),
@@ -421,8 +443,6 @@ CREATE TABLE sale_item_units (
     sale_item_id BIGINT NOT NULL,
     product_unit_id BIGINT NOT NULL,
     assigned_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    category_id_snapshot BIGINT NULL,
-    category_name_snapshot VARCHAR(100) NULL,
 
     UNIQUE KEY uq_sale_item_unit
         (sale_item_id, product_unit_id),
@@ -576,7 +596,10 @@ CREATE TABLE stock_movements (
 -- ======================================================
 
 INSERT INTO currencies (code, name, symbol)
-VALUES ('MAD', 'Moroccan Dirham', 'DH');
+VALUES
+    ('MAD', 'Moroccan Dirham', 'DH'),
+    ('EUR', 'Euro', '€'),
+    ('USD', 'US Dollar', '$');
 
 -- ======================================================
 -- END OF SCHEMA

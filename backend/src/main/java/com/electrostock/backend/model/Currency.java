@@ -31,6 +31,11 @@ public class Currency {
 	protected Currency () {
 		
 	}
+	public Currency(String code, String name, String symbol) {
+	    this.code = code;
+	    this.name = name.strip();
+	    this.symbol = symbol == null ? null : symbol.strip();
+	}
 	//Getters :
 	public Long getId() {
 		return id;
