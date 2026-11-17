@@ -174,6 +174,42 @@ public class Purchase {
 	    this.cancelledAt = cancelledAt;
 	    this.status = PurchaseStatus.CANCELLED;
 	}
+	public void confirmWithRate(
+	        BigDecimal rateToMad,
+	        BigDecimal convertedTotalMad,
+	        LocalDateTime confirmedAt) {
+
+	    if (status != PurchaseStatus.DRAFT) {
+	        throw new IllegalStateException("Only draft purchases can be confirmed");
+	    }
+
+	    if (rateToMad == null || rateToMad.signum() <= 0) {
+	        throw new IllegalArgumentException("Exchange rate to MAD must be positive");
+	    }
+
+	    if (rateToMad.stripTrailingZeros().scale() > 10) {
+	        throw new IllegalArgumentException(
+	                "Exchange rate to MAD cannot have more than 10 decimal places");
+	    }
+
+	    if ("MAD".equals(currency.getCode())
+	            && rateToMad.compareTo(BigDecimal.ONE) != 0) {
+	        throw new IllegalArgumentException("MAD purchases must use an exchange rate of 1");
+	    }
+
+	    if (convertedTotalMad == null || convertedTotalMad.signum() < 0) {
+	        throw new IllegalArgumentException("Converted purchase total cannot be negative or missing");
+	    }
+
+	    if (confirmedAt == null) {
+	        throw new IllegalArgumentException("Confirmation time is required");
+	    }
+
+	    this.rateToMadSnapshot = rateToMad;
+	    this.totalMad = convertedTotalMad;
+	    this.confirmedAt = confirmedAt;
+	    this.status = PurchaseStatus.CONFIRMED;
+	}
 }
 
 

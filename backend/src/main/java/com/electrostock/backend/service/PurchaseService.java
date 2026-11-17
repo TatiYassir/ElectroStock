@@ -236,9 +236,12 @@ public class PurchaseService {
 	    validatePurchaseSerials(items, serialsByItemId);
 
 	    LocalDateTime confirmedAt = LocalDateTime.now();
-
+	    
+	    BigDecimal rateToMad = BigDecimal.ONE;
+	    BigDecimal totalMad = BigDecimal.ZERO;
 	    for (PurchaseItem item : items) {
-	        item.snapshotCostsInMad();
+	        item.snapshotCostsInMad(rateToMad);
+	        totalMad = totalMad.add(item.getLineTotalMad());
 
 	        Product product = item.getProduct();
 
@@ -263,7 +266,7 @@ public class PurchaseService {
 	        }
 	    }
 
-	    purchase.confirmInMad(confirmedAt);
+	    purchase.confirmWithRate(rateToMad, totalMad, confirmedAt);
 	}
 	private void validateStockForPurchaseCancellation(List<StockMovement> movements) {
 	    if (movements.isEmpty()) {

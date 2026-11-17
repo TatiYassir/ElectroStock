@@ -9,7 +9,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.JoinColumn;
 
 import java.math.BigDecimal;
-
+import java.math.RoundingMode;
 import jakarta.persistence.Column;
 
 @Entity
@@ -100,5 +100,25 @@ public class PurchaseItem {
 
 	    this.unitCostMadSnapshot = this.unitPriceCurrency;
 	    this.lineTotalMad = this.lineTotalCurrency;
+	}
+	public void snapshotCostsInMad(BigDecimal rateToMad) {
+	    if (rateToMad == null || rateToMad.signum() <= 0) {
+	        throw new IllegalArgumentException("Exchange rate to MAD must be positive");
+	    }
+
+	    this.unitCostMadSnapshot = this.unitPriceCurrency
+	            .multiply(rateToMad)
+	            .setScale(4, RoundingMode.HALF_UP);
+
+	    if (getProduct().isTracksSerials()) {
+	        // Each serial gets its own stock movement at the rounded unit cost.
+	        this.lineTotalMad = this.unitCostMadSnapshot
+	                .multiply(BigDecimal.valueOf(getQuantity()));
+	    } else {
+	        // One stock movement covers the whole line, so round the line once.
+	        this.lineTotalMad = this.lineTotalCurrency
+	                .multiply(rateToMad)
+	                .setScale(4, RoundingMode.HALF_UP);
+	    }
 	}
 }

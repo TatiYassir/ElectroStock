@@ -421,6 +421,8 @@ CREATE TABLE sale_item_units (
     sale_item_id BIGINT NOT NULL,
     product_unit_id BIGINT NOT NULL,
     assigned_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    category_id_snapshot BIGINT NULL,
+    category_name_snapshot VARCHAR(100) NULL,
 
     UNIQUE KEY uq_sale_item_unit
         (sale_item_id, product_unit_id),

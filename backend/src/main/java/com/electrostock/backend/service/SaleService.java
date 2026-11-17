@@ -236,58 +236,92 @@ public class SaleService {
         validateStockAvailability(items);
     }
     @Transactional
-    public void confirmSaleInMad(Long saleId, Map<Long, List<String>> serialsByItemId) {
+    public void confirmSaleInMad(
+            Long saleId,
+            Map<Long, List<String>> serialsByItemId) {
+
         Sale sale = saleRepository.findById(saleId)
                 .orElseThrow(() -> new IllegalArgumentException(
                         "Sale not found: " + saleId));
 
         if (sale.getStatus() != SaleStatus.DRAFT) {
-            throw new IllegalStateException("Only draft sales can be confirmed");
-        }
-        if (!"MAD".equals(sale.getCurrency().getCode())) {
-            throw new IllegalStateException("Only MAD sales can be confirmed for now");
+            throw new IllegalStateException(
+                    "Only draft sales can be confirmed");
         }
 
-        List<SaleItem> items = saleItemRepository.findBySale_Id(saleId);
+        if (!"MAD".equals(sale.getCurrency().getCode())) {
+            throw new IllegalStateException(
+                    "Only MAD sales can be confirmed for now");
+        }
+
+        List<SaleItem> items =
+                saleItemRepository.findBySale_Id(saleId);
+
         if (items.isEmpty()) {
-            throw new IllegalStateException("Add at least one item before confirming");
+            throw new IllegalStateException(
+                    "Add at least one item before confirming");
         }
 
         Map<Long, List<ProductUnit>> unitsByItemId =
                 validateSelectedUnits(items, serialsByItemId);
+
         validateStockAvailability(items);
 
         LocalDateTime confirmedAt = LocalDateTime.now();
+        BigDecimal rateToMad = BigDecimal.ONE;
+        BigDecimal totalMad = BigDecimal.ZERO;
 
         for (SaleItem item : items) {
             Product product = item.getProduct();
             item.snapshotCategory();
+
+            BigDecimal lineCost;
+
             if (product.isTracksSerials()) {
-                BigDecimal lineCost = BigDecimal.ZERO;
+                lineCost = BigDecimal.ZERO;
 
                 for (ProductUnit unit : unitsByItemId.get(item.getId())) {
-                    BigDecimal unitCost = unit.getAcquisitionCostMad();
+                    BigDecimal unitCost =
+                            unit.getAcquisitionCostMad();
+
                     lineCost = lineCost.add(unitCost);
 
                     unit.markSold();
-                    saleItemUnitRepository.save(new SaleItemUnit(item, unit, confirmedAt));
+
+                    saleItemUnitRepository.save(
+                            new SaleItemUnit(item, unit, confirmedAt));
+
                     stockMovementRepository.save(
-                            StockMovement.forSale(item, unit, 1, unitCost, confirmedAt));
+                            StockMovement.forSale(
+                                    item,
+                                    unit,
+                                    1,
+                                    unitCost,
+                                    confirmedAt));
                 }
-
-                item.snapshotAmountsInMad(lineCost);
             } else {
-                BigDecimal lineCost = costingService.calculateUntrackedSaleCostMad(
-                        product.getId(), item.getQuantity());
+                lineCost =
+                        costingService.calculateUntrackedSaleCostMad(
+                                product.getId(),
+                                item.getQuantity());
 
-                item.snapshotAmountsInMad(lineCost);
                 stockMovementRepository.saveAndFlush(
                         StockMovement.forSale(
-                                item, null, item.getQuantity(), lineCost, confirmedAt));
+                                item,
+                                null,
+                                item.getQuantity(),
+                                lineCost,
+                                confirmedAt));
             }
+
+            item.snapshotAmountsInMad(rateToMad, lineCost);
+            totalMad = totalMad.add(item.getLineTotalMad());
         }
 
-        sale.confirmInMad(confirmedAt);
+        sale.confirmWithRate(
+                rateToMad,
+                totalMad,
+                confirmedAt);
     }
     @Transactional
     public void handOverSale(Long saleId) {

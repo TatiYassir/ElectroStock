@@ -2,6 +2,8 @@ package com.electrostock.backend.model;
 
 import java.math.BigDecimal;
 
+import com.electrostock.backend.enums.SaleStatus;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -124,6 +126,31 @@ public class SaleItem {
         }
 
         this.lineTotalMad = this.lineTotalCurrency;
+        this.costOfGoodsSoldMad = costOfGoodsSoldMad;
+    }
+    public void snapshotAmountsInMad(
+            BigDecimal rateToMad,
+            BigDecimal costOfGoodsSoldMad) {
+
+        if (sale.getStatus() != SaleStatus.DRAFT) {
+            throw new IllegalStateException(
+                    "Only draft sale items can be updated");
+        }
+
+        if (rateToMad == null || rateToMad.signum() <= 0) {
+            throw new IllegalArgumentException(
+                    "Exchange rate to MAD must be positive");
+        }
+
+        if (costOfGoodsSoldMad == null || costOfGoodsSoldMad.signum() < 0) {
+            throw new IllegalArgumentException(
+                    "Cost of goods sold cannot be null or negative");
+        }
+
+        this.lineTotalMad = this.lineTotalCurrency
+                .multiply(rateToMad)
+                .setScale(4, java.math.RoundingMode.HALF_UP);
+
         this.costOfGoodsSoldMad = costOfGoodsSoldMad;
     }
     public void snapshotCategory() {

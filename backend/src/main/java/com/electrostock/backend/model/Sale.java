@@ -118,6 +118,47 @@ public class Sale {
 	    this.confirmedAt = confirmedAt;
 	    this.status = SaleStatus.CONFIRMED;
 	}
+	public void confirmWithRate(
+	        BigDecimal rateToMad,
+	        BigDecimal convertedTotalMad,
+	        LocalDateTime confirmedAt) {
+
+	    if (status != SaleStatus.DRAFT) {
+	        throw new IllegalStateException(
+	                "Only draft sales can be confirmed");
+	    }
+
+	    if (rateToMad == null || rateToMad.signum() <= 0) {
+	        throw new IllegalArgumentException(
+	                "Exchange rate to MAD must be positive");
+	    }
+
+	    if (rateToMad.stripTrailingZeros().scale() > 10) {
+	        throw new IllegalArgumentException(
+	                "Exchange rate to MAD cannot have more than 10 decimal places");
+	    }
+
+	    if ("MAD".equals(currency.getCode())
+	            && rateToMad.compareTo(BigDecimal.ONE) != 0) {
+	        throw new IllegalArgumentException(
+	                "MAD sales must use an exchange rate of 1");
+	    }
+
+	    if (convertedTotalMad == null || convertedTotalMad.signum() < 0) {
+	        throw new IllegalArgumentException(
+	                "Converted MAD total cannot be null or negative");
+	    }
+
+	    if (confirmedAt == null) {
+	        throw new IllegalArgumentException(
+	                "Confirmation time is required");
+	    }
+
+	    this.rateToMadSnapshot = rateToMad;
+	    this.totalMad = convertedTotalMad;
+	    this.confirmedAt = confirmedAt;
+	    this.status = SaleStatus.CONFIRMED;
+	}
 	public void markHandedOver(LocalDateTime handedOverAt) {
 	    if (status != SaleStatus.CONFIRMED) {
 	        throw new IllegalStateException("Only confirmed sales can be handed over");
@@ -149,4 +190,5 @@ public class Sale {
 	    this.cancelledAt = cancelledAt;
 	    this.status = SaleStatus.CANCELLED;
 	}
+	
 }
