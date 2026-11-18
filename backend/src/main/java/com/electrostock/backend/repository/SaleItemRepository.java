@@ -2,7 +2,9 @@ package com.electrostock.backend.repository;
 
 import java.util.List;
 import org.springframework.data.jpa.repository.Query;
-
+import java.time.LocalDate;
+import org.springframework.data.repository.query.Param;
+import com.electrostock.backend.dto.report.DailySalesRow;
 import com.electrostock.backend.dto.report.SalesByProductRow;
 import org.springframework.data.jpa.repository.JpaRepository;
 import com.electrostock.backend.dto.report.SalesByCategoryRow;
@@ -59,4 +61,21 @@ public interface SaleItemRepository extends JpaRepository<SaleItem, Long> {
                      p.id
             """)
     List<GrossProfitByProductRow> findGrossProfitByProduct();
+    @Query("""
+            SELECT new com.electrostock.backend.dto.report.DailySalesRow(
+                s.saleDate,
+                SUM(si.lineTotalMad),
+                SUM(si.lineTotalMad - si.costOfGoodsSoldMad),
+                SUM(si.quantity)
+            )
+            FROM SaleItem si
+            JOIN si.sale s
+            WHERE s.status = com.electrostock.backend.enums.SaleStatus.CONFIRMED
+              AND s.saleDate BETWEEN :start AND :end
+            GROUP BY s.saleDate
+            ORDER BY s.saleDate
+            """)
+    List<DailySalesRow> findDailySales(
+            @Param("start") LocalDate start,
+            @Param("end") LocalDate end);
 }

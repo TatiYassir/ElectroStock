@@ -1,14 +1,18 @@
 package com.electrostock.backend.controller;
 
+import java.time.LocalDate;
 import java.util.List;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.electrostock.backend.dto.report.SalesByProductRow;
 import com.electrostock.backend.service.SaleReportService;
 import com.electrostock.backend.dto.report.SalesByCategoryRow;
+import com.electrostock.backend.dto.report.DailySalesRow;
 import com.electrostock.backend.dto.report.GrossProfitByProductRow;
 
 @RestController
@@ -32,5 +36,11 @@ public class SaleReportController {
     @GetMapping("/gross-profit-by-product")
     public List<GrossProfitByProductRow> getGrossProfitByProduct() {
         return saleReportService.getGrossProfitByProduct();
+    }
+    @GetMapping("/daily-sales")
+    public List<DailySalesRow> getDailySales(
+            @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+        return saleReportService.getDailySales(from, to);
     }
 }

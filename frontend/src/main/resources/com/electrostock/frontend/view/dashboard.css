@@ -1,3 +1,18 @@
+/*DashBoard css*/
+
+.dashboard-title {
+    -fx-font-size: 26px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #172B40;
+}
+.dashboard-scroll,
+.dashboard-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.dashboard-scroll {
+    -fx-padding: 0;
+}
 .sales-chart .default-color0.chart-bar {
     -fx-bar-fill: #3066A3;
 }
@@ -25,4 +40,42 @@
 .sales-chart .chart-horizontal-zero-line {
     -fx-stroke: #64748B;
     -fx-stroke-width: 1.5px;
+}
+/*APP Stylish*/
+.app-sidebar {
+    -fx-background-color: #172B40;
+    -fx-padding: 20 12;
+    -fx-spacing: 6;
+}
+
+.app-sidebar > .label {
+    -fx-text-fill: white;
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 8 16 8;
+}
+
+.app-sidebar .button {
+    -fx-alignment: center-left;
+    -fx-padding: 9 12;
+    -fx-background-color: transparent;
+    -fx-background-radius: 6;
+    -fx-border-color: transparent;
+    -fx-border-radius: 6;
+    -fx-text-fill: #E2EBF3;
+    -fx-font-size: 14px;
+    -fx-cursor: hand;
+}
+
+.app-sidebar .button:hover {
+    -fx-background-color: #29445E;
+}
+
+.app-sidebar .button:focused {
+    -fx-border-color: #74D8CC;
+}
+.app-sidebar .button:current-page {
+    -fx-background-color: #0E645E;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
 }

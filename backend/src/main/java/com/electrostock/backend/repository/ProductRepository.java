@@ -26,8 +26,9 @@ public interface ProductRepository
 		        LEFT JOIN StockMovement m ON m.product = p
 		        WHERE p.status = com.electrostock.backend.enums.ProductStatus.ACTIVE
 		        GROUP BY p.id, p.sku, p.name, p.lowStockThreshold
-		        HAVING COALESCE(SUM(m.quantityChange), 0L) <= p.lowStockThreshold
+		        HAVING (:alertsOnly = false OR COALESCE(SUM(m.quantityChange), 0L) <= p.lowStockThreshold)
 		        ORDER BY COALESCE(SUM(m.quantityChange), 0L), p.sku, p.id
 		        """)
-		List<LowStockProductRow> findLowStockProducts();
+		List<LowStockProductRow> findStockAvailability(
+		        @org.springframework.data.repository.query.Param("alertsOnly") boolean alertsOnly);
 }

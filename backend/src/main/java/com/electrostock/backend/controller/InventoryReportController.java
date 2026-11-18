@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.electrostock.backend.dto.report.RecentStockActivityRow;
 import com.electrostock.backend.dto.report.InventoryValuationRow;
 import com.electrostock.backend.service.InventoryReportService;
 
@@ -36,5 +37,9 @@ public class InventoryReportController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
 
         return inventoryReportService.getStockMovementReport(from, to);
+    }
+    @GetMapping("/stock-movements/recent")
+    public List<RecentStockActivityRow> getRecentStockActivity() {
+        return inventoryReportService.getRecentStockActivity();
     }
 }

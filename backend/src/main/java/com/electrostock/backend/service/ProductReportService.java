@@ -19,6 +19,10 @@ public class ProductReportService {
 
     @Transactional(readOnly = true)
     public List<LowStockProductRow> getLowStockProducts() {
-        return productRepository.findLowStockProducts();
+    	return productRepository.findStockAvailability(true);
+    }
+    @Transactional(readOnly = true)
+    public List<LowStockProductRow> getStockAvailability() {
+        return productRepository.findStockAvailability(false);
     }
 }

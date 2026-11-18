@@ -7,5 +7,6 @@ public record InventoryValuationRow(
         String sku,
         String productName,
         long stockQuantity,
-        BigDecimal stockValueMad) {
+        BigDecimal stockValueMad,
+        BigDecimal sellingPriceMad) {
 }

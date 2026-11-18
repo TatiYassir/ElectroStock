@@ -3,12 +3,20 @@ package com.electrostock.frontend.view;
 import java.math.BigDecimal;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+
 import java.time.format.DateTimeFormatter;
 
 import java.util.Locale;
 import java.util.Comparator;
 import java.util.List;
+
+import com.electrostock.frontend.api.InventoryReportClient;
+import com.electrostock.frontend.api.InventoryReportClient.LowStockItem;
+import com.electrostock.frontend.api.InventoryReportClient.SalesDay;
+import com.electrostock.frontend.api.InventoryReportClient.StockActivity;
+import com.electrostock.frontend.api.InventoryReportClient.StockItem;
+
+import javafx.application.Platform;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -20,6 +28,8 @@ import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Label;
+import javafx.scene.control.Button;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
@@ -27,71 +37,42 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.ArcType;
 
 public class DashboardView extends VBox {
 
-    private record SalesDay(LocalDate date, int revenueMad, int profitMad, int unitsSold) {}
+	private long salesRequestNumber;
 
     private static final DateTimeFormatter DAY_LABEL =
             DateTimeFormatter.ofPattern("MMM d", Locale.ENGLISH);
-
-    // The sample dashboard is shown as of November 17.
-    private static final LocalDate SAMPLE_TODAY = LocalDate.of(2026, 11, 17);
-
-    private final List<SalesDay> sampleDays = List.of(
-            new SalesDay(LocalDate.of(2026, 11, 15), 1500, 420, 1),
-            new SalesDay(LocalDate.of(2026, 11, 16), 2000, 1000, 1),
-            new SalesDay(LocalDate.of(2026, 11, 17), 1450, -550, 1)
-    );
-
-    // The selling price is per unit. The stock cost covers all units of this SKU.
-    private record StockItem(String sku, int quantity,
-                             BigDecimal sellingPriceMad, BigDecimal stockCostMad) {
-
-        BigDecimal potentialSalesMad() {
-            return sellingPriceMad.multiply(BigDecimal.valueOf(quantity));
-        }
-
-        BigDecimal potentialProfitMad() {
-            return potentialSalesMad().subtract(stockCostMad);
-        }
-    }
-
-    private final List<StockItem> sampleStock = List.of(
-            new StockItem("MON-001", 2,
-                    new BigDecimal("1450.00"), new BigDecimal("14000.00")),
-            new StockItem("MON-002", 9,
-                    new BigDecimal("1500.00"), new BigDecimal("9846.4582"))
-    );
-    private record LowStockItem(String sku, int quantity, int threshold) {}
-
-    private final List<LowStockItem> sampleLowStock = List.of(
-            new LowStockItem("TEST-ZERO-STOCK-001", 0, 0),
-            new LowStockItem("WARRANTY-TEST-001", 0, 0),
-            new LowStockItem("WARRANTY-TEST-002", 0, 0)
-    );
-    private record StockActivity(
-            String movementType, String sku, int quantityChange, LocalDateTime movementAt) {}
-
+    
+    private final InventoryReportClient inventoryReports = new InventoryReportClient();
+    
     private static final DateTimeFormatter ACTIVITY_TIME =
             DateTimeFormatter.ofPattern("MMM d, HH:mm", Locale.ENGLISH);
 
-    private final List<StockActivity> sampleActivity = List.of(
-            new StockActivity("SALE", "WARRANTY-TEST-002", -1,
-                    LocalDateTime.parse("2026-11-17T15:05:13")),
-            new StockActivity("PURCHASE", "WARRANTY-TEST-002", 1,
-                    LocalDateTime.parse("2026-11-17T15:04:02")),
-            new StockActivity("SALE", "MON-001", -1,
-                    LocalDateTime.parse("2026-11-17T14:52:44"))
-    );
     //Constructor
-    public DashboardView() {
+    public DashboardView(Runnable onNewSale, Runnable onNewPurchase) {
         getStylesheets().add(
                 DashboardView.class.getResource("dashboard.css").toExternalForm());
         setSpacing(20);
         setPadding(new Insets(20));
 
         Label title = new Label("Dashboard");
+        title.getStyleClass().add("dashboard-title");
+        Button newSale = new Button("New sale");
+        Button newPurchase = new Button("New purchase");
+        newSale.setOnAction(event -> onNewSale.run());
+        newPurchase.setOnAction(event -> onNewPurchase.run());
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        HBox header = new HBox(10, title, spacer, newSale, newPurchase);
+        header.setAlignment(Pos.CENTER_LEFT);
         GridPane sections = new GridPane();
         sections.setHgap(20);
 
@@ -120,51 +101,63 @@ public class DashboardView extends VBox {
         sections.add(salesPanel, 0, 1);
 
         // Right column
-        RadioButton gains = new RadioButton("Largest gains");
-        RadioButton losses = new RadioButton("Largest losses");
-
-        ToggleGroup stockFilter = new ToggleGroup();
-        gains.setToggleGroup(stockFilter);
-        losses.setToggleGroup(stockFilter);
-        losses.setSelected(true);
-
-        HBox filterBar = new HBox(12, gains, losses);
         sections.add(new Label("Stock on hand now"), 1, 0);
-
-        VBox stockRows = new VBox(8);
-        updateStockProfitRows(stockRows, true);
-
-        gains.setOnAction(event -> updateStockProfitRows(stockRows, false));
-        losses.setOnAction(event -> updateStockProfitRows(stockRows, true));
-
-        Label stockChartTitle = new Label("Potential profit by product");
-        stockChartTitle.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
-
-        VBox stockPanel = new VBox(
-                12, createStockSummary(), stockChartTitle, filterBar, stockRows);
-        sections.add(stockPanel, 1, 1);
+        sections.add(createStockPanel(), 1, 1);
 
         sections.setVgap(10);
         sections.add(createLowStockPanel(), 0, 2);
         sections.add(createRecentActivityPanel(), 1, 2);
 
-        getChildren().addAll(title, sections);
+        ScrollPane reportScroll = new ScrollPane(sections);
+        reportScroll.setFitToWidth(true);
+        reportScroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+        reportScroll.setMinHeight(0);
+        reportScroll.getStyleClass().add("dashboard-scroll");
+
+        VBox.setVgrow(reportScroll, Priority.ALWAYS);
+        getChildren().addAll(header, reportScroll);
+        
     }
     private VBox createRecentActivityPanel() {
         Label heading = new Label("Recent stock activity");
         heading.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
 
-        VBox panel = new VBox(10, heading);
+        Button refresh = new Button("Refresh");
+        HBox header = new HBox(12, heading, refresh);
+        header.setAlignment(Pos.CENTER_LEFT);
+
+        VBox content = new VBox();
+        VBox panel = new VBox(10, header, content);
         panel.setPadding(new Insets(14));
         panel.setStyle(
                 "-fx-background-color: white; -fx-background-radius: 8;"
                 + "-fx-border-color: #D7DFE7; -fx-border-radius: 8;");
 
-        if (sampleActivity.isEmpty()) {
-            panel.getChildren().add(new Label("No stock movements recorded yet."));
-            return panel;
-        }
+        refresh.setOnAction(event -> {
+            refresh.setDisable(true);
+            content.getChildren().setAll(new Label("Loading recent activity…"));
 
+            inventoryReports.fetchRecentActivity().whenComplete((activities, error) ->
+                    Platform.runLater(() -> {
+                        refresh.setDisable(false);
+
+                        if (error != null) {
+                            content.getChildren().setAll(
+                                    new Label("Couldn’t load activity. Check the backend and refresh."));
+                        } else if (activities.isEmpty()) {
+                            content.getChildren().setAll(
+                                    new Label("No stock movements recorded yet."));
+                        } else {
+                            content.getChildren().setAll(createActivityTable(activities));
+                        }
+                    }));
+        });
+
+        refresh.fire();
+        return panel;
+    }
+
+    private GridPane createActivityTable(List<StockActivity> activities) {
         GridPane table = new GridPane();
         table.setHgap(12);
         table.setVgap(8);
@@ -177,41 +170,135 @@ public class DashboardView extends VBox {
         table.addRow(0, new Label("Movement"), new Label("SKU"),
                 new Label("Units"), new Label("When"));
 
-        List<StockActivity> latest = sampleActivity.stream()
-                .sorted(Comparator.comparing(StockActivity::movementAt).reversed())
-                .limit(5)
-                .toList();
-
         int row = 1;
-        for (StockActivity activity : latest) {
+        for (StockActivity activity : activities) {
             Label units = new Label("%+d".formatted(activity.quantityChange()));
             units.setStyle("-fx-font-weight: bold;");
 
-            table.addRow(row++,
-                    new Label(activity.movementType()),
-                    new Label(activity.sku()),
-                    units,
+            table.addRow(row++, new Label(activity.movementType()),
+                    new Label(activity.sku()), units,
                     new Label(ACTIVITY_TIME.format(activity.movementAt())));
         }
 
-        panel.getChildren().add(table);
-        return panel;
+        return table;
     }
     private VBox createLowStockPanel() {
-        Label heading = new Label("Low stock (" + sampleLowStock.size() + ")");
+        Label heading = new Label("Stock availability");
         heading.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
 
-        VBox panel = new VBox(10, heading);
+        Button refresh = new Button("Refresh");
+        HBox header = new HBox(12, heading, refresh);
+        header.setAlignment(Pos.CENTER_LEFT);
+
+        VBox content = new VBox();
+        VBox panel = new VBox(10, header, content);
         panel.setPadding(new Insets(14));
         panel.setStyle(
                 "-fx-background-color: white; -fx-background-radius: 8;"
                 + "-fx-border-color: #D7DFE7; -fx-border-radius: 8;");
 
-        if (sampleLowStock.isEmpty()) {
-            panel.getChildren().add(new Label("All products are above their stock threshold."));
-            return panel;
+        refresh.setOnAction(event -> {
+            refresh.setDisable(true);
+            content.getChildren().setAll(new Label("Loading stock…"));
+
+            inventoryReports.fetchStockAvailability().whenComplete((items, error) ->
+                    Platform.runLater(() -> {
+                        refresh.setDisable(false);
+
+                        if (error != null) {
+                            content.getChildren().setAll(
+                                    new Label("Couldn’t load stock. Check the backend and refresh."));
+                            return;
+                        }
+
+                        content.getChildren().setAll(createAvailabilityContent(items));
+                        if (items.isEmpty()) {
+                            content.getChildren().setAll(
+                                    new Label("No products are at or below their threshold."));
+                        } else {
+                        	content.getChildren().setAll(createAvailabilityContent(items));
+                        }
+                    }));
+        });
+
+        refresh.fire();
+        return panel;
+    }
+
+    private VBox createAvailabilityContent(List<LowStockItem> items) {
+        if (items.isEmpty()) {
+            return new VBox(new Label("No active products."));
         }
 
+        List<LowStockItem> alerts = items.stream()
+                .filter(item -> item.stockQuantity() <= item.lowStockThreshold())
+                .toList();
+
+        int out = (int) alerts.stream()
+                .filter(item -> item.stockQuantity() <= 0)
+                .count();
+        int low = alerts.size() - out;
+        int above = items.size() - alerts.size();
+
+        Color teal = Color.web("#087869");
+        Color amber = Color.web("#AB650F");
+        Color red = Color.web("#B83B42");
+
+        Canvas ring = new Canvas(124, 124);
+        GraphicsContext pen = ring.getGraphicsContext2D();
+
+        int[] counts = {above, low, out};
+        Color[] colors = {teal, amber, red};
+        double start = 90;
+
+        for (int i = 0; i < counts.length; i++) {
+            double sweep = 360.0 * counts[i] / items.size();
+            if (counts[i] > 0) {
+                pen.setFill(colors[i]);
+                pen.fillArc(2, 2, 120, 120, start, -sweep, ArcType.ROUND);
+            }
+            start -= sweep;
+        }
+
+        pen.setFill(Color.WHITE);
+        pen.fillOval(17, 17, 90, 90);
+
+        Label count = new Label(alerts.size() + " of " + items.size());
+        count.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #172B40;");
+        Label caption = new Label("need restocking");
+        caption.setStyle("-fx-font-size: 10px; -fx-text-fill: #475569;");
+
+        VBox center = new VBox(2, count, caption);
+        center.setAlignment(Pos.CENTER);
+        StackPane donut = new StackPane(ring, center);
+
+        VBox details = new VBox(8);
+        if (alerts.isEmpty()) {
+            details.getChildren().add(new Label("All active products are above threshold."));
+        } else {
+            details.getChildren().add(createLowStockTable(alerts));
+        }
+
+        HBox body = new HBox(18, donut, details);
+        body.setAlignment(Pos.CENTER_LEFT);
+        HBox.setHgrow(details, Priority.ALWAYS);
+
+        javafx.scene.layout.FlowPane legend = new javafx.scene.layout.FlowPane(14, 4);
+        legend.getChildren().addAll(
+                availabilityKey(teal, "Above threshold", above),
+                availabilityKey(amber, "Low stock", low),
+                availabilityKey(red, "Out of stock", out));
+
+        return new VBox(8, body, legend);
+    }
+
+    private HBox availabilityKey(Color color, String label, int count) {
+        javafx.scene.shape.Circle dot = new javafx.scene.shape.Circle(4, color);
+        HBox key = new HBox(5, dot, new Label(label + " · " + count));
+        key.setAlignment(Pos.CENTER_LEFT);
+        return key;
+    }
+    private GridPane createLowStockTable(List<LowStockItem> items) {
         GridPane table = new GridPane();
         table.setHgap(16);
         table.setVgap(8);
@@ -222,24 +309,22 @@ public class DashboardView extends VBox {
 
         table.addRow(0, new Label("SKU"), new Label("On hand"), new Label("Threshold"));
 
-        List<LowStockItem> sortedItems = sampleLowStock.stream()
-                .sorted(Comparator.comparingInt(LowStockItem::quantity)
+        List<LowStockItem> sorted = items.stream()
+                .sorted(Comparator.comparingLong(LowStockItem::stockQuantity)
                         .thenComparing(LowStockItem::sku))
                 .toList();
 
         int row = 1;
-        for (LowStockItem item : sortedItems) {
-            Label quantity = new Label(String.valueOf(item.quantity()));
-            if (item.quantity() == 0) {
+        for (LowStockItem item : sorted) {
+            Label quantity = new Label(String.valueOf(item.stockQuantity()));
+            if (item.stockQuantity() == 0) {
                 quantity.setStyle("-fx-text-fill: #B83B42; -fx-font-weight: bold;");
             }
 
             table.addRow(row++, new Label(item.sku()), quantity,
-                    new Label(String.valueOf(item.threshold())));
+                    new Label(String.valueOf(item.lowStockThreshold())));
         }
-
-        panel.getChildren().add(table);
-        return panel;
+        return table;
     }
     private VBox createMetricCard(String title, String value, boolean negative) {
         Label caption = new Label(title);
@@ -262,34 +347,50 @@ public class DashboardView extends VBox {
         return card;
     }
     private void updateSalesPanel(VBox panel, String period) {
-        LocalDate start = "Today".equals(period)
-                ? SAMPLE_TODAY
-                : SAMPLE_TODAY.withDayOfMonth(1);
+        LocalDate today = LocalDate.now();
+        LocalDate from = "Today".equals(period) ? today : today.withDayOfMonth(1);
+        long requestNumber = ++salesRequestNumber;
 
-        List<SalesDay> selectedDays = sampleDays.stream()
-                .filter(day -> !day.date().isBefore(start)
-                        && !day.date().isAfter(SAMPLE_TODAY))
-                .toList();
+        panel.getChildren().setAll(new Label("Loading sales…"));
 
-        panel.getChildren().setAll(
-                createSalesSummary(selectedDays),
-                createSalesChart(selectedDays));
+        inventoryReports.fetchDailySales(from, today).whenComplete((days, error) ->
+                Platform.runLater(() -> {
+                    // A newer period selection may have finished loading first.
+                    if (requestNumber != salesRequestNumber) {
+                        return;
+                    }
+
+                    if (error != null) {
+                        Button retry = new Button("Retry");
+                        retry.setOnAction(event -> updateSalesPanel(panel, period));
+                        panel.getChildren().setAll(new Label("Couldn’t load sales."), retry);
+                        return;
+                    }
+
+                    panel.getChildren().setAll(createSalesSummary(days));
+                    if (days.isEmpty()) {
+                        panel.getChildren().add(new Label("No confirmed sales in this period."));
+                    } else {
+                        panel.getChildren().add(createSalesChart(days));
+                    }
+                }));
     }
 
-    private HBox createSalesSummary(List<SalesDay> selectedDays) {
-        int revenue = 0;
-        int profit = 0;
-        int units = 0;
+    private HBox createSalesSummary(List<SalesDay> days) {
+        BigDecimal revenue = BigDecimal.ZERO;
+        BigDecimal profit = BigDecimal.ZERO;
+        long units = 0;
 
-        for (SalesDay day : selectedDays) {
-            revenue += day.revenueMad();
-            profit += day.profitMad();
+        for (SalesDay day : days) {
+            revenue = revenue.add(day.revenueMad());
+            profit = profit.add(day.profitMad());
             units += day.unitsSold();
         }
 
         return new HBox(8,
-                createMetricCard("Revenue", "%,d MAD".formatted(revenue), false),
-                createMetricCard("Gross profit", "%,d MAD".formatted(profit), profit < 0),
+                createMetricCard("Revenue", "%,.2f MAD".formatted(revenue), false),
+                createMetricCard("Gross profit", "%,.2f MAD".formatted(profit),
+                        profit.signum() < 0),
                 createMetricCard("Units sold", String.valueOf(units), false));
     }
 
@@ -299,6 +400,7 @@ public class DashboardView extends VBox {
         amounts.setLabel("Amount (MAD)");
 
         BarChart<String, Number> chart = new BarChart<>(days, amounts);
+        chart.setPrefHeight(275);
         chart.getStyleClass().add("sales-chart");
         chart.setTitle("Daily sales and gross profit");
         chart.setAnimated(false);
@@ -315,7 +417,7 @@ public class DashboardView extends VBox {
             XYChart.Data<String, Number> profitPoint =
                     new XYChart.Data<>(label, day.profitMad());
 
-            if (day.profitMad() < 0) {
+            if (day.profitMad().signum() < 0) {
                 StackPane lossBar = new StackPane();
                 lossBar.setStyle("-fx-bar-fill: #B83B42;");
                 profitPoint.setNode(lossBar);
@@ -329,12 +431,57 @@ public class DashboardView extends VBox {
         return chart;
     }
 
-    private HBox createStockSummary() {
+    private VBox createStockPanel() {
+        Button refresh = new Button("Refresh");
+        VBox content = new VBox(12);
+        VBox panel = new VBox(12, refresh, content);
+        RadioButton gains = new RadioButton("Largest gains");
+        RadioButton losses = new RadioButton("Largest losses");
+
+        ToggleGroup stockFilter = new ToggleGroup();
+        gains.setToggleGroup(stockFilter);
+        losses.setToggleGroup(stockFilter);
+        losses.setSelected(true);
+
+        HBox filterBar = new HBox(12, gains, losses);
+
+        VBox stockRows = new VBox(8);
+
+
+        Label stockChartTitle = new Label("Potential profit by product");
+        stockChartTitle.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+
+        refresh.setOnAction(event -> {
+            refresh.setDisable(true);
+            content.getChildren().setAll(new Label("Loading inventory…"));
+
+            inventoryReports.fetchInventoryValuation().whenComplete((items, error) ->
+                    Platform.runLater(() -> {
+                        refresh.setDisable(false);
+                        if (error != null) {
+                            content.getChildren().setAll(new Label(
+                                    "Couldn’t load inventory. Check the backend and refresh."));
+                            return;
+                        }
+
+                        gains.setOnAction(e -> updateStockProfitRows(stockRows, items, false));
+                        losses.setOnAction(e -> updateStockProfitRows(stockRows, items, true));
+                        updateStockProfitRows(stockRows, items, losses.isSelected());
+                        content.getChildren().setAll(
+                                createStockSummary(items), stockChartTitle, filterBar, stockRows);
+                    }));
+        });
+
+        refresh.fire();
+        return panel;
+    }
+
+    private HBox createStockSummary(List<StockItem> items) {
         BigDecimal totalCost = BigDecimal.ZERO;
         BigDecimal potentialSales = BigDecimal.ZERO;
 
-        for (StockItem item : sampleStock) {
-            totalCost = totalCost.add(item.stockCostMad());
+        for (StockItem item : items) {
+            totalCost = totalCost.add(item.stockValueMad());
             potentialSales = potentialSales.add(item.potentialSalesMad());
         }
 
@@ -347,11 +494,11 @@ public class DashboardView extends VBox {
                         potentialProfit.signum() < 0));
     }
 
-    private void updateStockProfitRows(VBox rows, boolean showLosses) {
+    private void updateStockProfitRows(VBox rows, List<StockItem> items, boolean showLosses) {
         rows.getChildren().clear();
 
         // Use the same scale for gains and losses.
-        BigDecimal largestMagnitude = sampleStock.stream()
+        BigDecimal largestMagnitude = items.stream()
                 .map(item -> item.potentialProfitMad().abs())
                 .max(BigDecimal::compareTo)
                 .orElse(BigDecimal.ZERO);
@@ -359,7 +506,7 @@ public class DashboardView extends VBox {
         Comparator<StockItem> byProfit =
                 Comparator.comparing(StockItem::potentialProfitMad);
 
-        List<StockItem> rankedItems = sampleStock.stream()
+        List<StockItem> rankedItems = items.stream()
                 .filter(item -> showLosses
                         ? item.potentialProfitMad().signum() < 0
                         : item.potentialProfitMad().signum() > 0)

@@ -3,6 +3,7 @@ package com.electrostock.backend.repository;
 import com.electrostock.backend.enums.MovementType;
 import com.electrostock.backend.model.StockMovement;
 import com.electrostock.backend.dto.report.InventoryValuationRow;
+import com.electrostock.backend.dto.report.RecentStockActivityRow;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -13,6 +14,7 @@ import com.electrostock.backend.dto.report.StockMovementReportRow;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.domain.Pageable;
 
 public interface StockMovementRepository 
 		extends JpaRepository<StockMovement, Long> {
@@ -35,19 +37,20 @@ public interface StockMovementRepository
 	        Long purchaseId, MovementType movementType);
 	List<StockMovement> findByProduct_IdOrderByMovementAtDescIdDesc(Long productId);
 	@Query("""
-		    SELECT new com.electrostock.backend.dto.report.InventoryValuationRow(
-		        p.id,
-		        p.sku,
-		        p.name,
-		        COALESCE(SUM(m.quantityChange), 0L),
-		        COALESCE(SUM(m.valueChangeMad), 0.0BD)
-		    )
-		    FROM Product p
-		    LEFT JOIN StockMovement m ON m.product = p
-		    GROUP BY p.id, p.sku, p.name
-		    ORDER BY p.sku, p.id
-		    """)
-		List<InventoryValuationRow> findInventoryValuation();
+	        SELECT new com.electrostock.backend.dto.report.InventoryValuationRow(
+	            p.id,
+	            p.sku,
+	            p.name,
+	            COALESCE(SUM(m.quantityChange), 0L),
+	            COALESCE(SUM(m.valueChangeMad), 0.0BD),
+	            p.sellingPriceMad
+	        )
+	        FROM Product p
+	        LEFT JOIN StockMovement m ON m.product = p
+	        GROUP BY p.id, p.sku, p.name, p.sellingPriceMad
+	        ORDER BY p.sku, p.id
+	        """)
+	List<InventoryValuationRow> findInventoryValuation();
 	@Query("""
 	        SELECT m
 	        FROM StockMovement m
@@ -85,4 +88,13 @@ public interface StockMovementRepository
 		        @Param("fromInclusive") LocalDateTime fromInclusive,
 		        @Param("toExclusive") LocalDateTime toExclusive);
 	List<StockMovement> findByProductUnit_IdOrderByMovementAtAscIdAsc(Long unitId);
+	@Query("""
+	        SELECT new com.electrostock.backend.dto.report.RecentStockActivityRow(
+	            m.movementType, p.sku, m.quantityChange, m.movementAt
+	        )
+	        FROM StockMovement m
+	        JOIN m.product p
+	        ORDER BY m.movementAt DESC, m.id DESC
+	        """)
+	List<RecentStockActivityRow> findRecentActivity(Pageable pageable);
 }

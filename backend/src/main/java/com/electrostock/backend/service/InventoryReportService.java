@@ -5,7 +5,9 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.PageRequest;
 
+import com.electrostock.backend.dto.report.RecentStockActivityRow;
 import com.electrostock.backend.dto.report.InventoryValuationRow;
 import com.electrostock.backend.dto.report.StockMovementReportRow;
 import com.electrostock.backend.repository.StockMovementRepository;
@@ -39,5 +41,9 @@ public class InventoryReportService {
         return stockMovementRepository.findMovementReport(
                 from.atStartOfDay(),
                 to.plusDays(1).atStartOfDay());
+    }
+    @Transactional(readOnly = true)
+    public List<RecentStockActivityRow> getRecentStockActivity() {
+        return stockMovementRepository.findRecentActivity(PageRequest.of(0, 5));
     }
 }

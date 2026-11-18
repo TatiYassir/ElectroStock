@@ -23,4 +23,8 @@ public class ProductReportController {
     public List<LowStockProductRow> getLowStockProducts() {
         return productReportService.getLowStockProducts();
     }
+    @GetMapping("/stock-availability")
+    public List<LowStockProductRow> getStockAvailability() {
+        return productReportService.getStockAvailability();
+    }
 }
