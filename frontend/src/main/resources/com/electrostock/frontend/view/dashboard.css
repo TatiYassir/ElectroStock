@@ -1,0 +1,28 @@
+.sales-chart .default-color0.chart-bar {
+    -fx-bar-fill: #3066A3;
+}
+
+.sales-chart .default-color1.chart-bar {
+    -fx-bar-fill: #087869;
+}
+
+.sales-chart .default-color1.chart-bar.negative {
+    -fx-bar-fill: #B83B42;
+}
+
+.sales-chart .chart-plot-background {
+    -fx-background-color: white;
+}
+
+.sales-chart .chart-vertical-grid-lines {
+    -fx-stroke: transparent;
+}
+
+.sales-chart .chart-horizontal-grid-lines {
+    -fx-stroke: #DCE3EA;
+}
+
+.sales-chart .chart-horizontal-zero-line {
+    -fx-stroke: #64748B;
+    -fx-stroke-width: 1.5px;
+}
