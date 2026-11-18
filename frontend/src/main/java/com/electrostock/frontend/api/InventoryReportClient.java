@@ -28,6 +28,7 @@ public class InventoryReportClient {
     public record StockActivity(
             String movementType,
             String sku,
+            String productName,
             int quantityChange,
             LocalDateTime movementAt) {}
 

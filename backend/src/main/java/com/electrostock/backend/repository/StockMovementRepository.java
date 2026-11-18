@@ -90,7 +90,7 @@ public interface StockMovementRepository
 	List<StockMovement> findByProductUnit_IdOrderByMovementAtAscIdAsc(Long unitId);
 	@Query("""
 	        SELECT new com.electrostock.backend.dto.report.RecentStockActivityRow(
-	            m.movementType, p.sku, m.quantityChange, m.movementAt
+	            m.movementType, p.sku, p.name, m.quantityChange, m.movementAt
 	        )
 	        FROM StockMovement m
 	        JOIN m.product p
