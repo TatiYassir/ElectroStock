@@ -31,7 +31,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.RadioButton;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
@@ -435,21 +435,31 @@ public class DashboardView extends VBox {
         Button refresh = new Button("Refresh");
         VBox content = new VBox(12);
         VBox panel = new VBox(12, refresh, content);
-        RadioButton gains = new RadioButton("Largest gains");
-        RadioButton losses = new RadioButton("Largest losses");
+
+        ToggleButton overview = new ToggleButton("Overview");
+        ToggleButton gains = new ToggleButton("Largest gains");
+        ToggleButton losses = new ToggleButton("Largest losses");
 
         ToggleGroup stockFilter = new ToggleGroup();
-        gains.setToggleGroup(stockFilter);
-        losses.setToggleGroup(stockFilter);
-        losses.setSelected(true);
+        List<ToggleButton> buttons = List.of(overview, gains, losses);
+        String segmentStyle = "-fx-padding: 6 10; -fx-background-radius: 4;";
 
-        HBox filterBar = new HBox(12, gains, losses);
+        for (ToggleButton button : buttons) {
+            button.setToggleGroup(stockFilter);
+            button.styleProperty().bind(
+                    javafx.beans.binding.Bindings.when(button.selectedProperty())
+                            .then(segmentStyle
+                                    + "-fx-background-color: #087869; -fx-text-fill: white;")
+                            .otherwise(segmentStyle
+                                    + "-fx-background-color: #EDF2F5; -fx-text-fill: #172B40;"));
+        }
+        overview.setSelected(true);
 
-        VBox stockRows = new VBox(8);
+        Label title = new Label("Potential profit by product");
+        title.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
 
-
-        Label stockChartTitle = new Label("Potential profit by product");
-        stockChartTitle.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+        HBox filterBar = new HBox(overview, gains, losses);
+        VBox stockRows = new VBox(6);
 
         refresh.setOnAction(event -> {
             refresh.setDisable(true);
@@ -458,24 +468,100 @@ public class DashboardView extends VBox {
             inventoryReports.fetchInventoryValuation().whenComplete((items, error) ->
                     Platform.runLater(() -> {
                         refresh.setDisable(false);
+
                         if (error != null) {
                             content.getChildren().setAll(new Label(
                                     "Couldn’t load inventory. Check the backend and refresh."));
                             return;
                         }
 
-                        gains.setOnAction(e -> updateStockProfitRows(stockRows, items, false));
-                        losses.setOnAction(e -> updateStockProfitRows(stockRows, items, true));
-                        updateStockProfitRows(stockRows, items, losses.isSelected());
+                        Runnable render = () -> {
+                            if (overview.isSelected()) {
+                                showProfitOverview(stockRows, items);
+                            } else {
+                                updateStockProfitRows(stockRows, items, losses.isSelected());
+                            }
+                        };
+
+                        for (ToggleButton button : buttons) {
+                            button.setOnAction(e -> {
+                                // Clicking the active button keeps that view selected.
+                                button.setSelected(true);
+                                render.run();
+                            });
+                        }
+
+                        render.run();
                         content.getChildren().setAll(
-                                createStockSummary(items), stockChartTitle, filterBar, stockRows);
+                                createStockSummary(items), title, filterBar, stockRows);
                     }));
         });
 
         refresh.fire();
         return panel;
     }
+    private void showProfitOverview(VBox rows, List<StockItem> items) {
+        BigDecimal net = items.stream()
+                .map(StockItem::potentialProfitMad)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
+        Label total = new Label(String.format(
+                Locale.ENGLISH, "Net potential profit   %,.2f MAD", net));
+        total.setStyle("-fx-font-weight: bold;");
+        rows.getChildren().setAll(total);
+
+        List<StockItem> products = items.stream()
+                .filter(item -> item.potentialProfitMad().signum() != 0)
+                .sorted(Comparator.comparing(StockItem::potentialProfitMad)
+                        .thenComparing(StockItem::sku))
+                .toList();
+
+        if (products.isEmpty()) {
+            rows.getChildren().add(new Label("No products with a potential gain or loss."));
+            return;
+        }
+
+        NumberAxis amounts = new NumberAxis();
+        amounts.setLabel("Potential profit (MAD)");
+
+        CategoryAxis skus = new CategoryAxis();
+        BarChart<Number, String> chart = new BarChart<>(amounts, skus);
+        chart.setAnimated(false);
+        chart.setLegendVisible(false);
+        chart.setHorizontalGridLinesVisible(false);
+        chart.setCategoryGap(10);
+
+        XYChart.Series<Number, String> series = new XYChart.Series<>();
+
+        for (StockItem item : products) {
+            BigDecimal profit = item.potentialProfitMad();
+            String label = String.format(
+                    Locale.ENGLISH, "%s   %,.2f", item.sku(), profit);
+
+            XYChart.Data<Number, String> point = new XYChart.Data<>(profit, label);
+            StackPane bar = new StackPane();
+            String color = profit.signum() < 0 ? "#B83B42" : "#087869";
+            bar.setStyle("-fx-bar-fill: " + color + ";");
+            point.setNode(bar);
+
+            series.getData().add(point);
+        }
+
+        chart.getData().add(series);
+        double height = 75 + 32.0 * products.size();
+        chart.setMinHeight(height);
+        chart.setPrefHeight(height);
+
+        if (products.size() <= 5) {
+            rows.getChildren().add(chart);
+        } else {
+            ScrollPane viewport = new ScrollPane(chart);
+            viewport.setFitToWidth(true);
+            viewport.setPrefViewportHeight(235);
+            viewport.setMaxHeight(240);
+            rows.getChildren().add(viewport);
+        }
+    }
     private HBox createStockSummary(List<StockItem> items) {
         BigDecimal totalCost = BigDecimal.ZERO;
         BigDecimal potentialSales = BigDecimal.ZERO;
@@ -494,84 +580,151 @@ public class DashboardView extends VBox {
                         potentialProfit.signum() < 0));
     }
 
-    private void updateStockProfitRows(VBox rows, List<StockItem> items, boolean showLosses) {
-        rows.getChildren().clear();
-
-        // Use the same scale for gains and losses.
-        BigDecimal largestMagnitude = items.stream()
-                .map(item -> item.potentialProfitMad().abs())
-                .max(BigDecimal::compareTo)
-                .orElse(BigDecimal.ZERO);
+    private void updateStockProfitRows(
+            VBox chartArea, List<StockItem> items, boolean showLosses) {
 
         Comparator<StockItem> byProfit =
                 Comparator.comparing(StockItem::potentialProfitMad);
 
-        List<StockItem> rankedItems = items.stream()
-                .filter(item -> showLosses
-                        ? item.potentialProfitMad().signum() < 0
-                        : item.potentialProfitMad().signum() > 0)
-                .sorted(showLosses ? byProfit : byProfit.reversed())
+        Comparator<StockItem> order = showLosses ? byProfit : byProfit.reversed();
+
+        List<StockItem> ranked = items.stream()
+                .filter(item -> item.potentialProfitMad().signum() == (showLosses ? -1 : 1))
+                .sorted(order.thenComparing(StockItem::sku))
                 .limit(5)
                 .toList();
 
-        if (rankedItems.isEmpty()) {
-            rows.getChildren().add(new Label(showLosses
+        if (ranked.isEmpty()) {
+            String message = showLosses
                     ? "No products with a potential loss."
-                    : "No products with a potential gain."));
+                    : "No products with a potential gain.";
+
+            chartArea.getChildren().setAll(new Label(message));
             return;
         }
 
-        for (StockItem item : rankedItems) {
-            rows.getChildren().add(createStockProfitRow(item, largestMagnitude));
+        Canvas plot = new Canvas();
+        double height = 42 + ranked.size() * 33;
+        plot.setHeight(height);
+
+        StackPane plotArea = new StackPane(plot);
+        plotArea.setMinWidth(0);
+        plotArea.setMinHeight(height);
+        plotArea.setPrefHeight(height);
+
+        plot.widthProperty().bind(plotArea.widthProperty());
+        plot.widthProperty().addListener((observable, oldWidth, newWidth) ->
+                drawProfitPlot(plot, ranked, showLosses));
+
+        StringBuilder description = new StringBuilder("Potential profit in MAD.");
+        for (StockItem item : ranked) {
+            description.append(" ").append(item.sku()).append(": ")
+                    .append(item.potentialProfitMad().toPlainString()).append(".");
         }
+        plotArea.setAccessibleRole(javafx.scene.AccessibleRole.TEXT);
+        plotArea.setAccessibleText(description.toString());
+
+        chartArea.getChildren().setAll(plotArea);
+        drawProfitPlot(plot, ranked, showLosses);
     }
 
-    private HBox createStockProfitRow(StockItem item, BigDecimal largestMagnitude) {
-        BigDecimal profit = item.potentialProfitMad();
-        boolean loss = profit.signum() < 0;
-        String color = loss ? "#B83B42" : "#087869";
+    private void drawProfitPlot(
+            Canvas plot, List<StockItem> ranked, boolean showLosses) {
 
-        Label sku = new Label(item.sku());
-        sku.setMinWidth(84);
-        sku.setPrefWidth(84);
-
-        // The two equal halves meet at zero.
-        StackPane left = new StackPane();
-        StackPane right = new StackPane();
-        left.setAlignment(Pos.CENTER_RIGHT);
-        right.setAlignment(Pos.CENTER_LEFT);
-        left.setStyle("-fx-border-color: transparent #94A3B8 transparent transparent;");
-
-        GridPane track = new GridPane();
-        for (int i = 0; i < 2; i++) {
-            ColumnConstraints half = new ColumnConstraints();
-            half.setPercentWidth(50);
-            track.getColumnConstraints().add(half);
+        double width = plot.getWidth();
+        if (width < 100) {
+            return;
         }
-        track.add(left, 0, 0);
-        track.add(right, 1, 0);
-        track.setMaxWidth(Double.MAX_VALUE);
-        HBox.setHgrow(track, Priority.ALWAYS);
 
-        StackPane side = loss ? left : right;
-        double fraction = profit.abs().doubleValue() / largestMagnitude.doubleValue();
+        GraphicsContext g = plot.getGraphicsContext2D();
+        g.clearRect(0, 0, width, plot.getHeight());
 
-        Region bar = new Region();
-        bar.setMinSize(0, 12);
-        bar.setPrefHeight(12);
-        bar.setMaxHeight(12);
-        bar.maxWidthProperty().bind(side.widthProperty().multiply(fraction));
-        bar.setStyle("-fx-background-color: " + color + "; -fx-background-radius: 3;");
-        side.getChildren().add(bar);
+        var font = javafx.scene.text.Font.font(12);
+        g.setFont(font);
 
-        Label amount = new Label("%,.2f MAD".formatted(profit));
-        amount.setMinWidth(120);
-        amount.setAlignment(Pos.CENTER_RIGHT);
-        amount.setStyle("-fx-text-fill: " + color + "; -fx-font-weight: bold;");
+        // Reserve enough room for the product SKUs on the left.
+        var measure = new javafx.scene.text.Text();
+        measure.setFont(font);
 
-        HBox row = new HBox(10, sku, track, amount);
-        row.setAlignment(Pos.CENTER_LEFT);
-        row.setPadding(new Insets(6, 0, 6, 0));
-        return row;
+        double longestSku = 0;
+        for (StockItem item : ranked) {
+            measure.setText(item.sku());
+            longestSku = Math.max(longestSku, measure.getLayoutBounds().getWidth());
+        }
+
+        double left = Math.min(width * 0.34, longestSku + 12);
+        double right = width - 26;
+        double plotWidth = right - left;
+        double bottom = 4 + ranked.size() * 33;
+
+        // Choose readable tick intervals based on the largest visible bar.
+        double largestAmount = ranked.get(0).potentialProfitMad().abs().doubleValue();
+        int targetTicks = Math.max(2, Math.min(6, (int) (plotWidth / 66)));
+        double rawStep = largestAmount / targetTicks;
+        double power = Math.pow(10, Math.floor(Math.log10(rawStep)));
+
+        double step;
+        if (rawStep <= 2 * power) {
+            step = 2 * power;
+        } else if (rawStep <= 5 * power) {
+            step = 5 * power;
+        } else {
+            step = 10 * power;
+        }
+
+        int ticks = (int) Math.ceil(largestAmount / step);
+        double axisLimit = ticks * step;
+
+        var numbers = new java.text.DecimalFormat(
+                "#,##0.####",
+                java.text.DecimalFormatSymbols.getInstance(Locale.ENGLISH));
+
+        // For losses, zero sits at the right edge. For gains, it sits at the left.
+        for (int i = 0; i <= ticks; i++) {
+            double x = left + plotWidth * i / ticks;
+            double value = (showLosses ? i - ticks : i) * step;
+
+            g.setStroke(value == 0 ? Color.web("#506377") : Color.web("#DFE6EB"));
+            g.strokeLine(x, 4, x, bottom);
+
+            g.setFill(Color.web("#475569"));
+            g.setTextAlign(javafx.scene.text.TextAlignment.CENTER);
+            g.fillText(numbers.format(value), x, bottom + 15);
+        }
+
+        for (int i = 0; i < ranked.size(); i++) {
+            StockItem item = ranked.get(i);
+            BigDecimal profit = item.potentialProfitMad();
+
+            double y = 9 + i * 33;
+            double length = plotWidth * profit.abs().doubleValue() / axisLimit;
+            double x = showLosses ? right - length : left;
+
+            g.setFill(Color.web("#172B40"));
+            g.setTextAlign(javafx.scene.text.TextAlignment.LEFT);
+            g.fillText(item.sku(), 0, y + 16, left - 8);
+
+            g.setFill(Color.web(showLosses ? "#B83B42" : "#087869"));
+            g.fillRect(x, y, length, 23);
+
+            String amount = numbers.format(
+                    profit.setScale(2, java.math.RoundingMode.HALF_UP));
+            measure.setText(amount);
+
+            // Short bars get an outside label so the amount stays readable.
+            boolean fitsInside = length >= measure.getLayoutBounds().getWidth() + 12;
+            boolean alignRight = fitsInside ? !showLosses : showLosses;
+            double edge = showLosses ? x : x + length;
+
+            g.setFill(fitsInside ? Color.WHITE : Color.web("#172B40"));
+            g.setTextAlign(alignRight
+                    ? javafx.scene.text.TextAlignment.RIGHT
+                    : javafx.scene.text.TextAlignment.LEFT);
+            g.fillText(amount, edge + (alignRight ? -5 : 5), y + 16);
+        }
+
+        g.setFill(Color.web("#475569"));
+        g.setTextAlign(javafx.scene.text.TextAlignment.CENTER);
+        g.fillText("Potential profit (MAD)", (left + right) / 2, bottom + 34);
     }
 }
