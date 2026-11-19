@@ -33,6 +33,7 @@ import javafx.collections.SetChangeListener;
 import javafx.collections.transformation.FilteredList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
@@ -77,7 +78,7 @@ final class SaleDialogs {
 
     private Optional<AddLine> lineDialog(Window owner, Sale sale, Line existing) {
         boolean editing = existing != null;
-        ButtonType submitType = action(editing ? "Save changes" : "Add product");
+        ButtonType submitType = action(editing ? "Save changes" : "Add to sale");
         Dialog<AddLine> dialog = dialog(
                 owner,
                 editing ? "Edit line #" + existing.id() + " · " + existing.productName()
@@ -86,7 +87,7 @@ final class SaleDialogs {
         var submit = dialog.getDialogPane().lookupButton(submitType);
 
         TextField search = new TextField();
-        search.setPromptText("Filter by SKU or product name…");
+        search.setPromptText("Search by SKU or product name…");
         search.setDisable(editing);
 
         var choices = FXCollections.<Choice>observableArrayList();
@@ -98,8 +99,9 @@ final class SaleDialogs {
         });
 
         ListView<Choice> picker = new ListView<>(matches);
+        picker.getStyleClass().add("sale-product-picker");
         picker.setAccessibleText("Matching products");
-        picker.setPrefHeight(editing ? 86 : 190);
+        picker.setPrefHeight(editing ? 86 : 210);
         picker.setDisable(editing);
         Label empty = new Label("Loading available products…");
         picker.setPlaceholder(empty);
@@ -124,44 +126,71 @@ final class SaleDialogs {
                 HBox topRow = new HBox(8, productLabel, gap, stockPill);
                 topRow.setAlignment(Pos.CENTER_LEFT);
 
-                StringBuilder meta = new StringBuilder(product.sku());
+                Label skuBadge = new Label(product.sku());
+                skuBadge.getStyleClass().add("sale-sku-tag");
+
+                HBox metaRow = new HBox(8, skuBadge);
+                metaRow.setAlignment(Pos.CENTER_LEFT);
+
                 if ("MAD".equals(sale.currencyCode()) && product.sellingPriceMad() != null) {
-                    meta.append("  ·  ").append(money(product.sellingPriceMad(), "MAD"));
+                    metaRow.getChildren().add(small("Catalog: " + money(product.sellingPriceMad(), "MAD")));
                 }
                 if (product.tracksSerials()) {
-                    meta.append("  ·  Serial tracked");
+                    Label serialTag = new Label("Serial tracked");
+                    serialTag.getStyleClass().add("sale-meta-tag");
+                    metaRow.getChildren().add(serialTag);
                 }
                 if (value.alreadyInOtherLines() > 0) {
-                    meta.append("  ·  ").append(value.alreadyInOtherLines()).append(" already in draft");
+                    metaRow.getChildren().add(small("·  " + value.alreadyInOtherLines() + " in draft"));
                 }
 
-                setGraphic(new VBox(3, topRow, small(meta.toString())));
+                setGraphic(new VBox(5, topRow, metaRow));
                 setTooltip(new Tooltip(product.sku() + " · " + product.name()));
             }
         });
 
+        Label selectedTitle = heading("No product selected");
+        Label selectedMeta = small("Choose an item from the catalog list above to configure quantity and price.");
+        selectedMeta.setWrapText(true);
+        VBox selectionStrip = new VBox(3, selectedTitle, selectedMeta);
+        selectionStrip.getStyleClass().add("sale-selection-strip");
+
         TextField quantity = new TextField(editing ? String.valueOf(existing.quantity()) : "1");
         quantity.setPrefColumnCount(4);
+        quantity.setPrefHeight(36);
         quantity.setAlignment(Pos.CENTER);
 
         Button minusQty = new Button("−");
         minusQty.getStyleClass().add("sale-qty-btn");
+        minusQty.setPrefSize(36, 36);
         Button plusQty = new Button("+");
         plusQty.getStyleClass().add("sale-qty-btn");
+        plusQty.setPrefSize(36, 36);
 
-        HBox qtyControl = new HBox(4, minusQty, quantity, plusQty);
+        HBox qtyControl = new HBox(6, minusQty, quantity, plusQty);
         qtyControl.setAlignment(Pos.CENTER_LEFT);
 
         TextField price = new TextField(editing
                 ? existing.unitPriceCurrency().stripTrailingZeros().toPlainString() : "");
-        price.setPromptText("Unit price in " + sale.currencyCode());
+        price.setPromptText("0.00");
+        price.setPrefHeight(36);
         price.setMaxWidth(Double.MAX_VALUE);
         VBox priceBox = field("Unit price (" + sale.currencyCode() + ")", price);
         HBox.setHgrow(priceBox, Priority.ALWAYS);
 
-        Label note = small("Select a product to view available stock.");
-        note.setWrapText(true);
-        Label estimate = heading("Line total: —");
+        Label breakdownLabel = small("Enter quantity and unit price");
+        Label estimateValue = new Label("—");
+        estimateValue.getStyleClass().add("sale-total-highlight");
+
+        Region totalSpacer = new Region();
+        HBox.setHgrow(totalSpacer, Priority.ALWAYS);
+        HBox summaryBox = new HBox(10,
+                new VBox(2, small("LINE TOTAL"), breakdownLabel),
+                totalSpacer,
+                estimateValue);
+        summaryBox.getStyleClass().add("sale-line-summary-box");
+        summaryBox.setAlignment(Pos.CENTER_LEFT);
+
         Label issue = new Label();
         issue.getStyleClass().add("sale-dialog-error");
         issue.setWrapText(true);
@@ -185,11 +214,15 @@ final class SaleDialogs {
             String problem = lineProblem(choice, quantity.getText(), price.getText(), baseSaleTotal);
             submit.setDisable(problem != null);
             issue.setText(choice == null || problem == null ? "" : problem);
-            estimate.setText(problem == null
-                    ? "Line total: " + money(
-                            parsePrice(price.getText()).multiply(BigDecimal.valueOf(currentQty)),
-                            sale.currencyCode())
-                    : "Line total: —");
+            if (problem == null) {
+                BigDecimal unit = parsePrice(price.getText());
+                BigDecimal lineTotal = unit.multiply(BigDecimal.valueOf(currentQty));
+                breakdownLabel.setText(currentQty + " × " + money(unit, sale.currencyCode()));
+                estimateValue.setText(money(lineTotal, sale.currencyCode()));
+            } else {
+                breakdownLabel.setText(choice == null ? "Select a product first" : "Check quantity & price");
+                estimateValue.setText("—");
+            }
         };
 
         minusQty.setOnAction(e -> {
@@ -220,15 +253,17 @@ final class SaleDialogs {
                 quantity.setText("1");
             }
             if (choice == null) {
-                note.setText("Select a product to view available stock.");
+                selectedTitle.setText("No product selected");
+                selectedMeta.setText("Choose an item from the catalog list above to configure quantity and price.");
             } else {
                 Product product = choice.product();
                 if (!editing && "MAD".equals(sale.currencyCode()) && product.sellingPriceMad() != null) {
                     price.setText(product.sellingPriceMad().stripTrailingZeros().toPlainString());
                 }
-                note.setText(choice.onHand() + " on hand · " + choice.alreadyInOtherLines() + " in other draft lines"
-                        + (product.tracksSerials() ? " · Serial numbers chosen at confirmation."
-                        : !"MAD".equals(sale.currencyCode()) ? " · Enter unit price in " + sale.currencyCode() + "." : "."));
+                selectedTitle.setText(product.name() + " (" + product.sku() + ")");
+                selectedMeta.setText(choice.onHand() + " on hand  ·  " + choice.alreadyInOtherLines() + " in other draft lines"
+                        + (product.tracksSerials() ? "  ·  Serial units chosen at confirmation"
+                        : !"MAD".equals(sale.currencyCode()) ? "  ·  Enter unit price in " + sale.currencyCode() : ""));
             }
             validate.run();
         });
@@ -236,12 +271,18 @@ final class SaleDialogs {
         price.textProperty().addListener((obs, oldValue, newValue) -> validate.run());
         validate.run();
 
-        VBox content = new VBox(11);
-        content.setPadding(new Insets(12, 0, 4, 0));
+        VBox content = new VBox(12);
+        content.setPadding(new Insets(4, 0, 4, 0));
         if (!editing) {
             content.getChildren().add(field("Find a product", search));
         }
-        content.getChildren().addAll(picker, note, bar(field("Quantity", qtyControl), priceBox), estimate, issue, loadError);
+        content.getChildren().addAll(
+                picker,
+                selectionStrip,
+                bar(field("Quantity", qtyControl), priceBox),
+                summaryBox,
+                issue,
+                loadError);
 
         dialog.getDialogPane().setContent(content);
         dialog.setResultConverter(pressed -> pressed == submitType
@@ -288,21 +329,48 @@ final class SaleDialogs {
     Optional< Map< Long, List< String > > > confirm(Window owner, Sale sale) {
         ButtonType confirm = action("Confirm sale");
         Dialog< Map< Long, List< String > > > dialog = dialog(owner, "Confirm sale #" + sale.id(), confirm);
-        
         var submit = dialog.getDialogPane().lookupButton(confirm);
-        
-        // ... the rest of your code remains exactly the same
         List<Line> tracked = sale.items().stream().filter(Line::tracksSerials).toList();
 
-        Label note = small("Confirming deducts stock immediately. Mark the sale handed over only after the customer receives the items.");
-        note.setWrapText(true);
+        int lineCount = sale.items().size();
+        int totalUnits = sale.items().stream().mapToInt(Line::quantity).sum();
+
+        Label totalEyebrow = new Label("ORDER TOTAL");
+        totalEyebrow.getStyleClass().add("sale-eyebrow");
+        Label heroAmount = new Label(money(sale.totalCurrency(), sale.currencyCode()));
+        heroAmount.getStyleClass().add("sale-confirm-amount");
+
+        Label orderMeta = new Label(lineCount + " item(s)  ·  " + totalUnits + " unit(s)");
+        orderMeta.getStyleClass().add("sale-pill-neutral");
+        Label dateMeta = small("Sale date: " + SalesView.formatDate(sale.saleDate()));
+
+        Region heroSpacer = new Region();
+        HBox.setHgrow(heroSpacer, Priority.ALWAYS);
+        VBox rightMeta = new VBox(5, orderMeta, dateMeta);
+        rightMeta.setAlignment(Pos.CENTER_RIGHT);
+
+        HBox heroCard = new HBox(12,
+                new VBox(3, totalEyebrow, heroAmount),
+                heroSpacer,
+                rightMeta);
+        heroCard.getStyleClass().add("sale-confirm-hero");
+        heroCard.setAlignment(Pos.CENTER_LEFT);
+
+        VBox stockNotice = new VBox(3,
+                heading("Inventory deduction notice"),
+                small("Confirming deducts stock immediately. Mark the sale as handed over only after the customer receives the items."));
+        stockNotice.getStyleClass().add("sale-callout-amber");
+        stockNotice.getChildren().forEach(node -> {
+            if (node instanceof Label lbl) lbl.setWrapText(true);
+        });
+
         Label issue = new Label();
         issue.getStyleClass().add("sale-dialog-error");
         issue.setWrapText(true);
         issue.managedProperty().bind(issue.textProperty().isNotEmpty());
 
-        VBox content = new VBox(11, heading("Order total:  " + money(sale.totalCurrency(), sale.currencyCode())), note);
-        content.setPadding(new Insets(12, 0, 4, 0));
+        VBox content = new VBox(12, heroCard, stockNotice);
+        content.setPadding(new Insets(4, 0, 4, 0));
 
         Map<Long, ObservableSet<String>> selections = new LinkedHashMap<>();
         Map<Long, ListView<String>> selectors = new LinkedHashMap<>();
@@ -515,9 +583,12 @@ final class SaleDialogs {
         var pane = dialog.getDialogPane();
         SalesView.applyStyles(pane);
         pane.getStyleClass().add("sales-dialog");
-        pane.setPrefWidth(650);
+        pane.setPrefWidth(640);
         pane.getButtonTypes().setAll(ButtonType.CANCEL, action);
-        pane.lookupButton(action).getStyleClass().add("sale-primary");
+        Node confirmBtn = pane.lookupButton(action);
+        if (confirmBtn != null) confirmBtn.getStyleClass().add("sale-primary");
+        Node cancelBtn = pane.lookupButton(ButtonType.CANCEL);
+        if (cancelBtn != null) cancelBtn.getStyleClass().add("sale-secondary");
         return dialog;
     }
 }

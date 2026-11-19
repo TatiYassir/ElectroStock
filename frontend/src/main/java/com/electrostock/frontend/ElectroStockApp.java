@@ -4,7 +4,9 @@ import com.electrostock.frontend.view.AppSidebar;
 import com.electrostock.frontend.view.DashboardView;
 import com.electrostock.frontend.view.ProductsView;
 import com.electrostock.frontend.view.PurchasesView;
+import com.electrostock.frontend.view.ReportsView;
 import com.electrostock.frontend.view.SalesView;
+import com.electrostock.frontend.view.StockView;
 import com.electrostock.frontend.view.SuppliersView;
 
 import javafx.application.Application;
@@ -24,6 +26,8 @@ public class ElectroStockApp extends Application {
     private SalesView sales;
     private PurchasesView purchases;
     private SuppliersView suppliers;
+    private StockView stock;
+    private ReportsView reports;
 
     @Override
     public void start(Stage stage) {
@@ -67,10 +71,21 @@ public class ElectroStockApp extends Application {
                 purchases.showList();
                 showPage(page, purchases);
             }
+            case "Stock" -> {
+                if (stock == null) stock = new StockView();
+                showPage(page, stock);
+                stock.onOpen();
+            }
             case "Suppliers" -> {
                 if (suppliers == null) suppliers = new SuppliersView();
                 showPage(page, suppliers);
                 suppliers.onOpen();
+            }
+
+            case "Reports" -> {
+                if (reports == null) reports = new ReportsView();
+                showPage(page, reports);
+                reports.onOpen();
             }
 
             default -> showPage(page, new Label(page));

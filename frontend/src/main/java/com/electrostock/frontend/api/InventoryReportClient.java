@@ -15,8 +15,8 @@ import tools.jackson.databind.json.JsonMapper;
 
 public class InventoryReportClient {
 
-    private static final URI REPORTS_URI =
-            URI.create("http://localhost:8080/api/reports/");
+    private static final URI API_URI = URI.create("http://localhost:8080/api/");
+    private static final URI REPORTS_URI = API_URI.resolve("reports/");
 
     public record LowStockItem(
             long productId,
@@ -46,8 +46,28 @@ public class InventoryReportClient {
         return fetchRows("stock-movements/recent", StockActivity[].class);
     }
 
+    public record StockMovement(
+            long id,
+            String movementType,
+            int quantityChange,
+            BigDecimal valueChangeMad,
+            LocalDateTime movementAt,
+            String serialNumber,
+            String adjustmentReason,
+            String explanation,
+            Long reversalOfMovementId) {}
+
+    public CompletableFuture<List<StockMovement>> fetchStockMovements(long productId) {
+        URI endpoint = API_URI.resolve("products/" + productId + "/stock-movements");
+        return fetchRows(endpoint, StockMovement[].class);
+    }
+
     private <T> CompletableFuture<List<T>> fetchRows(String path, Class<T[]> rowType) {
-        HttpRequest request = HttpRequest.newBuilder(REPORTS_URI.resolve(path))
+        return fetchRows(REPORTS_URI.resolve(path), rowType);
+    }
+
+    private <T> CompletableFuture<List<T>> fetchRows(URI endpoint, Class<T[]> rowType) {
+        HttpRequest request = HttpRequest.newBuilder(endpoint)
                 .timeout(Duration.ofSeconds(10))
                 .header("Accept", "application/json")
                 .GET()
@@ -57,7 +77,7 @@ public class InventoryReportClient {
                 .thenApply(response -> {
                     if (response.statusCode() != 200) {
                         throw new IllegalStateException(
-                                "Report " + path + " returned HTTP " + response.statusCode());
+                                "GET " + endpoint.getPath() + " returned HTTP " + response.statusCode());
                     }
 
                     T[] rows = mapper.readValue(response.body(), rowType);

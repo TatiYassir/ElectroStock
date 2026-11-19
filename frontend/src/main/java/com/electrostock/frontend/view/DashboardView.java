@@ -46,10 +46,12 @@ import javafx.scene.shape.StrokeLineJoin;
 public class DashboardView extends VBox {
 
 	private long salesRequestNumber;
-    private static final String STOCK_GREEN = "#44B8A4";
-    private static final String STOCK_RED = "#FA7068";
-    private static final String STOCK_AMBER = "#EDAD48";
-    private static final int PROFIT_OVERVIEW_PAGE_SIZE = 9;
+    private static final String STOCK_GREEN = "#1FA37A";
+    private static final String STOCK_RED = "#E2574C";
+    private static final String STOCK_AMBER = "#F2A62C";
+    private static final int PROFIT_OVERVIEW_LIMIT = 5;
+    private static final String ACCENT = "#2D3FD3";
+    private static final String INK = "#14173A";
 
     private static final DateTimeFormatter DAY_LABEL =
             DateTimeFormatter.ofPattern("MMM d", Locale.ENGLISH);
@@ -80,8 +82,8 @@ public class DashboardView extends VBox {
         newPurchase.setOnAction(event -> onNewPurchase.run());
 
         newSale.setGraphic(icon("New sale", "white"));
-        newPurchase.setGraphic(icon("New purchase", "#09193D"));
-        Button refreshAll = new Button("Refresh all", icon("Refresh", "#09193D"));
+        newPurchase.setGraphic(icon("New purchase", INK));
+        Button refreshAll = new Button("Refresh all", icon("Refresh", INK));
         refreshAll.getStyleClass().add("secondary-action");
         refreshAll.disableProperty().bind(pendingReports.greaterThan(0));
         HBox pageHeader = new HBox(10, title, flexibleSpace(), refreshAll, newSale, newPurchase);
@@ -139,7 +141,6 @@ public class DashboardView extends VBox {
         refreshAll.fire();
         sceneProperty().addListener((obs, previous, scene) -> {
             if (scene != null) Platform.runLater(() -> {
-                decorateNavigation(scene);
                 if (pendingReports.get() == 0) fit.run();
             });
         });
@@ -193,28 +194,6 @@ public class DashboardView extends VBox {
         return badge;
     }
 
-    private void decorateNavigation(javafx.scene.Scene scene) {
-        // Navigation belongs to the application shell, outside the dashboard.
-        // Share the stylesheet with the scene so the sidebar gets its hover states.
-        String css = DashboardView.class.getResource("dashboard.css").toExternalForm();
-        if (!scene.getStylesheets().contains(css)) scene.getStylesheets().add(css);
-        for (var node : scene.getRoot().lookupAll(".button")) {
-            if (!(node instanceof Button button)) continue;
-            if (!List.of("Dashboard", "Products", "Purchases", "Sales", "Suppliers",
-                    "Stock", "Reports").contains(button.getText())) continue;
-            if (button.getParent() instanceof VBox sidebar
-                    && sidebar.getChildren().stream().anyMatch(child ->
-                            child instanceof Button b && "Dashboard".equals(b.getText()))) {
-                button.setGraphic(icon(button.getText(), "white"));
-                button.setGraphicTextGap(10);
-                button.setAlignment(Pos.CENTER_LEFT);
-                sidebar.setBackground(new javafx.scene.layout.Background(
-                        new javafx.scene.layout.BackgroundFill(Color.web("#09193D"),
-                                javafx.scene.layout.CornerRadii.EMPTY, Insets.EMPTY)));
-            }
-        }
-    }
-
     private StackPane icon(String name, String color) {
         String path = switch (name) {
             case "Refresh" -> "M20 9A8 8 0 1 0 20 15 M20 3V9H14";
@@ -250,7 +229,7 @@ public class DashboardView extends VBox {
     }
 
     private HBox sectionHeader(String text, javafx.scene.Node control) {
-        Label heading = new Label(text, icon("Reports", "#008C79"));
+        Label heading = new Label(text, icon("Reports", ACCENT));
         heading.setGraphicTextGap(9);
         heading.getStyleClass().add("section-heading");
 
@@ -377,17 +356,14 @@ public class DashboardView extends VBox {
     }
     private VBox createLowStockPanel() {
         Label heading = new Label("Stock availability");
-        heading.setStyle("-fx-font-size: 17px; -fx-font-weight: bold;");
+        heading.getStyleClass().add("panel-heading");
 
         HBox header = new HBox(heading);
         header.setAlignment(Pos.CENTER_LEFT);
 
         VBox content = new VBox();
         VBox panel = new VBox(10, header, content);
-        panel.setPadding(new Insets(14));
-        panel.setStyle(
-                "-fx-background-color: white; -fx-background-radius: 8;"
-                + "-fx-border-color: #D7DFE7; -fx-border-radius: 8;");
+        panel.getStyleClass().add("report-card");
 
         inventoryLoaders.add(() -> {
             pendingReports.set(pendingReports.get() + 1);
@@ -433,7 +409,7 @@ public class DashboardView extends VBox {
             column.setPercentWidth(50);
             cards.getColumnConstraints().add(column);
         }
-        cards.add(stockCount("Total products", total, -1, "#243B62"), 0, 0);
+        cards.add(stockCount("Total products", total, -1, "#2D3FD3"), 0, 0);
         cards.add(stockCount("In stock", healthy, total, STOCK_GREEN), 1, 0);
         cards.add(stockCount("Low stock", low, total, STOCK_AMBER), 0, 1);
         cards.add(stockCount("Out of stock", out, total, STOCK_RED), 1, 1);
@@ -459,7 +435,7 @@ public class DashboardView extends VBox {
         pen.setTextBaseline(javafx.geometry.VPos.CENTER);
 
         if (total == 0) {
-            pen.setStroke(Color.web("#E4E9EF"));
+            pen.setStroke(Color.web("#EFEAE0"));
             pen.setLineWidth(outer - inner);
             pen.strokeOval(center - mid, center - mid, 2 * mid, 2 * mid);
         }
@@ -491,7 +467,7 @@ public class DashboardView extends VBox {
             }
             if (sweep >= 36) {
                 double angle = Math.toRadians(start - sweep / 2);
-                pen.setFill(Color.web("#111C28"));
+                pen.setFill(Color.web("#14173A"));
                 pen.fillText(percentLabel(n, total), center + mid * Math.cos(angle),
                         center - mid * Math.sin(angle), outer - inner - 2);
             }
@@ -513,37 +489,56 @@ public class DashboardView extends VBox {
 
     private VBox stockCount(String title, int count, int total, String color) {
         Label caption = new Label(title);
-        caption.setStyle("-fx-font-size: 14px; -fx-text-fill: #182331;");
+        caption.getStyleClass().add("stock-count-caption");
         Label number = new Label(String.valueOf(count));
-        number.setStyle("-fx-font-size: 21px; -fx-font-weight: bold; -fx-text-fill: #101923;");
+        number.getStyleClass().add("stock-count-number");
         HBox values = new HBox(8, number);
         values.setAlignment(Pos.BASELINE_LEFT);
         if (total >= 0) {
             Label percent = new Label(percentLabel(count, total));
-            percent.setStyle("-fx-text-fill: #394757; -fx-font-size: 13px; -fx-font-weight: bold;");
+            percent.getStyleClass().add("stock-count-percent");
             values.getChildren().add(percent);
         }
         VBox card = new VBox(2, caption, values);
-        card.setPadding(new Insets(6, 11, 6, 11));
+        card.getStyleClass().add("stock-count-card");
         card.setMaxWidth(Double.MAX_VALUE);
-        card.setStyle("-fx-background-color: #F8FAFC; -fx-background-radius: 5;"
-                + "-fx-border-color: transparent transparent transparent " + color + ";"
-                + "-fx-border-width: 0 0 0 4;");
+        // Only the status colour stays inline; it depends on the card.
+        card.setStyle("-fx-border-color: transparent transparent transparent " + color + ";"
+                + "-fx-border-width: 0 0 0 4; -fx-border-radius: 2 0 0 2;");
         return card;
     }
 
     private VBox createMetricCard(String title, String value, boolean negative) {
         Label caption = new Label(title);
         caption.getStyleClass().add("metric-caption");
+        caption.setMinWidth(Region.USE_PREF_SIZE);
 
+        StackPane iconTile = new StackPane(icon(title, ACCENT));
+        iconTile.getStyleClass().add("metric-icon");
+        HBox top = new HBox(10, iconTile, caption);
+        top.setAlignment(Pos.CENTER_LEFT);
+
+        // "58,937.50 MAD" -> big number + small unit, so the whole amount always fits.
+        String unit = null;
+        if (value.endsWith(" MAD")) {
+            unit = "MAD";
+            value = value.substring(0, value.length() - 4);
+        }
         Label amount = new Label(value);
         amount.getStyleClass().add("metric-value");
         if (negative) amount.getStyleClass().add("negative");
+        amount.setMinWidth(Region.USE_PREF_SIZE);
 
-        VBox text = new VBox(4, caption, amount);
-        HBox contents = new HBox(10, icon(title, "#008C79"), text);
-        contents.setAlignment(Pos.CENTER_LEFT);
-        VBox card = new VBox(contents);
+        HBox valueRow = new HBox(5, amount);
+        valueRow.setAlignment(Pos.BASELINE_LEFT);
+        if (unit != null) {
+            Label unitLabel = new Label(unit);
+            unitLabel.getStyleClass().add("metric-unit");
+            unitLabel.setMinWidth(Region.USE_PREF_SIZE);
+            valueRow.getChildren().add(unitLabel);
+        }
+
+        VBox card = new VBox(10, top, valueRow);
         card.getStyleClass().add("metric-card");
         card.setPrefWidth(150);
         card.setMaxWidth(Double.MAX_VALUE);
@@ -602,11 +597,11 @@ public class DashboardView extends VBox {
 
     private BarChart<String, Number> createSalesChart(List<SalesDay> selectedDays) {
         CategoryAxis days = new CategoryAxis();
-        days.setTickLabelFill(Color.web("#192330"));
-        days.setTickLabelFont(javafx.scene.text.Font.font("System", javafx.scene.text.FontWeight.BOLD, 13));
+        days.setTickLabelFill(Color.web("#6B6F92"));
+        days.setTickLabelFont(javafx.scene.text.Font.font("System", javafx.scene.text.FontWeight.NORMAL, 12));
         NumberAxis amounts = new NumberAxis();
-        amounts.setTickLabelFill(Color.web("#192330"));
-        amounts.setTickLabelFont(javafx.scene.text.Font.font("System", javafx.scene.text.FontWeight.BOLD, 13));
+        amounts.setTickLabelFill(Color.web("#6B6F92"));
+        amounts.setTickLabelFont(javafx.scene.text.Font.font("System", javafx.scene.text.FontWeight.NORMAL, 12));
         amounts.setLabel("Amount (MAD)");
 
         BarChart<String, Number> chart = new BarChart<>(days, amounts);
@@ -631,15 +626,15 @@ public class DashboardView extends VBox {
 
             if (day.profitMad().signum() < 0) {
                 StackPane lossBar = new StackPane();
-                lossBar.setStyle("-fx-bar-fill: #F74436;");
+                lossBar.setStyle("-fx-bar-fill: " + STOCK_RED + ";");
                 profitPoint.setNode(lossBar);
             }
 
             profit.getData().add(profitPoint);
         }
 
-        colorSeries(revenue, "#1677ED");
-        colorSeries(profit, "#14C8A0");
+        colorSeries(revenue, "#3350E8");
+        colorSeries(profit, "#F2A62C");
         chart.getData().add(revenue);
         chart.getData().add(profit);
         return chart;
@@ -647,7 +642,7 @@ public class DashboardView extends VBox {
 
     private VBox createStockPanel() {
         VBox content = new VBox(12);
-        Label stockTitle = new Label("Stock on hand now", icon("Products", "#008C79"));
+        Label stockTitle = new Label("Stock on hand now", icon("Products", ACCENT));
         stockTitle.setGraphicTextGap(9);
         stockTitle.getStyleClass().add("section-heading");
         stockTitle.setMinHeight(34);
@@ -742,50 +737,46 @@ public class DashboardView extends VBox {
                 Locale.ENGLISH, "Net potential profit   %,.2f MAD", net));
         total.getStyleClass().add("profit-total");
 
-        List<StockItem> products = items.stream()
+        List<StockItem> withImpact = items.stream()
                 .filter(item -> item.potentialProfitMad().signum() != 0)
+                .toList();
+
+        if (withImpact.isEmpty()) {
+            rows.getChildren().setAll(total,
+                    new Label("No products with a potential gain or loss."));
+            return;
+        }
+
+        // Show only the products with the biggest impact (gain or loss);
+        // everything else is summed up in one line.
+        List<StockItem> top = withImpact.stream()
+                .sorted(Comparator.comparing((StockItem item) -> item.potentialProfitMad().abs())
+                        .reversed().thenComparing(StockItem::sku))
+                .limit(PROFIT_OVERVIEW_LIMIT)
                 .sorted(Comparator.comparing(StockItem::potentialProfitMad)
                         .thenComparing(StockItem::sku))
                 .toList();
 
-        rows.getChildren().setAll(total);
-
-        if (products.isEmpty()) {
-            rows.getChildren().add(new Label("No products with a potential gain or loss."));
-        } else if (products.size() <= PROFIT_OVERVIEW_PAGE_SIZE) {
-            rows.getChildren().add(createProfitChart(products));
-        } else {
-            addProfitOverviewPages(rows, total, products);
-        }
-    }
-
-    private void addProfitOverviewPages(VBox rows, Label total, List<StockItem> products) {
-        int pageCount = (products.size() - 1) / PROFIT_OVERVIEW_PAGE_SIZE + 1;
-        var page = new javafx.beans.property.SimpleIntegerProperty(0);
-        Button previous = new Button("Previous");
-        Button next = new Button("Next");
-        Label pageLabel = new Label();
-        StackPane chartSlot = new StackPane();
-        HBox header = new HBox(8, total, flexibleSpace(), previous, pageLabel, next);
+        HBox header = new HBox(8, total, flexibleSpace());
         header.setAlignment(Pos.CENTER_LEFT);
 
-        previous.disableProperty().bind(page.isEqualTo(0));
-        next.disableProperty().bind(page.isEqualTo(pageCount - 1));
-        previous.setOnAction(event -> page.set(page.get() - 1));
-        next.setOnAction(event -> page.set(page.get() + 1));
+        int others = withImpact.size() - top.size();
+        if (others > 0) {
+            BigDecimal othersProfit = withImpact.stream()
+                    .filter(item -> !top.contains(item))
+                    .map(StockItem::potentialProfitMad)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            Label more = new Label(String.format(Locale.ENGLISH,
+                    "+%d other product%s  %s%,.2f MAD", others, others == 1 ? "" : "s",
+                    othersProfit.signum() > 0 ? "+" : "", othersProfit));
+            more.getStyleClass().add("profit-more");
+            more.setTooltip(new javafx.scene.control.Tooltip(
+                    "Combined potential profit of the other products. "
+                    + "Use Largest gains / Largest losses to see them."));
+            header.getChildren().add(more);
+        }
 
-        // Use one MAD scale across pages so bar lengths stay comparable.
-        Runnable renderPage = () -> {
-            int index = page.get();
-            int from = index * PROFIT_OVERVIEW_PAGE_SIZE;
-            int to = Math.min(from + PROFIT_OVERVIEW_PAGE_SIZE, products.size());
-            pageLabel.setText((index + 1) + " / " + pageCount);
-            chartSlot.getChildren().setAll(
-                    createProfitChart(products.subList(from, to), products));
-        };
-        page.addListener((obs, oldPage, newPage) -> renderPage.run());
-        renderPage.run();
-        rows.getChildren().setAll(header, chartSlot);
+        rows.getChildren().setAll(header, createProfitChart(top));
     }
 
     private void updateStockProfitRows(
@@ -817,8 +808,8 @@ public class DashboardView extends VBox {
     private Region createProfitChart(List<StockItem> products, List<StockItem> scaleProducts) {
         boolean compact = products.size() > 5;
         NumberAxis amounts = new NumberAxis();
-        amounts.setTickLabelFill(Color.web("#192330"));
-        amounts.setTickLabelFont(javafx.scene.text.Font.font("System", javafx.scene.text.FontWeight.BOLD, 13));
+        amounts.setTickLabelFill(Color.web("#6B6F92"));
+        amounts.setTickLabelFont(javafx.scene.text.Font.font("System", javafx.scene.text.FontWeight.NORMAL, 12));
         amounts.setLabel("Potential profit (MAD)");
         amounts.setForceZeroInRange(true);
         amounts.setMinorTickVisible(false);
@@ -856,7 +847,7 @@ public class DashboardView extends VBox {
         amounts.widthProperty().addListener((obs, oldWidth, width) -> scale.run());
 
         CategoryAxis skus = new CategoryAxis();
-        skus.setTickLabelFill(Color.web("#192330"));
+        skus.setTickLabelFill(Color.web("#6B6F92"));
         skus.setTickLabelFont(javafx.scene.text.Font.font(
                 "System", javafx.scene.text.FontWeight.BOLD, compact ? 12 : 13));
 
@@ -887,18 +878,24 @@ public class DashboardView extends VBox {
             Label value = new Label(formatted);
             value.getStyleClass().add("profit-bar-value");
             value.setMouseTransparent(true);
-            value.setStyle("-fx-text-fill: #101923; -fx-font-size: "
+            value.setMinWidth(Region.USE_PREF_SIZE);
+            value.setMaxWidth(Region.USE_PREF_SIZE);
+            value.setStyle("-fx-text-fill: #14173A; -fx-font-size: "
                     + (compact ? 12 : 13) + "px; -fx-font-weight: bold;");
 
             StackPane bar = new StackPane(value);
-            bar.setAlignment(loss ? Pos.CENTER_LEFT : Pos.CENTER_RIGHT);
-            bar.setPadding(new Insets(0, 5, 0, 5));
+            bar.setAlignment(Pos.CENTER);
             bar.setStyle("-fx-bar-fill: " + (loss ? STOCK_RED : STOCK_GREEN) + ";");
 
-            // Keep the bar proportional even when the amount is too small for text.
-            value.visibleProperty().bind(javafx.beans.binding.Bindings.createBooleanBinding(
-                    () -> bar.getWidth() >= value.prefWidth(-1) + 10,
-                    bar.widthProperty(), value.fontProperty()));
+            // The amount sits inside the bar's far end when it fits,
+            // otherwise just outside it, so small bars stay readable.
+            value.translateXProperty().bind(javafx.beans.binding.Bindings.createDoubleBinding(() -> {
+                double labelWidth = value.prefWidth(-1);
+                double side = loss ? -1 : 1;
+                double inside = bar.getWidth() / 2 - labelWidth / 2 - 6;
+                double outside = bar.getWidth() / 2 + labelWidth / 2 + 6;
+                return side * (bar.getWidth() >= labelWidth + 12 ? inside : outside);
+            }, bar.widthProperty(), value.fontProperty()));
 
             String detail = product.sku() + " · " + formatted + " MAD";
             javafx.scene.control.Tooltip.install(bar, new javafx.scene.control.Tooltip(detail));

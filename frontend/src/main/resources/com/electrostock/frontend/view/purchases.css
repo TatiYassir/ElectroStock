@@ -2,172 +2,666 @@
 .purchases-page, .purchases-dialog {
     -fx-font-family: "Segoe UI";
     -fx-font-size: 13px;
-    -fx-text-background-color: #14223B;
+    -fx-text-background-color: #0F172A;
 }
+
 .purchases-page {
-    -fx-background-color: #F2F5FA;
-    -fx-padding: 20;
-    -fx-spacing: 14;
+    -fx-background-color: #F4F7FB;
+    -fx-padding: 22;
+    -fx-spacing: 16;
 }
+
 .purchases-page .purchase-page-title {
-    -fx-font-size: 30px;
+    -fx-font-size: 28px;
     -fx-font-weight: bold;
     -fx-text-fill: #09193D;
 }
+
 .purchases-page .purchase-muted, .purchases-dialog .purchase-muted {
-    -fx-text-fill: #485B76;
+    -fx-text-fill: #52647C;
+    -fx-font-size: 12px;
 }
+
+.purchases-page .purchase-eyebrow, .purchases-dialog .purchase-eyebrow {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #0F766E;
+}
+
+.purchases-dialog .purchase-eyebrow-danger {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #B91C1C;
+}
+
 .purchases-page .purchase-card {
-    -fx-background-color: white;
-    -fx-background-radius: 8;
-    -fx-border-color: #CCD8E7;
-    -fx-border-radius: 8;
-    -fx-padding: 14;
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 12;
+    -fx-border-color: #D6E0EC;
+    -fx-border-radius: 12;
+    -fx-padding: 18;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.04), 10, 0, 0, 2);
 }
+
+/* Centered New Purchase Setup Card */
+.purchases-page .purchase-setup-card {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 14;
+    -fx-border-color: #D6E0EC;
+    -fx-border-radius: 14;
+    -fx-padding: 28;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.08), 22, 0, 0, 6);
+}
+
+.purchases-page .purchase-setup-title {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #09193D;
+}
+
 .purchases-page .purchase-card-title, .purchases-dialog .purchase-card-title {
     -fx-font-size: 15px;
     -fx-font-weight: bold;
-    -fx-text-fill: #102447;
+    -fx-text-fill: #0F2342;
 }
+
 .purchases-page .purchase-field-label, .purchases-dialog .purchase-field-label {
     -fx-font-weight: bold;
-    -fx-text-fill: #1B3457;
+    -fx-text-fill: #1E3A5F;
 }
+
+/* Callout Boxes */
+.purchases-page .purchase-callout-info, .purchases-dialog .purchase-callout-info {
+    -fx-background-color: #F0FDFA;
+    -fx-border-color: #99F6E4;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 11 14;
+}
+
+.purchases-dialog .purchase-callout-amber {
+    -fx-background-color: #FFFBEB;
+    -fx-border-color: #FDE68A;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 11 14;
+}
+
+.purchases-dialog .purchase-callout-danger {
+    -fx-background-color: #FEF2F2;
+    -fx-border-color: #FECACA;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 11 14;
+}
+
+/* Dialog Chrome */
+.purchases-dialog {
+    -fx-background-color: #FFFFFF;
+}
+
+.purchases-dialog:header .header-panel {
+    -fx-background-color: #F8FAFC;
+    -fx-border-color: transparent transparent #E2E8F0 transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 16 22 14 22;
+}
+
+.purchases-dialog:header .header-panel .label {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #09193D;
+}
+
+.purchases-dialog > .content.label,
+.purchases-dialog > .content {
+    -fx-padding: 14 22 12 22;
+}
+
+.purchases-dialog > .button-bar {
+    -fx-background-color: #F8FAFC;
+    -fx-border-color: #E2E8F0 transparent transparent transparent;
+    -fx-border-width: 1 0 0 0;
+    -fx-padding: 12 22 16 22;
+}
+
+.purchases-dialog .purchase-confirm-dialog-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #09193D;
+}
+
+.purchases-dialog .purchase-confirm-dialog-body {
+    -fx-font-size: 13px;
+    -fx-text-fill: #334155;
+}
+
+/* Confirm Receipt Hero Card */
+.purchases-dialog .purchase-confirm-hero {
+    -fx-background-color: #F8FAFC;
+    -fx-border-color: #CBD5E1;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-padding: 14 18;
+}
+
+.purchases-dialog .purchase-confirm-amount {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #09193D;
+}
+
+.purchases-dialog .purchase-pill-neutral {
+    -fx-background-color: #E2E8F0;
+    -fx-text-fill: #1E293B;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-padding: 3 10;
+    -fx-background-radius: 12;
+}
+
+/* Add Product Dialog Cards & Tags */
+.purchases-dialog .purchase-sku-tag {
+    -fx-background-color: #F1F5F9;
+    -fx-border-color: #CBD5E1;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-padding: 1 6;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #334155;
+}
+
+.purchases-dialog .purchase-meta-tag {
+    -fx-background-color: #EFF6FF;
+    -fx-text-fill: #1D4ED8;
+    -fx-padding: 1 7;
+    -fx-background-radius: 4;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.purchases-dialog .purchase-selection-strip {
+    -fx-background-color: #F8FAFC;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 9 13;
+}
+
+.purchases-dialog .purchase-line-summary-box {
+    -fx-background-color: #F0FDFA;
+    -fx-border-color: #99F6E4;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 10 14;
+}
+
+.purchases-dialog .purchase-total-highlight {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #0F766E;
+}
+
+/* Interactive KPI Cards */
+.purchases-page .purchase-kpi-card {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 10;
+    -fx-border-color: #D6E0EC;
+    -fx-border-radius: 10;
+    -fx-padding: 12 16;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.03), 8, 0, 0, 1);
+}
+
+.purchases-page .purchase-kpi-card:hover {
+    -fx-border-color: #0F766E;
+    -fx-background-color: #F8FCFB;
+}
+
+.purchases-page .purchase-kpi-card-active {
+    -fx-border-color: #0F766E;
+    -fx-border-width: 1.5;
+    -fx-background-color: #F0FDFA;
+}
+
+.purchases-page .purchase-kpi-value {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #09193D;
+}
+
+/* Lifecycle Stepper */
+.purchases-page .purchase-stepper {
+    -fx-padding: 2 0 4 0;
+}
+
+.purchases-page .purchase-step {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-padding: 4 11;
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+}
+
+.purchases-page .purchase-step-done {
+    -fx-background-color: #DCFCE7;
+    -fx-border-color: #86EFAC;
+    -fx-text-fill: #166534;
+}
+
+.purchases-page .purchase-step-current {
+    -fx-background-color: #E0F2FE;
+    -fx-border-color: #7DD3FC;
+    -fx-text-fill: #075985;
+}
+
+.purchases-page .purchase-step-pending {
+    -fx-background-color: #F1F5F9;
+    -fx-border-color: #CBD5E1;
+    -fx-text-fill: #64748B;
+}
+
+.purchases-page .purchase-step-cancelled {
+    -fx-background-color: #FEE2E2;
+    -fx-border-color: #FCA5A5;
+    -fx-text-fill: #991B1B;
+}
+
+/* Buttons */
 .purchases-page .button, .purchases-dialog .button {
     -fx-cursor: hand;
-    -fx-background-radius: 6;
-    -fx-border-radius: 6;
+    -fx-background-radius: 7;
+    -fx-border-radius: 7;
     -fx-font-weight: bold;
-    -fx-padding: 8 13;
+    -fx-padding: 8 15;
 }
+
 .purchases-page .purchase-primary, .purchases-dialog .purchase-primary {
-    -fx-background-color: #00786C;
+    -fx-background-color: #0F766E;
     -fx-border-color: transparent;
-    -fx-text-fill: white;
+    -fx-text-fill: #FFFFFF;
 }
+
 .purchases-page .purchase-primary:hover, .purchases-dialog .purchase-primary:hover {
-    -fx-background-color: #006358;
+    -fx-background-color: #115E59;
 }
-.purchases-page .purchase-secondary {
-    -fx-background-color: white;
-    -fx-border-color: #ACBDD3;
-    -fx-text-fill: #15294C;
+
+.purchases-page .purchase-secondary, .purchases-dialog .purchase-secondary {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #CBD5E1;
+    -fx-text-fill: #1E293B;
 }
-.purchases-page .purchase-secondary:hover {
-    -fx-background-color: #EAF1FA;
+
+.purchases-page .purchase-secondary:hover, .purchases-dialog .purchase-secondary:hover {
+    -fx-background-color: #F1F5F9;
 }
+
+.purchases-page .purchase-chip-btn {
+    -fx-background-color: #F8FAFC;
+    -fx-border-color: #CBD5E1;
+    -fx-text-fill: #334155;
+    -fx-padding: 8 12;
+}
+
+.purchases-page .purchase-chip-btn:hover {
+    -fx-background-color: #F1F5F9;
+}
+
+.purchases-page .purchase-chip-btn-active {
+    -fx-background-color: #F0FDFA;
+    -fx-border-color: #0F766E;
+    -fx-text-fill: #0F766E;
+}
+
 .purchases-page .purchase-danger {
-    -fx-background-color: #FFF3F2;
-    -fx-border-color: #E3AFAB;
-    -fx-text-fill: #972C29;
+    -fx-background-color: #FFF5F5;
+    -fx-border-color: #FEB2B2;
+    -fx-text-fill: #9B2C2C;
 }
+
 .purchases-page .purchase-danger:hover {
-    -fx-background-color: #FBE2E0;
+    -fx-background-color: #FED7D7;
 }
+
+.purchases-dialog .purchase-danger-solid {
+    -fx-background-color: #DC2626;
+    -fx-border-color: transparent;
+    -fx-text-fill: #FFFFFF;
+}
+
+.purchases-dialog .purchase-danger-solid:hover {
+    -fx-background-color: #B91C1C;
+}
+
+.purchases-dialog .purchase-qty-btn {
+    -fx-background-color: #F1F5F9;
+    -fx-border-color: #CBD5E1;
+    -fx-text-fill: #0F172A;
+    -fx-padding: 4 10;
+    -fx-font-size: 13px;
+}
+
+.purchases-dialog .purchase-qty-btn:hover {
+    -fx-background-color: #E2E8F0;
+}
+
 .purchases-page .button:focused, .purchases-dialog .button:focused {
-    -fx-border-color: #398ECD;
+    -fx-border-color: #0284C7;
 }
+
+/* Inputs */
 .purchases-page .text-field, .purchases-page .combo-box, .purchases-page .date-picker,
 .purchases-dialog .text-field, .purchases-dialog .text-area, .purchases-dialog .list-view {
-    -fx-background-color: white;
-    -fx-border-color: #A7B9D0;
-    -fx-border-radius: 5;
-    -fx-background-radius: 5;
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #CBD5E1;
+    -fx-border-radius: 7;
+    -fx-background-radius: 7;
 }
+
+.purchases-page .combo-box, .purchases-page .date-picker {
+    -fx-padding: 3 6;
+}
+
+.purchases-page .date-picker > .text-field {
+    -fx-border-color: transparent;
+    -fx-background-color: transparent;
+}
+
+.purchases-page .date-picker > .arrow-button,
+.purchases-page .combo-box > .arrow-button {
+    -fx-background-color: transparent;
+}
+
 .purchases-page .text-field, .purchases-dialog .text-field {
-    -fx-padding: 7 9;
-    -fx-prompt-text-fill: #617694;
+    -fx-padding: 8 11;
+    -fx-prompt-text-fill: #64748B;
 }
+
 .purchases-page .text-field:focused, .purchases-page .combo-box:focused, .purchases-page .date-picker:focused,
 .purchases-dialog .text-field:focused, .purchases-dialog .text-area:focused,
 .purchases-dialog .list-view:focused {
-    -fx-border-color: #398ECD;
+    -fx-border-color: #0F766E;
 }
+
+/* Metrics & Summary */
 .purchases-page .purchase-metric {
-    -fx-background-color: #F3F7FC;
-    -fx-background-radius: 6;
-    -fx-padding: 8 11;
+    -fx-background-color: #F8FAFC;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 10 14;
 }
+
 .purchases-page .purchase-metric-value {
-    -fx-text-fill: #102447;
-    -fx-font-size: 15px;
+    -fx-text-fill: #0F172A;
+    -fx-font-size: 16px;
     -fx-font-weight: bold;
 }
+
+.purchases-page .purchase-items-footer {
+    -fx-background-color: #F8FAFC;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 10 14;
+}
+
+/* Feedback Banners */
 .purchases-page .purchase-notice, .purchases-page .purchase-error {
-    -fx-padding: 8 11;
-    -fx-background-radius: 6;
-    -fx-border-radius: 6;
-}
-.purchases-page .purchase-notice {
-    -fx-background-color: #E7F4EF;
-    -fx-border-color: #ADCBBC;
-    -fx-text-fill: #124E43;
-}
-.purchases-page .purchase-error {
-    -fx-background-color: #FFF2F2;
-    -fx-border-color: #E6B1AF;
-    -fx-text-fill: #8D2928;
-}
-.purchases-dialog .purchase-dialog-error {
-    -fx-text-fill: #8D2928;
-}
-.purchases-page .purchase-status {
+    -fx-padding: 10 14;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
     -fx-font-weight: bold;
-    -fx-font-size: 12px;
-    -fx-background-radius: 12;
-    -fx-padding: 3 9;
-    -fx-background-color: #EEF2F8;
-    -fx-text-fill: #253D60;
 }
+
+.purchases-page .purchase-notice {
+    -fx-background-color: #ECFDF5;
+    -fx-border-color: #A7F3D0;
+    -fx-text-fill: #065F46;
+}
+
+.purchases-page .purchase-error {
+    -fx-background-color: #FEF2F2;
+    -fx-border-color: #FECACA;
+    -fx-text-fill: #991B1B;
+}
+
+.purchases-dialog .purchase-dialog-error {
+    -fx-text-fill: #991B1B;
+    -fx-font-weight: bold;
+}
+
+/* Compact Status & Serial Pills */
+.purchases-page .purchase-status {
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-border-width: 1;
+    -fx-padding: 3 10;
+}
+
+.purchases-page .purchase-status-text {
+    -fx-font-weight: bold;
+    -fx-font-size: 11.5px;
+}
+
+.purchases-page .purchase-status-dot {
+    -fx-background-radius: 999;
+}
+
+.purchases-page .purchase-status-draft {
+    -fx-background-color: #F1F5F9;
+    -fx-border-color: #CBD5E1;
+}
+.purchases-page .purchase-status-text-draft {
+    -fx-text-fill: #334155;
+}
+.purchases-page .purchase-status-dot-draft {
+    -fx-background-color: #64748B;
+}
+
 .purchases-page .purchase-status-confirmed {
-    -fx-background-color: #DCF2E9;
-    -fx-text-fill: #12594C;
+    -fx-background-color: #ECFDF5;
+    -fx-border-color: #A7F3D0;
 }
+.purchases-page .purchase-status-text-confirmed {
+    -fx-text-fill: #065F46;
+}
+.purchases-page .purchase-status-dot-confirmed {
+    -fx-background-color: #059669;
+}
+
 .purchases-page .purchase-status-cancelled {
-    -fx-background-color: #F9E3E2;
-    -fx-text-fill: #8D2928;
+    -fx-background-color: #FEF2F2;
+    -fx-border-color: #FECACA;
 }
+.purchases-page .purchase-status-text-cancelled {
+    -fx-text-fill: #991B1B;
+}
+.purchases-page .purchase-status-dot-cancelled {
+    -fx-background-color: #DC2626;
+}
+
+.purchases-dialog .purchase-pill {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 3 9;
+    -fx-background-radius: 10;
+}
+
+.purchases-dialog .purchase-pill-stock {
+    -fx-background-color: #DCFCE7;
+    -fx-text-fill: #166534;
+}
+
+.purchases-dialog .purchase-pill-low {
+    -fx-background-color: #FEF3C7;
+    -fx-text-fill: #92400E;
+}
+
+.purchases-dialog .purchase-pill-out {
+    -fx-background-color: #FEE2E2;
+    -fx-text-fill: #991B1B;
+}
+
+/* Modern Borderless-Column Tables */
 .purchases-page .purchase-table {
-    -fx-background-color: white;
-    -fx-border-color: #B8C7D9;
-    -fx-border-radius: 5;
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 9;
+    -fx-background-radius: 9;
+    -fx-table-cell-border-color: transparent;
     -fx-padding: 0;
 }
-.purchases-page .purchase-table .column-header-background,
-.purchases-page .purchase-table .column-header {
-    -fx-background-color: #E4ECF6;
+
+.purchases-page .purchase-table .column-header-background {
+    -fx-background-color: #F8FAFC;
+    -fx-background-radius: 9 9 0 0;
+    -fx-border-color: transparent transparent #E2E8F0 transparent;
+    -fx-border-width: 0 0 1 0;
 }
+
+.purchases-page .purchase-table .column-header,
+.purchases-page .purchase-table .column-header-background .filler,
+.purchases-page .purchase-table .show-hide-columns-button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-pref-height: 40;
+}
+
 .purchases-page .purchase-table .column-header .label {
     -fx-alignment: center-left;
-    -fx-text-fill: #102447;
+    -fx-text-fill: #475569;
+    -fx-font-size: 12px;
     -fx-font-weight: bold;
-    -fx-padding: 0 8;
+    -fx-padding: 0 14;
 }
-.purchases-page .purchase-table .column-header {
-    -fx-pref-height: 34;
-    -fx-border-color: #B8C7D9;
-    -fx-border-width: 0 1 1 0;
+
+.purchases-page .purchase-table .column-header.purchase-col-numeric .label {
+    -fx-alignment: center-right;
 }
+
+.purchases-page .purchase-table .column-header .arrow {
+    -fx-background-color: #0F766E;
+}
+
 .purchases-page .purchase-table .table-row-cell {
-    -fx-background-color: white;
-    -fx-cell-size: 36;
+    -fx-background-color: #FFFFFF;
+    -fx-cell-size: 48;
+    -fx-border-color: transparent transparent #F1F5F9 transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-background-insets: 0;
 }
+
 .purchases-page .purchase-table .table-row-cell:odd:filled {
-    -fx-background-color: #F5F8FC;
+    -fx-background-color: #FAFBFD;
 }
+
+.purchases-page .purchase-table .table-row-cell:filled:hover {
+    -fx-background-color: #EEF2F6;
+    -fx-background-insets: 3 6;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+}
+
 .purchases-page .purchase-table .table-row-cell:filled:selected {
-    -fx-background-color: #DCEFF2;
+    -fx-background-color: #E6F7F5;
+    -fx-background-insets: 3 6;
+    -fx-background-radius: 8;
+    -fx-border-color: transparent transparent #CCFBF1 transparent;
 }
+
+.purchases-page .purchase-table .table-row-cell:empty {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
 .purchases-page .purchase-table .table-row-cell:filled .table-cell {
-    -fx-border-color: #DFE7F1;
-    -fx-border-width: 0 1 1 0;
-    -fx-text-fill: #172B40;
-    -fx-padding: 0 8;
+    -fx-border-color: transparent;
+    -fx-background-color: transparent;
+    -fx-text-fill: #334155;
+    -fx-padding: 0 14;
 }
+
+.purchases-page .purchase-table .table-row-cell:filled .table-cell.purchase-cell-strong,
+.purchases-page .purchase-table .table-row-cell:filled .table-cell.purchase-cell-amount {
+    -fx-font-weight: bold;
+    -fx-text-fill: #09193D;
+}
+
+.purchases-page .purchase-currency-tag {
+    -fx-background-color: #F1F5F9;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+    -fx-padding: 2 8;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #334155;
+}
+
+.purchases-page .purchase-sku-cell-tag {
+    -fx-background-color: #F8FAFC;
+    -fx-border-color: #CBD5E1;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+    -fx-padding: 2 8;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1E293B;
+}
+
+/* Sleek Table Scrollbars */
+.purchases-page .purchase-table .scroll-bar:vertical,
+.purchases-page .purchase-table .scroll-bar:horizontal {
+    -fx-background-color: transparent;
+    -fx-padding: 2;
+}
+
+.purchases-page .purchase-table .scroll-bar:vertical {
+    -fx-pref-width: 10;
+}
+
+.purchases-page .purchase-table .scroll-bar:horizontal {
+    -fx-pref-height: 10;
+}
+
+.purchases-page .purchase-table .scroll-bar .track {
+    -fx-background-color: transparent;
+}
+
+.purchases-page .purchase-table .scroll-bar .thumb {
+    -fx-background-color: #CBD5E1;
+    -fx-background-radius: 99;
+}
+
+.purchases-page .purchase-table .scroll-bar .thumb:hover {
+    -fx-background-color: #94A3B8;
+}
+
+.purchases-page .purchase-table .scroll-bar .increment-button,
+.purchases-page .purchase-table .scroll-bar .decrement-button {
+    -fx-padding: 0;
+    -fx-pref-height: 0;
+    -fx-pref-width: 0;
+}
+
+.purchases-page .purchase-table .scroll-bar .increment-arrow,
+.purchases-page .purchase-table .scroll-bar .decrement-arrow {
+    -fx-shape: "";
+    -fx-padding: 0;
+}
+
 .purchases-dialog .list-cell:filled {
-    -fx-padding: 6 9;
+    -fx-padding: 9 12;
+    -fx-border-color: transparent transparent #E2E8F0 transparent;
 }
+
+.purchases-dialog .list-cell:filled:hover {
+    -fx-background-color: #F8FAFC;
+}
+
 .purchases-dialog .list-cell:filled:selected {
-    -fx-background-color: #DCEFF2;
-    -fx-text-fill: #172B40;
+    -fx-background-color: #E6FFFA;
+    -fx-text-fill: #0F172A;
 }

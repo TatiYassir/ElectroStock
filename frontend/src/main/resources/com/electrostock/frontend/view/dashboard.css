@@ -1,39 +1,49 @@
-/* ElectroStock dashboard */
+/* ElectroStock dashboard  -  "Majorelle" palette
+ *
+ *   ink        #14173A    text, headings
+ *   body       #2B2F55    secondary text
+ *   muted      #6B6F92    captions, axes
+ *   sand       #F5F2EA    page background
+ *   edge       #E6E0D2    card borders
+ *   majorelle  #2D3FD3    primary accent  (hover #2434B0, pressed #1B2790)
+ *   saffron    #F2A62C    secondary accent
+ *   zellige    #1FA37A    positive / in stock
+ *   terracotta #E2574C    negative / out of stock
+ */
 
 /* ---------- Page ---------- */
 .dashboard-page {
     -fx-font-family: "Segoe UI";
     -fx-font-size: 13px;
-    -fx-background-color: #F4F6FA;
-    -fx-text-background-color: #192330;
-    -fx-padding: 14 16 14 16;
-    -fx-spacing: 14;
+    -fx-background-color: #F5F2EA;
+    -fx-padding: 18 22 18 22;
+    -fx-spacing: 16;
 }
 
 .dashboard-page .label {
-    -fx-text-fill: #192330;
+    -fx-text-fill: #2B2F55;
 }
 
 .dashboard-page .page-heading {
-    -fx-font-size: 34px;
+    -fx-font-size: 30px;
     -fx-font-weight: bold;
-    -fx-text-fill: #101828;
+    -fx-text-fill: #14173A;
 }
 
 .dashboard-page .section-heading {
-    -fx-font-size: 21px;
+    -fx-font-size: 20px;
     -fx-font-weight: bold;
-    -fx-text-fill: #101828;
+    -fx-text-fill: #14173A;
 }
 
 .dashboard-page .panel-heading {
-    -fx-font-size: 17px;
+    -fx-font-size: 16px;
     -fx-font-weight: bold;
-    -fx-text-fill: #101828;
+    -fx-text-fill: #14173A;
 }
 
 .dashboard-page .empty-state {
-    -fx-text-fill: #5B6B7F;
+    -fx-text-fill: #6B6F92;
     -fx-padding: 10 2;
 }
 
@@ -43,43 +53,97 @@
     -fx-padding: 0;
 }
 
+/* Slim scrollbars */
+.dashboard-page .scroll-bar {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+.dashboard-page .scroll-bar:vertical { -fx-pref-width: 12; }
+.dashboard-page .scroll-bar:horizontal { -fx-pref-height: 12; }
+.dashboard-page .scroll-bar .track {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+.dashboard-page .scroll-bar .thumb {
+    -fx-background-color: #D5CEBB;
+    -fx-background-radius: 6;
+    -fx-background-insets: 2;
+}
+.dashboard-page .scroll-bar .thumb:hover {
+    -fx-background-color: #B9B19A;
+}
+.dashboard-page .scroll-bar .increment-button,
+.dashboard-page .scroll-bar .decrement-button {
+    -fx-padding: 0;
+    -fx-pref-height: 0;
+    -fx-pref-width: 0;
+    -fx-background-color: transparent;
+}
+.dashboard-page .scroll-bar .increment-arrow,
+.dashboard-page .scroll-bar .decrement-arrow {
+    -fx-shape: " ";
+    -fx-padding: 0;
+}
+
 /* ---------- Cards ---------- */
 .dashboard-page .report-card {
     -fx-background-color: white;
-    -fx-border-color: #D4DCE7;
-    -fx-background-radius: 12;
-    -fx-border-radius: 12;
-    -fx-padding: 14;
-    -fx-effect: dropshadow(gaussian, rgba(16, 24, 40, 0.06), 10, 0, 0, 2);
+    -fx-border-color: #E6E0D2;
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+    -fx-padding: 16;
+    -fx-effect: dropshadow(gaussian, rgba(20, 23, 58, 0.07), 14, 0, 0, 3);
 }
 
 .dashboard-page .metric-card {
-    -fx-background-color: white;
-    -fx-background-radius: 8;
-    -fx-border-color: #D7DFE7;
-    -fx-border-radius: 8;
+    -fx-background-color: #FBFAF6;
+    -fx-background-radius: 10;
+    -fx-border-color: #E6E0D2;
+    -fx-border-radius: 10;
     -fx-padding: 12;
-    -fx-effect: dropshadow(gaussian, rgba(16, 24, 40, 0.05), 6, 0, 0, 1);
+    -fx-cursor: hand;
 }
 
 .dashboard-page .metric-card:hover {
-    -fx-border-color: #7FCFC4;
-    -fx-background-color: #FAFEFD;
+    -fx-background-color: white;
+    -fx-border-color: #2D3FD3;
+    -fx-effect: dropshadow(gaussian, rgba(45, 63, 211, 0.18), 12, 0, 0, 3);
+}
+
+.dashboard-page .metric-icon {
+    -fx-background-color: #E9EBFB;
+    -fx-background-radius: 9;
+    -fx-min-width: 34;
+    -fx-min-height: 34;
+    -fx-pref-width: 34;
+    -fx-pref-height: 34;
+    -fx-max-width: 34;
+    -fx-max-height: 34;
+}
+
+.dashboard-page .metric-card:hover .metric-icon {
+    -fx-background-color: #D9DDF9;
 }
 
 .dashboard-page .metric-caption {
-    -fx-font-size: 13px;
-    -fx-text-fill: #3B4A5C;
+    -fx-font-size: 12px;
+    -fx-text-fill: #6B6F92;
 }
 
 .dashboard-page .metric-value {
-    -fx-font-size: 17px;
+    -fx-font-size: 19px;
     -fx-font-weight: bold;
-    -fx-text-fill: #172B40;
+    -fx-text-fill: #14173A;
+}
+
+.dashboard-page .metric-unit {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #6B6F92;
 }
 
 .dashboard-page .metric-value.negative {
-    -fx-text-fill: #A52F30;
+    -fx-text-fill: #C7443A;
 }
 
 /* ---------- Buttons ---------- */
@@ -87,153 +151,257 @@
 .dashboard-page .secondary-action {
     -fx-font-size: 14px;
     -fx-font-weight: bold;
-    -fx-padding: 8 18;
-    -fx-background-radius: 7;
-    -fx-border-radius: 7;
+    -fx-padding: 9 18;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
     -fx-border-width: 1;
+    -fx-graphic-text-gap: 8;
     -fx-cursor: hand;
 }
 
 .dashboard-page .primary-action {
-    -fx-background-color: #008578;
-    -fx-border-color: #008578;
+    -fx-background-color: linear-gradient(to bottom, #3A4DE0, #2D3FD3);
+    -fx-border-color: #2434B0;
     -fx-text-fill: white;
+    -fx-effect: dropshadow(gaussian, rgba(45, 63, 211, 0.30), 10, 0, 0, 3);
 }
-
 .dashboard-page .primary-action:hover {
-    -fx-background-color: #006E64;
-    -fx-border-color: #006E64;
+    -fx-background-color: linear-gradient(to bottom, #2F43D9, #2434B0);
+    -fx-effect: dropshadow(gaussian, rgba(45, 63, 211, 0.42), 14, 0, 0, 4);
 }
-
 .dashboard-page .primary-action:pressed {
-    -fx-background-color: #005A52;
+    -fx-background-color: #1B2790;
+    -fx-effect: null;
 }
 
 .dashboard-page .secondary-action {
     -fx-background-color: white;
-    -fx-border-color: #203450;
-    -fx-text-fill: #14263F;
+    -fx-border-color: #D9D2C0;
+    -fx-text-fill: #14173A;
 }
-
 .dashboard-page .secondary-action:hover {
-    -fx-background-color: #EDF3F7;
+    -fx-background-color: #F3F4FD;
+    -fx-border-color: #2D3FD3;
+}
+.dashboard-page .secondary-action:pressed {
+    -fx-background-color: #E4E7FA;
 }
 
-.dashboard-page .secondary-action:pressed {
-    -fx-background-color: #DCE6EE;
+.dashboard-page .primary-action:focused,
+.dashboard-page .secondary-action:focused {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+    -fx-border-color: #F2A62C;
+    -fx-border-width: 2;
 }
 
 .dashboard-page .primary-action:disabled,
 .dashboard-page .secondary-action:disabled {
-    -fx-opacity: 0.55;
+    -fx-opacity: 0.5;
 }
 
-.dashboard-page .period-selector,
-.dashboard-page .quiet-action {
-    -fx-background-color: white;
-    -fx-background-radius: 6;
-    -fx-border-color: #CDD6E1;
-    -fx-border-radius: 6;
+/* Small buttons (Retry, Previous, Next) */
+.dashboard-page .button {
     -fx-cursor: hand;
 }
 
+/* ---------- Period dropdown ---------- */
+.dashboard-page .period-selector,
+.dashboard-page .quiet-action {
+    -fx-background-color: white;
+    -fx-background-radius: 8;
+    -fx-border-color: #D9D2C0;
+    -fx-border-radius: 8;
+    -fx-cursor: hand;
+}
 .dashboard-page .period-selector:hover,
 .dashboard-page .quiet-action:hover {
-    -fx-background-color: #F1F6F9;
-    -fx-border-color: #008578;
+    -fx-background-color: #F3F4FD;
+    -fx-border-color: #2D3FD3;
 }
-
+.dashboard-page .period-selector:focused {
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+    -fx-border-color: #2D3FD3;
+}
+.dashboard-page .period-selector .list-cell {
+    -fx-text-fill: #14173A;
+    -fx-background-color: transparent;
+}
+.dashboard-page .period-selector .arrow-button {
+    -fx-background-color: transparent;
+}
+.dashboard-page .period-selector .arrow {
+    -fx-background-color: #6B6F92;
+}
 .dashboard-page .quiet-action {
     -fx-text-fill: #42546A;
     -fx-padding: 4 10;
 }
-
 .dashboard-page .quiet-action:disabled {
     -fx-opacity: 0.45;
 }
 
-/* ---------- Segmented toggle (Overview / gains / losses) ---------- */
+.combo-box-popup > .list-view {
+    -fx-background-color: white;
+    -fx-background-radius: 8;
+    -fx-border-color: #D9D2C0;
+    -fx-border-radius: 8;
+    -fx-effect: dropshadow(gaussian, rgba(20, 23, 58, 0.14), 14, 0, 0, 4);
+}
+.combo-box-popup > .list-view .list-cell {
+    -fx-text-fill: #14173A;
+    -fx-padding: 8 14;
+}
+.combo-box-popup > .list-view .list-cell:filled:hover {
+    -fx-background-color: #E9EBFB;
+    -fx-text-fill: #1B2790;
+}
+.combo-box-popup > .list-view .list-cell:filled:selected {
+    -fx-background-color: #2D3FD3;
+    -fx-text-fill: white;
+}
+
+/* ---------- Segmented toggle ---------- */
 .dashboard-page .segment-bar {
-    -fx-background-color: #EDF2F5;
-    -fx-background-radius: 6;
-    -fx-border-color: #D4DCE7;
-    -fx-border-radius: 6;
-    -fx-padding: 2;
+    -fx-background-color: #EFEBE0;
+    -fx-background-radius: 9;
+    -fx-padding: 3;
 }
 
 .dashboard-page .segment-button {
     -fx-background-color: transparent;
-    -fx-background-radius: 5;
-    -fx-text-fill: #253449;
+    -fx-background-radius: 7;
+    -fx-text-fill: #4A4F78;
     -fx-font-weight: normal;
-    -fx-padding: 5 12;
+    -fx-padding: 5 13;
     -fx-cursor: hand;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
 }
-
 .dashboard-page .segment-button:hover {
-    -fx-background-color: #DFE8EE;
+    -fx-background-color: #E3DECF;
+    -fx-text-fill: #14173A;
 }
-
 .dashboard-page .segment-button:selected {
-    -fx-background-color: #008578;
+    -fx-background-color: #2D3FD3;
     -fx-text-fill: white;
     -fx-font-weight: bold;
+    -fx-effect: dropshadow(gaussian, rgba(45, 63, 211, 0.30), 6, 0, 0, 2);
 }
-
 .dashboard-page .segment-button:selected:hover {
-    -fx-background-color: #006E64;
+    -fx-background-color: #2434B0;
 }
 
 /* ---------- Charts ---------- */
 .dashboard-page .chart-plot-background {
-    -fx-background-color: white;
-}
-
-.dashboard-page .chart-legend {
     -fx-background-color: transparent;
 }
-
+.dashboard-page .chart-content {
+    -fx-padding: 4;
+}
+.dashboard-page .chart-legend {
+    -fx-background-color: transparent;
+    -fx-padding: 4;
+}
+.dashboard-page .chart-legend-item {
+    -fx-text-fill: #4A4F78;
+    -fx-font-size: 12px;
+}
 .dashboard-page .axis {
-    -fx-tick-label-fill: #475569;
+    -fx-tick-label-fill: #6B6F92;
+    -fx-tick-mark-visible: false;
+    -fx-minor-tick-visible: false;
 }
-
-.dashboard-page .sales-chart .default-color0.chart-bar {
-    -fx-bar-fill: #1677ED;
-}
-
-.dashboard-page .sales-chart .default-color1.chart-bar {
-    -fx-bar-fill: #14C8A0;
+.dashboard-page .axis-label {
+    -fx-text-fill: #6B6F92;
+    -fx-font-size: 12px;
 }
 
 .dashboard-page .sales-chart .chart-vertical-grid-lines {
     -fx-stroke: transparent;
 }
-
 .dashboard-page .sales-chart .chart-horizontal-grid-lines {
-    -fx-stroke: #E3E9F0;
+    -fx-stroke: #EEE9DD;
+    -fx-stroke-dash-array: 3 4;
 }
-
 .dashboard-page .sales-chart .chart-horizontal-zero-line {
-    -fx-stroke: #64748B;
-    -fx-stroke-width: 1.5px;
+    -fx-stroke: #9A9AB8;
+    -fx-stroke-width: 1.2px;
+}
+.dashboard-page .sales-chart .default-color0.chart-bar {
+    -fx-bar-fill: #3350E8;
+}
+.dashboard-page .sales-chart .default-color1.chart-bar {
+    -fx-bar-fill: #F2A62C;
+}
+.dashboard-page .sales-chart .default-color0.chart-legend-item-symbol {
+    -fx-background-color: #3350E8;
+    -fx-background-radius: 3;
+}
+.dashboard-page .sales-chart .default-color1.chart-legend-item-symbol {
+    -fx-background-color: #F2A62C;
+    -fx-background-radius: 3;
 }
 
+.dashboard-page .chart-bar {
+    -fx-cursor: hand;
+}
 .dashboard-page .chart-bar:hover {
-    -fx-opacity: 0.85;
+    -fx-opacity: 0.82;
 }
 
 .dashboard-page .product-profit-chart .chart-vertical-grid-lines {
-    -fx-stroke: #E3E9F0;
+    -fx-stroke: #EEE9DD;
+    -fx-stroke-dash-array: 3 4;
 }
-
 .dashboard-page .product-profit-chart .chart-horizontal-grid-lines {
     -fx-stroke: transparent;
 }
+.dashboard-page .product-profit-chart .chart-vertical-zero-line {
+    -fx-stroke: #9A9AB8;
+    -fx-stroke-width: 1.2px;
+}
 
 .dashboard-page .profit-total {
-    -fx-font-size: 14px;
+    -fx-font-size: 13px;
     -fx-font-weight: bold;
-    -fx-text-fill: #101828;
+    -fx-text-fill: #14173A;
+    -fx-background-color: #FDF1DA;
+    -fx-background-radius: 8;
+    -fx-padding: 5 12;
+}
+
+.dashboard-page .profit-more {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6B6F92;
+    -fx-background-color: #F3F0E7;
+    -fx-background-radius: 8;
+    -fx-padding: 5 10;
+}
+
+/* ---------- Stock availability ---------- */
+.dashboard-page .stock-count-card {
+    -fx-background-color: #FBFAF6;
+    -fx-background-radius: 8;
+    -fx-padding: 8 12;
+}
+.dashboard-page .stock-count-card:hover {
+    -fx-background-color: #F3F4FD;
+}
+.dashboard-page .stock-count-caption {
+    -fx-font-size: 12px;
+    -fx-text-fill: #6B6F92;
+}
+.dashboard-page .stock-count-number {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #14173A;
+}
+.dashboard-page .stock-count-percent {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #6B6F92;
 }
 
 /* ---------- Recent stock activity ---------- */
@@ -242,32 +410,30 @@
 }
 
 .dashboard-page .stock-activity-cell {
-    -fx-padding: 8 10;
-    -fx-border-color: transparent transparent #E6EBF2 transparent;
+    -fx-padding: 9 10;
+    -fx-border-color: transparent transparent #EFEAE0 transparent;
     -fx-border-width: 0 0 1 0;
 }
 
 .dashboard-page .stock-activity-cell:row-hover {
-    -fx-background-color: #F1F7F9;
+    -fx-background-color: #F3F4FD;
 }
 
 .dashboard-page .stock-activity-heading {
-    -fx-background-color: #EDF1F6;
+    -fx-background-color: #F3F0E7;
     -fx-border-color: transparent;
-    -fx-padding: 7 10;
+    -fx-padding: 8 10;
 }
-
 .dashboard-page .stock-activity-heading .label {
     -fx-font-weight: bold;
-    -fx-text-fill: #253449;
+    -fx-font-size: 12px;
+    -fx-text-fill: #6B6F92;
 }
-
 .dashboard-page .stock-activity-heading:first-child {
-    -fx-background-radius: 5 0 0 5;
+    -fx-background-radius: 8 0 0 8;
 }
-
 .dashboard-page .stock-activity-last-column.stock-activity-heading {
-    -fx-background-radius: 0 5 5 0;
+    -fx-background-radius: 0 8 8 0;
 }
 
 .dashboard-page .stock-activity-last-row {
@@ -275,30 +441,23 @@
 }
 
 .dashboard-page .stock-activity-time {
-    -fx-text-fill: #475569;
+    -fx-text-fill: #6B6F92;
 }
 
 .dashboard-page .stock-activity-quantity {
     -fx-font-weight: bold;
+    -fx-text-fill: #14173A;
 }
-
-.dashboard-page .stock-activity-quantity.gain {
-    -fx-text-fill: #0A7D6E;
-}
-
-.dashboard-page .stock-activity-quantity.loss {
-    -fx-text-fill: #C23A3A;
-}
+.dashboard-page .stock-activity-quantity.gain { -fx-text-fill: #12805F; }
+.dashboard-page .stock-activity-quantity.loss { -fx-text-fill: #C7443A; }
 
 .dashboard-page .movement-badge {
-    -fx-background-radius: 6;
-    -fx-text-fill: #09193D;
-    -fx-padding: 3 10;
+    -fx-background-radius: 20;
+    -fx-padding: 3 12;
     -fx-font-size: 12px;
+    -fx-font-weight: bold;
 }
-
-.dashboard-page .movement-sale     { -fx-background-color: #D6E3F3; }
-.dashboard-page .movement-purchase { -fx-background-color: #C1DAFF; }
-.dashboard-page .movement-reversal { -fx-background-color: #EEE5FA; }
-.dashboard-page .movement-other    { -fx-background-color: #D7F0E9; }
-
+.dashboard-page .movement-sale     { -fx-background-color: #FDEBC8; -fx-text-fill: #7A4A00; }
+.dashboard-page .movement-purchase { -fx-background-color: #E0E4FB; -fx-text-fill: #1B2790; }
+.dashboard-page .movement-reversal { -fx-background-color: #EDE4F7; -fx-text-fill: #5B2E91; }
+.dashboard-page .movement-other    { -fx-background-color: #DDF3EB; -fx-text-fill: #0F6B4F; }

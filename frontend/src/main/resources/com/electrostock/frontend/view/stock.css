@@ -1,0 +1,563 @@
+/* Stock Command & Availability — Exclusive Indigo, Jade, Marigold & Rose Palette */
+.stock-page {
+    -fx-background-color: #F2F4F8;
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 13px;
+    -fx-text-background-color: #0F172A;
+    -fx-padding: 22;
+    -fx-spacing: 16;
+}
+
+.stock-page .stock-title {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #0F172A;
+}
+
+.stock-page .stock-heading {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #0F172A;
+}
+
+.stock-page .stock-muted {
+    -fx-text-fill: #52637A;
+    -fx-font-size: 12px;
+}
+
+/* Panels & Interactive KPI Cards */
+.stock-page .stock-panel {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #DCE3EC;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-padding: 16 18;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.04), 10, 0, 0, 2);
+}
+
+.stock-page .stock-metric {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #DCE3EC;
+    -fx-border-width: 1 1 1 4;
+    -fx-background-radius: 11;
+    -fx-border-radius: 11;
+    -fx-padding: 12 16;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.03), 8, 0, 0, 1);
+}
+
+.stock-page .stock-metric:hover {
+    -fx-background-color: #F8FAFC;
+}
+
+.stock-page .stock-metric.stock-all {
+    -fx-border-color: #DCE3EC #DCE3EC #DCE3EC #4338CA;
+}
+
+.stock-page .stock-metric.stock-in {
+    -fx-border-color: #DCE3EC #DCE3EC #DCE3EC #0D9488;
+}
+
+.stock-page .stock-metric.stock-low {
+    -fx-border-color: #DCE3EC #DCE3EC #DCE3EC #D97706;
+}
+
+.stock-page .stock-metric.stock-out {
+    -fx-border-color: #DCE3EC #DCE3EC #DCE3EC #E11D48;
+}
+
+/* Active Selected KPI Card Highlights */
+.stock-page .stock-metric.stock-all.stock-metric-selected {
+    -fx-background-color: #EEF2FF;
+    -fx-border-color: #A5B4FC #A5B4FC #A5B4FC #4338CA;
+}
+
+.stock-page .stock-metric.stock-in.stock-metric-selected {
+    -fx-background-color: #F0FDFA;
+    -fx-border-color: #5EEAD4 #5EEAD4 #5EEAD4 #0D9488;
+}
+
+.stock-page .stock-metric.stock-low.stock-metric-selected {
+    -fx-background-color: #FFFBEB;
+    -fx-border-color: #FCD34D #FCD34D #FCD34D #D97706;
+}
+
+.stock-page .stock-metric.stock-out.stock-metric-selected {
+    -fx-background-color: #FFF1F2;
+    -fx-border-color: #FDA4AF #FDA4AF #FDA4AF #E11D48;
+}
+
+.stock-page .stock-metric-label {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #64748B;
+}
+
+.stock-page .stock-metric-value {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #0F172A;
+}
+
+.stock-page .stock-metric-sub {
+    -fx-font-size: 11.5px;
+    -fx-text-fill: #475569;
+}
+
+/* Header Pills & Summary Counters */
+.stock-page .stock-count-pill {
+    -fx-background-color: #EEF2FF;
+    -fx-border-color: #C7D2FE;
+    -fx-border-radius: 999;
+    -fx-background-radius: 999;
+    -fx-text-fill: #3730A3;
+    -fx-font-size: 11.5px;
+    -fx-font-weight: bold;
+    -fx-padding: 4 11;
+}
+
+.stock-page .stock-units-pill {
+    -fx-background-color: #F0FDFA;
+    -fx-border-color: #99F6E4;
+    -fx-border-radius: 999;
+    -fx-background-radius: 999;
+    -fx-text-fill: #0F766E;
+    -fx-font-size: 11.5px;
+    -fx-font-weight: bold;
+    -fx-padding: 4 11;
+}
+
+.stock-page .stock-movement-stats {
+    -fx-background-color: #F8FAFC;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 999;
+    -fx-background-radius: 999;
+    -fx-text-fill: #334155;
+    -fx-font-size: 11.5px;
+    -fx-font-weight: bold;
+    -fx-padding: 4 11;
+}
+
+/* Action Buttons & Segmented Filter Tabs */
+.stock-page .button,
+.stock-page .toggle-button {
+    -fx-cursor: hand;
+    -fx-background-radius: 7;
+    -fx-border-radius: 7;
+    -fx-font-weight: bold;
+}
+
+.stock-page .stock-primary {
+    -fx-background-color: #3730A3;
+    -fx-border-color: transparent;
+    -fx-text-fill: #FFFFFF;
+    -fx-padding: 8 16;
+}
+
+.stock-page .stock-primary:hover {
+    -fx-background-color: #312E81;
+}
+
+.stock-page .stock-secondary {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #CBD5E1;
+    -fx-text-fill: #1E293B;
+    -fx-padding: 8 15;
+}
+
+.stock-page .stock-secondary:hover {
+    -fx-background-color: #F1F5F9;
+}
+
+.stock-page .stock-chip-btn {
+    -fx-background-color: #F8FAFC;
+    -fx-border-color: #CBD5E1;
+    -fx-text-fill: #334155;
+    -fx-font-size: 12px;
+    -fx-padding: 7 12;
+}
+
+.stock-page .stock-chip-btn:hover {
+    -fx-background-color: #EEF2FF;
+    -fx-border-color: #A5B4FC;
+    -fx-text-fill: #3730A3;
+}
+
+.stock-page .stock-seg-group {
+    -fx-background-color: #F1F5F9;
+    -fx-border-color: #CBD5E1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 2;
+}
+
+.stock-page .stock-seg-btn {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: #475569;
+    -fx-font-size: 12px;
+    -fx-padding: 5 13;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+}
+
+.stock-page .stock-seg-btn:hover {
+    -fx-text-fill: #0F172A;
+}
+
+.stock-page .stock-seg-btn:selected {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #E2E8F0;
+    -fx-text-fill: #3730A3;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.06), 4, 0, 0, 1);
+}
+
+.stock-page .stock-seg-in:selected {
+    -fx-text-fill: #0F766E;
+}
+
+.stock-page .stock-seg-low:selected {
+    -fx-text-fill: #B45309;
+}
+
+.stock-page .stock-seg-out:selected {
+    -fx-text-fill: #BE123C;
+}
+
+/* Search Input */
+.stock-page .text-field {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #CBD5E1;
+    -fx-background-radius: 7;
+    -fx-border-radius: 7;
+    -fx-padding: 7 11;
+    -fx-prompt-text-fill: #64748B;
+}
+
+.stock-page .button:focused,
+.stock-page .toggle-button:focused,
+.stock-page .text-field:focused {
+    -fx-border-color: #4338CA;
+}
+
+/* SplitPane Divider */
+.stock-page .stock-panels {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.stock-page .stock-panels > .split-pane-divider {
+    -fx-background-color: transparent;
+    -fx-padding: 6 0;
+}
+
+/* Modern Borderless-Column Data Tables */
+.stock-page .stock-table {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #E2E8F0;
+    -fx-background-radius: 9;
+    -fx-border-radius: 9;
+    -fx-table-cell-border-color: transparent;
+    -fx-padding: 0;
+}
+
+.stock-page .stock-table:focused {
+    -fx-border-color: #4338CA;
+}
+
+.stock-page .stock-table .column-header-background {
+    -fx-background-color: #F8FAFC;
+    -fx-background-radius: 9 9 0 0;
+    -fx-border-color: transparent transparent #E2E8F0 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.stock-page .stock-table .column-header,
+.stock-page .stock-table .column-header-background .filler,
+.stock-page .stock-table .show-hide-columns-button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-pref-height: 40;
+}
+
+.stock-page .stock-table .column-header .label {
+    -fx-alignment: center-left;
+    -fx-text-fill: #475569;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 14;
+}
+
+.stock-page .stock-table .column-header.stock-col-numeric .label {
+    -fx-alignment: center-right;
+}
+
+.stock-page .stock-table .column-header .arrow {
+    -fx-background-color: #4338CA;
+}
+
+.stock-page .stock-table .table-row-cell {
+    -fx-background-color: #FFFFFF;
+    -fx-cell-size: 46;
+    -fx-border-color: transparent transparent #F1F5F9 transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-background-insets: 0;
+}
+
+.stock-page .stock-table .table-row-cell:odd:filled {
+    -fx-background-color: #FAFBFD;
+}
+
+.stock-page .stock-table .table-row-cell:filled:hover {
+    -fx-background-color: #F3F4F8;
+    -fx-background-insets: 3 6;
+    -fx-background-radius: 8;
+}
+
+.stock-page .stock-table .table-row-cell:filled:selected {
+    -fx-background-color: #EEF2FF;
+    -fx-background-insets: 3 6;
+    -fx-background-radius: 8;
+    -fx-border-color: transparent transparent #E0E7FF transparent;
+}
+
+.stock-page .stock-table .table-row-cell:empty {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.stock-page .stock-table .table-row-cell:filled .table-cell {
+    -fx-border-color: transparent;
+    -fx-background-color: transparent;
+    -fx-padding: 0 14;
+    -fx-text-fill: #334155;
+}
+
+.stock-page .stock-cell-strong {
+    -fx-font-weight: bold;
+    -fx-text-fill: #0F172A;
+}
+
+.stock-page .stock-cell-muted-num {
+    -fx-text-fill: #64748B;
+}
+
+.stock-page .stock-qty-in {
+    -fx-font-weight: bold;
+    -fx-text-fill: #0F766E;
+}
+
+.stock-page .stock-qty-low {
+    -fx-font-weight: bold;
+    -fx-text-fill: #B45309;
+}
+
+.stock-page .stock-qty-out {
+    -fx-font-weight: bold;
+    -fx-text-fill: #BE123C;
+}
+
+.stock-page .stock-val-pos {
+    -fx-font-weight: bold;
+    -fx-text-fill: #0F766E;
+}
+
+.stock-page .stock-val-neg {
+    -fx-font-weight: bold;
+    -fx-text-fill: #BE123C;
+}
+
+/* Visual Stock Ratio Bars */
+.stock-page .stock-bar-track {
+    -fx-background-color: #E2E8F0;
+    -fx-background-radius: 99;
+}
+
+.stock-page .stock-bar-fill {
+    -fx-background-radius: 99;
+}
+
+.stock-page .stock-bar-in {
+    -fx-background-color: #0D9488;
+}
+
+.stock-page .stock-bar-low {
+    -fx-background-color: #D97706;
+}
+
+.stock-page .stock-bar-out {
+    -fx-background-color: #E11D48;
+}
+
+/* Badges & SKU Tags */
+.stock-page .stock-sku-tag {
+    -fx-background-color: #F1F5F9;
+    -fx-border-color: #CBD5E1;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+    -fx-padding: 2 8;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1E293B;
+}
+
+.stock-page .stock-badge {
+    -fx-font-size: 11.5px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-border-width: 1;
+    -fx-padding: 3 10;
+}
+
+.stock-page .stock-badge.stock-in,
+.stock-page .stock-badge-jade {
+    -fx-background-color: #F0FDFA;
+    -fx-border-color: #99F6E4;
+    -fx-text-fill: #0F766E;
+}
+
+.stock-page .stock-badge.stock-low,
+.stock-page .stock-badge-amber {
+    -fx-background-color: #FFFBEB;
+    -fx-border-color: #FDE68A;
+    -fx-text-fill: #92400E;
+}
+
+.stock-page .stock-badge.stock-out,
+.stock-page .stock-badge-rose {
+    -fx-background-color: #FFF1F2;
+    -fx-border-color: #FECDD3;
+    -fx-text-fill: #9F1239;
+}
+
+.stock-page .stock-badge-indigo {
+    -fx-background-color: #EEF2FF;
+    -fx-border-color: #C7D2FE;
+    -fx-text-fill: #3730A3;
+}
+
+.stock-page .stock-badge-neutral {
+    -fx-background-color: #F1F5F9;
+    -fx-border-color: #CBD5E1;
+    -fx-text-fill: #475569;
+}
+
+/* Sleek Table Scrollbars */
+.stock-page .stock-table .scroll-bar:vertical,
+.stock-page .stock-table .scroll-bar:horizontal {
+    -fx-background-color: transparent;
+    -fx-padding: 2;
+}
+
+.stock-page .stock-table .scroll-bar:vertical {
+    -fx-pref-width: 10;
+}
+
+.stock-page .stock-table .scroll-bar:horizontal {
+    -fx-pref-height: 10;
+}
+
+.stock-page .stock-table .scroll-bar .track {
+    -fx-background-color: transparent;
+}
+
+.stock-page .stock-table .scroll-bar .thumb {
+    -fx-background-color: #CBD5E1;
+    -fx-background-radius: 99;
+}
+
+.stock-page .stock-table .scroll-bar .thumb:hover {
+    -fx-background-color: #94A3B8;
+}
+
+.stock-page .stock-table .scroll-bar .increment-button,
+.stock-page .stock-table .scroll-bar .decrement-button {
+    -fx-padding: 0;
+    -fx-pref-height: 0;
+    -fx-pref-width: 0;
+}
+
+.stock-page .stock-table .scroll-bar .increment-arrow,
+.stock-page .stock-table .scroll-bar .decrement-arrow {
+    -fx-shape: "";
+    -fx-padding: 0;
+}
+
+/* Notices */
+.stock-page .stock-notice {
+    -fx-background-color: #EEF2FF;
+    -fx-border-color: #C7D2FE;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-text-fill: #3730A3;
+    -fx-font-weight: bold;
+    -fx-padding: 10 14;
+    -fx-max-width: infinity;
+}
+
+.stock-page .stock-notice.stock-error {
+    -fx-background-color: #FFF1F2;
+    -fx-border-color: #FECDD3;
+    -fx-text-fill: #9F1239;
+}
+
+/* The modal has its own DialogPane, separate from the Stock page. */
+.stock-adjustment-dialog {
+    -fx-font-family: "Segoe UI";
+    -fx-background-color: #F8FAFC;
+}
+
+.stock-adjustment-dialog .stock-dialog-title {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #0F172A;
+}
+
+.stock-adjustment-dialog .stock-dialog-field {
+    -fx-font-weight: bold;
+    -fx-text-fill: #1E293B;
+}
+
+.stock-adjustment-dialog .stock-dialog-muted {
+    -fx-text-fill: #475569;
+}
+
+.stock-adjustment-dialog .stock-dialog-status {
+    -fx-background-color: #E0E7FF;
+    -fx-background-radius: 6;
+    -fx-padding: 5 8;
+    -fx-text-fill: #312E81;
+    -fx-font-weight: bold;
+}
+
+.stock-adjustment-dialog .stock-dialog-warning,
+.stock-adjustment-dialog .stock-dialog-error {
+    -fx-background-radius: 6;
+    -fx-padding: 7 9;
+}
+
+.stock-adjustment-dialog .stock-dialog-warning {
+    -fx-background-color: #FEF3C7;
+    -fx-text-fill: #78350F;
+}
+
+.stock-adjustment-dialog .stock-dialog-error {
+    -fx-background-color: #FEE2E2;
+    -fx-text-fill: #991B1B;
+}
+
+.stock-adjustment-dialog .button {
+    -fx-cursor: hand;
+    -fx-background-radius: 7;
+    -fx-font-weight: bold;
+}
+
+.stock-adjustment-dialog .stock-dialog-apply {
+    -fx-background-color: #3730A3;
+    -fx-text-fill: white;
+}
+
+.stock-adjustment-dialog .stock-dialog-apply:hover {
+    -fx-background-color: #312E81;
+}

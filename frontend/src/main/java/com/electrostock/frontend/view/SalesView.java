@@ -24,20 +24,22 @@ import com.electrostock.frontend.api.SaleApiClient.Summary;
 
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
+import javafx.scene.control.Separator;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
@@ -97,11 +99,14 @@ public class SalesView extends VBox {
         Label empty = new Label("Loading sales…");
         table.setPlaceholder(empty);
 
-        addTypedColumn(table, "Sale #", 96, false, Summary::id, id -> "#" + id, Comparator.naturalOrder());
-        addTypedColumn(table, "Sale date", 145, false, Summary::saleDate, SalesView::date, Comparator.naturalOrder());
+        addTypedColumn(table, "Sale #", 105, false, Summary::id, id -> "#" + id,
+                Comparator.naturalOrder(), "sale-cell-strong");
+        addTypedColumn(table, "Sale date", 155, false, Summary::saleDate, SalesView::date,
+                Comparator.naturalOrder());
         addStatusColumn(table);
-        addColumn(table, "Currency", 96, false, Summary::currencyCode);
-        addTypedColumn(table, "Total", 160, true, Summary::totalCurrency, SalesView::amount, Comparator.naturalOrder());
+        addTagColumn(table, "Currency", 115, Summary::currencyCode, "sale-currency-tag");
+        addTypedColumn(table, "Total", 170, true, Summary::totalCurrency, SalesView::amount,
+                Comparator.naturalOrder(), "sale-cell-amount");
 
         Button open = button("Open sale", "sale-secondary", () -> {
             Summary picked = table.getSelectionModel().getSelectedItem();
@@ -233,39 +238,85 @@ public class SalesView extends VBox {
         long page = ++screen;
         Label feedback = feedback();
 
+        Label stepEyebrow = new Label("STEP 1 OF 2  ·  ORDER SETUP");
+        stepEyebrow.getStyleClass().add("sale-eyebrow");
+
+        Label cardTitle = new Label("Create a new sale draft");
+        cardTitle.getStyleClass().add("sale-setup-title");
+
+        Label cardSub = small("Configure the transaction date and billing currency before adding products.");
+        cardSub.setWrapText(true);
+
         DatePicker saleDate = new DatePicker(LocalDate.now());
         saleDate.setEditable(false);
         saleDate.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(saleDate, Priority.ALWAYS);
 
-        Button todayBtn = button("Today", "sale-secondary", () -> saleDate.setValue(LocalDate.now()));
-        Button yesterdayBtn = button("Yesterday", "sale-secondary", () -> saleDate.setValue(LocalDate.now().minusDays(1)));
+        Button todayBtn = button("Today", "sale-chip-btn", () -> saleDate.setValue(LocalDate.now()));
+        Button yesterdayBtn = button("Yesterday", "sale-chip-btn", () -> saleDate.setValue(LocalDate.now().minusDays(1)));
+
+        Runnable syncDateChips = () -> {
+            LocalDate val = saleDate.getValue();
+            todayBtn.getStyleClass().remove("sale-chip-btn-active");
+            yesterdayBtn.getStyleClass().remove("sale-chip-btn-active");
+            if (LocalDate.now().equals(val)) {
+                todayBtn.getStyleClass().add("sale-chip-btn-active");
+            } else if (LocalDate.now().minusDays(1).equals(val)) {
+                yesterdayBtn.getStyleClass().add("sale-chip-btn-active");
+            }
+        };
+        saleDate.valueProperty().addListener((obs, oldVal, newVal) -> syncDateChips.run());
+        syncDateChips.run();
+
         HBox dateRow = bar(saleDate, todayBtn, yesterdayBtn);
 
         ComboBox<Currency> currency = new ComboBox<>();
         currency.setPromptText("Loading currencies…");
         currency.setMaxWidth(Double.MAX_VALUE);
 
-        Button submit = button("Create draft", "sale-primary", () ->
+        Label currencyHint = small("Foreign currency sales lock the live MAD exchange rate when confirmed.");
+        currencyHint.setWrapText(true);
+
+        VBox callout = new VBox(3,
+                heading("How draft sales work"),
+                small("Drafts are saved automatically and do not reserve or deduct inventory until you confirm the order."));
+        callout.getStyleClass().add("sale-callout-info");
+        callout.getChildren().forEach(node -> {
+            if (node instanceof Label lbl) lbl.setWrapText(true);
+        });
+
+        Button cancelBtn = button("Cancel", "sale-secondary", this::showList);
+        Button submit = button("Create draft & add items →", "sale-primary", () ->
                 write("Creating draft…", feedback,
                         () -> api.createDraft(currency.getValue().code(), saleDate.getValue()),
                         id -> loadSale(id, "Draft created. Add products below before confirming.")));
         submit.disableProperty().bind(writing.or(currency.valueProperty().isNull())
                 .or(saleDate.valueProperty().isNull()));
 
-        Button back = button("Back to sales", "sale-secondary", this::showList);
-        VBox form = card(
-                heading("New sale setup"),
-                small("Sales start as drafts. Stock is only deducted once you review items and confirm the sale."),
+        HBox footerActions = bar(cancelBtn, spacer(), submit);
+
+        VBox form = new VBox(16,
+                new VBox(4, stepEyebrow, cardTitle, cardSub),
+                new Separator(),
                 field("Sale date", dateRow),
-                field("Checkout currency", currency),
-                bar(spacer(), submit));
-        form.setMaxWidth(540);
+                new VBox(5, field("Checkout currency", currency), currencyHint),
+                callout,
+                footerActions);
+        form.getStyleClass().add("sale-setup-card");
+        form.setMaxWidth(560);
+        form.setPrefWidth(560);
+
+        VBox centerStage = new VBox(form);
+        centerStage.setAlignment(Pos.CENTER);
+        centerStage.setFillWidth(false);
+        VBox.setVgrow(centerStage, Priority.ALWAYS);
+
+        Button back = button("← Back to sales", "sale-secondary", this::showList);
 
         getChildren().setAll(
-                pageHeading("New sale", "Select the sale date and billing currency.", back),
+                pageHeading("New sale", "Set up a new customer order.", back),
                 feedback,
-                form);
+                centerStage);
 
         api.currencies().whenComplete((currencies, error) -> Platform.runLater(() -> {
             if (page != screen) return;
@@ -288,7 +339,7 @@ public class SalesView extends VBox {
 
     private void loadSale(long id, String notice) {
         long page = ++screen;
-        Button back = button("Back to sales", "sale-secondary", this::showList);
+        Button back = button("← Back to sales", "sale-secondary", this::showList);
         Label feedback = feedback();
         showFeedback(feedback, "Loading sale #" + id + "…", false);
         getChildren().setAll(pageHeading("Sale #" + id, "Sale details", back), feedback);
@@ -308,7 +359,7 @@ public class SalesView extends VBox {
         if (!notice.isEmpty()) showFeedback(feedback, notice, false);
         Status status = statusOf(sale.status(), sale.handedOverAt());
 
-        Button back = button("Back to sales", "sale-secondary", this::showList);
+        Button back = button("← Back to sales", "sale-secondary", this::showList);
         Button refresh = button("Refresh", "sale-secondary", () -> loadSale(sale.id()));
         refresh.disableProperty().bind(writing);
 
@@ -347,13 +398,15 @@ public class SalesView extends VBox {
                 ? "No items in this draft yet. Click \"+ Add product\" to begin."
                 : "No line items recorded."));
 
-        addColumn(lines, "SKU", 115, false, line -> fallback(line.sku()));
-        addColumn(lines, "Product", 200, false, line -> line.productName() == null
-                ? "Product #" + line.productId() : line.productName());
-        addTypedColumn(lines, "Qty", 68, true, Line::quantity, String::valueOf, Comparator.naturalOrder());
-        addTypedColumn(lines, "Unit price", 120, true, Line::unitPriceCurrency, SalesView::amount, Comparator.naturalOrder());
-        addTypedColumn(lines, "Line total", 125, true, Line::lineTotalCurrency, SalesView::amount, Comparator.naturalOrder());
-        addColumn(lines, "Serial numbers", 170, false, line ->
+        addTagColumn(lines, "SKU", 130, line -> fallback(line.sku()), "sale-sku-cell-tag");
+        addTypedColumn(lines, "Product", 220, false,
+                line -> line.productName() == null ? "Product #" + line.productId() : line.productName(),
+                Function.identity(), String.CASE_INSENSITIVE_ORDER, "sale-cell-strong");
+        addTypedColumn(lines, "Qty", 80, true, Line::quantity, String::valueOf, Comparator.naturalOrder());
+        addTypedColumn(lines, "Unit price", 130, true, Line::unitPriceCurrency, SalesView::amount, Comparator.naturalOrder());
+        addTypedColumn(lines, "Line total", 140, true, Line::lineTotalCurrency, SalesView::amount,
+                Comparator.naturalOrder(), "sale-cell-amount");
+        addColumn(lines, "Serial numbers", 190, false, line ->
                 line.serialNumbers() == null || line.serialNumbers().isEmpty()
                         ? (line.tracksSerials() && status == Status.DRAFT ? "Assigned at confirmation" : "—")
                         : String.join(", ", line.serialNumbers()));
@@ -406,9 +459,11 @@ public class SalesView extends VBox {
                                     ignored -> loadSale(sale.id(), "Product added to the draft."))));
 
             Button discard = button("Discard draft", "sale-danger", () -> {
-                if (approve("Discard draft sale #" + sale.id() + "?",
-                        "This draft and all its line items will be permanently deleted.",
-                        "Discard draft")) {
+                if (approve("DISCARD DRAFT",
+                        "Discard draft sale #" + sale.id() + "?",
+                        "This draft and all its line items will be permanently deleted. This action cannot be undone.",
+                        "Discard draft",
+                        true)) {
                     write("Discarding draft…", feedback,
                             () -> api.deleteDraft(sale.id()),
                             ignored -> showList());
@@ -435,18 +490,22 @@ public class SalesView extends VBox {
                     confirm);
         } else if (status == Status.AWAITING) {
             Button cancel = button("Cancel sale", "sale-danger", () -> {
-                if (approve("Cancel sale #" + sale.id() + "?",
-                        "Stock deducted for this sale will be returned to inventory.",
-                        "Cancel sale")) {
+                if (approve("CANCEL ORDER",
+                        "Cancel sale #" + sale.id() + "?",
+                        "All stock deducted for this sale will be returned to available inventory.",
+                        "Cancel sale",
+                        true)) {
                     write("Cancelling sale…", feedback,
                             () -> api.cancel(sale.id()),
                             ignored -> loadSale(sale.id(), "Sale cancelled and stock restored."));
                 }
             });
             Button handover = button("Mark handed over", "sale-primary", () -> {
-                if (approve("Mark sale #" + sale.id() + " as handed over?",
-                        "Confirm only after the customer has received the items. Warranty timers will start and the sale cannot be cancelled afterward.",
-                        "Mark handed over")) {
+                if (approve("CUSTOMER HANDOVER",
+                        "Mark sale #" + sale.id() + " as handed over?",
+                        "Confirm only after the customer has received the items. Warranty timers will start immediately and the sale cannot be cancelled afterward.",
+                        "Mark handed over",
+                        false)) {
                     write("Recording handover…", feedback,
                             () -> api.handOver(sale.id()),
                             ignored -> loadSale(sale.id(), "Handover recorded."));
@@ -536,13 +595,47 @@ public class SalesView extends VBox {
         }
     }
 
-    private boolean approve(String title, String detail, String action) {
-        ButtonType accept = new ButtonType(action, javafx.scene.control.ButtonBar.ButtonData.OK_DONE);
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, detail, ButtonType.CANCEL, accept);
-        alert.initOwner(getScene().getWindow());
-        alert.setTitle("ElectroStock · Sales");
-        alert.setHeaderText(title);
-        return alert.showAndWait().filter(accept::equals).isPresent();
+    private boolean approve(String eyebrow, String title, String detail, String action, boolean danger) {
+        ButtonType accept = new ButtonType(action, ButtonBar.ButtonData.OK_DONE);
+        Dialog<Boolean> dialog = new Dialog<>();
+        dialog.initOwner(getScene().getWindow());
+        dialog.setTitle("ElectroStock · Sales");
+
+        var pane = dialog.getDialogPane();
+        applyStyles(pane);
+        pane.getStyleClass().add("sales-dialog");
+        pane.setPrefWidth(480);
+
+        Label tag = new Label(eyebrow);
+        tag.getStyleClass().add(danger ? "sale-eyebrow-danger" : "sale-eyebrow");
+
+        Label head = new Label(title);
+        head.getStyleClass().add("sale-confirm-dialog-title");
+        head.setWrapText(true);
+
+        Label body = new Label(detail);
+        body.getStyleClass().add("sale-confirm-dialog-body");
+        body.setWrapText(true);
+
+        VBox callout = new VBox(body);
+        callout.getStyleClass().add(danger ? "sale-callout-danger" : "sale-callout-amber");
+
+        VBox content = new VBox(12, new VBox(4, tag, head), callout);
+        content.setPadding(new Insets(6, 0, 2, 0));
+        pane.setContent(content);
+
+        pane.getButtonTypes().setAll(ButtonType.CANCEL, accept);
+        Node confirmBtn = pane.lookupButton(accept);
+        if (confirmBtn != null) {
+            confirmBtn.getStyleClass().add(danger ? "sale-danger-solid" : "sale-primary");
+        }
+        Node cancelBtn = pane.lookupButton(ButtonType.CANCEL);
+        if (cancelBtn != null) {
+            cancelBtn.getStyleClass().add("sale-secondary");
+        }
+
+        dialog.setResultConverter(pressed -> pressed == accept);
+        return dialog.showAndWait().orElse(false);
     }
 
     private <T> void write(String pending, Label feedback, Supplier<CompletableFuture<T>> request, Consumer<T> success) {
@@ -575,22 +668,65 @@ public class SalesView extends VBox {
         };
     }
 
-    private static Label badge(Status status) {
-        Label label = new Label(status == Status.ALL ? "Unknown" : status.text);
-        label.getStyleClass().addAll("sale-status", "sale-status-" + status.css);
-        return label;
+    private static HBox badge(Status status) {
+        String key = status == Status.ALL ? "draft" : status.css;
+        Region dot = new Region();
+        dot.getStyleClass().addAll("sale-status-dot", "sale-status-dot-" + key);
+        dot.setMinSize(6, 6);
+        dot.setPrefSize(6, 6);
+        dot.setMaxSize(6, 6);
+
+        Label text = new Label(status == Status.ALL ? "Unknown" : status.text);
+        text.getStyleClass().addAll("sale-status-text", "sale-status-text-" + key);
+
+        HBox pill = new HBox(6, dot, text);
+        pill.setAlignment(Pos.CENTER_LEFT);
+        pill.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+        pill.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+        pill.getStyleClass().addAll("sale-status", "sale-status-" + key);
+        return pill;
     }
 
     private static void addStatusColumn(TableView<Summary> table) {
-        TableColumn<Summary, String> column = new TableColumn<>("Status");
-        column.setPrefWidth(175);
-        column.setCellValueFactory(cell -> new ReadOnlyStringWrapper(
-                statusOf(cell.getValue().status(), cell.getValue().handedOverAt()).text));
+        TableColumn<Summary, Status> column = new TableColumn<>("Status");
+        column.setPrefWidth(195);
+        column.setMinWidth(180);
+        column.setComparator(Comparator.naturalOrder());
+        column.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(
+                statusOf(cell.getValue().status(), cell.getValue().handedOverAt())));
+        column.setCellFactory(ignored -> new TableCell<>() {
+            @Override protected void updateItem(Status status, boolean empty) {
+                super.updateItem(status, empty);
+                setText(null);
+                setAlignment(Pos.CENTER_LEFT);
+                setGraphic(empty || status == null ? null : badge(status));
+            }
+        });
+        table.getColumns().add(column);
+    }
+
+    private static <T> void addTagColumn(TableView<T> table, String title, double width,
+            Function<T, String> extractor, String tagStyle) {
+        TableColumn<T, String> column = new TableColumn<>(title);
+        column.setPrefWidth(width);
+        column.setMinWidth(width - 15);
+        column.setComparator(Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
+        column.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(extractor.apply(cell.getValue())));
         column.setCellFactory(ignored -> new TableCell<>() {
             @Override protected void updateItem(String value, boolean empty) {
                 super.updateItem(value, empty);
-                Summary row = getTableRow() == null ? null : getTableRow().getItem();
-                setGraphic(empty || row == null ? null : badge(statusOf(row.status(), row.handedOverAt())));
+                setText(null);
+                setAlignment(Pos.CENTER_LEFT);
+                if (empty || value == null || value.isBlank() || "—".equals(value)) {
+                    setGraphic(null);
+                    if (!empty && value != null) setText(value);
+                } else {
+                    Label pill = new Label(value);
+                    pill.setMinSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+                    pill.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+                    pill.getStyleClass().add(tagStyle);
+                    setGraphic(pill);
+                }
             }
         });
         table.getColumns().add(column);
@@ -602,18 +738,26 @@ public class SalesView extends VBox {
     }
 
     private static <T, V> void addTypedColumn(TableView<T> table, String title, double width,
-            boolean numeric, Function<T, V> extractor, Function<V, String> formatter, Comparator<V> comparator) {
+            boolean numeric, Function<T, V> extractor, Function<V, String> formatter,
+            Comparator<V> comparator, String... extraCellClasses) {
         TableColumn<T, V> column = new TableColumn<>(title);
         column.setPrefWidth(width);
+        if (numeric) {
+            column.getStyleClass().add("sale-col-numeric");
+        }
         column.setComparator(Comparator.nullsLast(comparator));
         column.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(extractor.apply(cell.getValue())));
         column.setCellFactory(ignored -> new TableCell<>() {
             @Override protected void updateItem(V value, boolean empty) {
                 super.updateItem(value, empty);
+                getStyleClass().removeAll(extraCellClasses);
                 String formatted = empty || value == null ? null : formatter.apply(value);
                 setText(formatted);
                 setAlignment(numeric ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT);
                 setTooltip(formatted == null ? null : new Tooltip(formatted));
+                if (!empty && value != null && extraCellClasses.length > 0) {
+                    getStyleClass().addAll(extraCellClasses);
+                }
             }
         });
         table.getColumns().add(column);
@@ -685,6 +829,10 @@ public class SalesView extends VBox {
         Label label = new Label(text);
         label.getStyleClass().add("sale-muted");
         return label;
+    }
+
+    static String formatDate(LocalDate date) {
+        return date(date);
     }
 
     private static Region spacer() {

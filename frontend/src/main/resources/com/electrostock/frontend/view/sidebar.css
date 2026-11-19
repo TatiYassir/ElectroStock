@@ -1,0 +1,87 @@
+/* Left navigation  -  "Majorelle" palette. Own style classes so it never clashes with dashboard.css. */
+.side-nav {
+    -fx-background-color: linear-gradient(to bottom, #1E2470 0%, #11154A 55%, #0B0E2E 100%);
+    -fx-padding: 24 0 16 0;
+    -fx-spacing: 3;
+    -fx-font-family: "Segoe UI";
+    -fx-border-color: transparent #2A3190 transparent transparent;
+    -fx-border-width: 0 1 0 0;
+}
+
+/* brand */
+.side-nav .nav-brand { -fx-padding: 0 20 22 20; }
+.side-nav .nav-logo {
+    -fx-background-color: linear-gradient(to bottom right, #FFC053, #F2822C);
+    -fx-background-radius: 13;
+    -fx-min-width: 42; -fx-min-height: 42;
+    -fx-pref-width: 42; -fx-pref-height: 42;
+    -fx-effect: dropshadow(gaussian, rgba(242, 166, 44, 0.50), 16, 0.1, 0, 4);
+}
+.side-nav .nav-logo .nav-icon {
+    -fx-stroke: #11154A;
+    -fx-stroke-width: 2;
+    -fx-fill: rgba(17, 21, 74, 0.14);
+}
+.side-nav .nav-brand-name { -fx-text-fill: white; -fx-font-size: 19px; -fx-font-weight: bold; }
+.side-nav .nav-brand-tagline { -fx-text-fill: #9DA3E0; -fx-font-size: 12px; }
+
+/* section titles */
+.side-nav .nav-section {
+    -fx-text-fill: #7B82CC;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 16 22 6 22;
+}
+
+/* buttons */
+.side-nav .nav-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 0 14 14 0;
+    -fx-border-color: transparent;
+    -fx-border-width: 0 0 0 4;
+    -fx-border-radius: 0;
+    -fx-text-fill: #C3C7F0;
+    -fx-font-size: 14.5px;
+    -fx-font-weight: 600;
+    -fx-padding: 10 16 10 20;
+    -fx-graphic-text-gap: 13;
+    -fx-cursor: hand;
+    -fx-effect: null;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+    -fx-background-insets: 0 12 0 0;
+    -fx-label-padding: 0;
+    -fx-pref-width: 236;
+    -fx-max-width: 236;
+}
+.side-nav .nav-icon {
+    -fx-fill: transparent;
+    -fx-stroke: #8E95D8;
+    -fx-stroke-width: 2;
+}
+.side-nav .nav-button:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.09);
+    -fx-text-fill: white;
+}
+.side-nav .nav-button:hover .nav-icon { -fx-stroke: #E8EAFF; }
+.side-nav .nav-button:pressed { -fx-background-color: rgba(255, 255, 255, 0.15); }
+.side-nav .nav-button:focused { -fx-background-color: rgba(255, 255, 255, 0.06); }
+
+/* current page */
+.side-nav .nav-button:current-page {
+    -fx-background-color: linear-gradient(to right, rgba(242, 166, 44, 0.28), rgba(242, 166, 44, 0.04));
+    -fx-border-color: transparent transparent transparent #F2A62C;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+.side-nav .nav-button:current-page .nav-icon { -fx-stroke: #FFCF7D; }
+
+/* footer */
+.side-nav .nav-footer {
+    -fx-text-fill: #7B82CC;
+    -fx-font-size: 11.5px;
+    -fx-padding: 12 22 0 22;
+    -fx-border-color: #2A3190 transparent transparent transparent;
+    -fx-border-width: 1 0 0 0;
+    -fx-max-width: infinity;
+}
