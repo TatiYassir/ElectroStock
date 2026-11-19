@@ -1,6 +1,7 @@
 package com.electrostock.backend.dto.purchase;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -18,6 +19,10 @@ public class PurchaseResponse {
     private final LocalDateTime rateRetrievedAtSnapshot;
     private final boolean rateFromCacheSnapshot;
     private final List<PurchaseItemResponse> items;
+    private final String supplierName;
+    private final LocalDate purchaseDate;
+    private final LocalDateTime confirmedAt;
+    private final LocalDateTime cancelledAt;
 
     public PurchaseResponse(
             Long id,
@@ -29,7 +34,9 @@ public class PurchaseResponse {
             String rateSourceSnapshot,
             LocalDateTime rateRetrievedAtSnapshot,
             boolean rateFromCacheSnapshot,
-            List<PurchaseItemResponse> items) {
+            List<PurchaseItemResponse> items,
+            String supplierName, LocalDate purchaseDate,
+            LocalDateTime confirmedAt, LocalDateTime cancelledAt) {
 
         this.id = id;
         this.status = status;
@@ -41,6 +48,10 @@ public class PurchaseResponse {
         this.rateRetrievedAtSnapshot = rateRetrievedAtSnapshot;
         this.rateFromCacheSnapshot = rateFromCacheSnapshot;
         this.items = items;
+        this.supplierName = supplierName;
+        this.purchaseDate = purchaseDate;
+        this.confirmedAt = confirmedAt;
+        this.cancelledAt = cancelledAt;
     }
 
     public Long getId() {
@@ -82,4 +93,8 @@ public class PurchaseResponse {
     public List<PurchaseItemResponse> getItems() {
         return items;
     }
+    public String getSupplierName() { return supplierName; }
+    public LocalDate getPurchaseDate() { return purchaseDate; }
+    public LocalDateTime getConfirmedAt() { return confirmedAt; }
+    public LocalDateTime getCancelledAt() { return cancelledAt; }
 }

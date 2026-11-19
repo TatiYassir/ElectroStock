@@ -21,7 +21,6 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "sales")
 public class Sale {
-	//Attributes :
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -39,8 +38,10 @@ public class Sale {
 
     @Column(name = "total_currency", nullable = false, precision = 19, scale = 4)
     private BigDecimal totalCurrency = BigDecimal.ZERO;
+
     @Column(name = "rate_to_mad_snapshot", precision = 20, scale = 10)
     private BigDecimal rateToMadSnapshot;
+
     @Column(name = "rate_source_snapshot", length = 100)
     private String rateSourceSnapshot;
 
@@ -49,8 +50,8 @@ public class Sale {
 
     @Column(name = "rate_overridden_snapshot", nullable = false)
     private boolean rateOverriddenSnapshot = false;
-    @Column(name = "rate_from_cache_snapshot",
-            nullable = false)
+
+    @Column(name = "rate_from_cache_snapshot", nullable = false)
     private boolean rateFromCacheSnapshot = false;
 
     @Column(name = "total_mad", precision = 19, scale = 4)
@@ -58,183 +59,194 @@ public class Sale {
 
     @Column(name = "confirmed_at")
     private LocalDateTime confirmedAt;
+
     @Column(name = "handed_over_at")
     private LocalDateTime handedOverAt;
+
     @Column(name = "cancelled_at")
     private LocalDateTime cancelledAt;
-    //NO-ARGUMENT CONSTRUCTOR for JPA :
+
     protected Sale() {
     }
-    //ARGUMENT CONSTRUCTOR :
+
     public Sale(Currency currency, LocalDate saleDate) {
         if (currency == null) {
             throw new IllegalArgumentException("Sale currency is required");
         }
-
         if (saleDate == null) {
             throw new IllegalArgumentException("Sale date is required");
         }
-
         this.currency = currency;
         this.saleDate = saleDate;
     }
-    //Getters:
-	public Long getId() {
-		return id;
-	}
-	public Currency getCurrency() {
-		return currency;
-	}
-	public LocalDate getSaleDate() {
-		return saleDate;
-	}
-	public SaleStatus getStatus() {
-		return status;
-	}
-	public BigDecimal getTotalCurrency() {
-		return totalCurrency;
-	}
-	public LocalDateTime getHandedOverAt() {
-	    return handedOverAt;
-	}
-	public LocalDateTime getCancelledAt() {
-	    return cancelledAt;
-	}
-	public BigDecimal getTotalMad() {
-	    return totalMad;
-	}
 
-	public BigDecimal getRateToMadSnapshot() {
-	    return rateToMadSnapshot;
-	}
+    public Long getId() {
+        return id;
+    }
 
-	public String getRateSourceSnapshot() {
-	    return rateSourceSnapshot;
-	}
+    public Currency getCurrency() {
+        return currency;
+    }
 
-	public LocalDateTime getRateRetrievedAtSnapshot() {
-	    return rateRetrievedAtSnapshot;
-	}
+    public LocalDate getSaleDate() {
+        return saleDate;
+    }
 
-	public boolean isRateFromCacheSnapshot() {
-	    return rateFromCacheSnapshot;
-	}
-	//methods:
-	public SaleItem addItem(Product product, int quantity, BigDecimal unitPriceCurrency) {
-	    if (status != SaleStatus.DRAFT) {
-	        throw new IllegalStateException("Only draft sales can be edited");
-	    }
+    public SaleStatus getStatus() {
+        return status;
+    }
 
-	    SaleItem item = new SaleItem(this, product, quantity, unitPriceCurrency);
-	    totalCurrency = totalCurrency.add(item.getLineTotalCurrency());
+    public BigDecimal getTotalCurrency() {
+        return totalCurrency;
+    }
 
-	    return item;
-	}
-	public void confirmInMad(LocalDateTime confirmedAt) {
-	    if (status != SaleStatus.DRAFT) {
-	        throw new IllegalStateException("Only draft sales can be confirmed");
-	    }
+    public LocalDateTime getConfirmedAt() {
+        return confirmedAt;
+    }
 
-	    if (!"MAD".equals(currency.getCode())) {
-	        throw new IllegalStateException("Only MAD sales can be confirmed for now");
-	    }
+    public LocalDateTime getHandedOverAt() {
+        return handedOverAt;
+    }
 
-	    if (confirmedAt == null) {
-	        throw new IllegalArgumentException("Confirmation time is required");
-	    }
+    public LocalDateTime getCancelledAt() {
+        return cancelledAt;
+    }
 
-	    this.rateToMadSnapshot = BigDecimal.ONE;
-	    this.totalMad = this.totalCurrency;
-	    this.confirmedAt = confirmedAt;
-	    this.status = SaleStatus.CONFIRMED;
-	}
-	public void confirmWithRate(
-	        BigDecimal rateToMad,
-	        BigDecimal convertedTotalMad,
-	        String rateSource,
-	        LocalDateTime rateRetrievedAt,
-	        boolean rateFromCache,
-	        LocalDateTime confirmedAt) {
+    public BigDecimal getTotalMad() {
+        return totalMad;
+    }
 
-	    if (status != SaleStatus.DRAFT) {
-	        throw new IllegalStateException(
-	                "Only draft sales can be confirmed");
-	    }
+    public BigDecimal getRateToMadSnapshot() {
+        return rateToMadSnapshot;
+    }
 
-	    if (rateToMad == null || rateToMad.signum() <= 0) {
-	        throw new IllegalArgumentException(
-	                "Exchange rate to MAD must be positive");
-	    }
+    public String getRateSourceSnapshot() {
+        return rateSourceSnapshot;
+    }
 
-	    if (rateToMad.stripTrailingZeros().scale() > 10) {
-	        throw new IllegalArgumentException(
-	                "Exchange rate to MAD cannot have more than 10 decimal places");
-	    }
+    public LocalDateTime getRateRetrievedAtSnapshot() {
+        return rateRetrievedAtSnapshot;
+    }
 
-	    if ("MAD".equals(currency.getCode())
-	            && rateToMad.compareTo(BigDecimal.ONE) != 0) {
-	        throw new IllegalArgumentException(
-	                "MAD sales must use an exchange rate of 1");
-	    }
+    public boolean isRateFromCacheSnapshot() {
+        return rateFromCacheSnapshot;
+    }
 
-	    if (convertedTotalMad == null || convertedTotalMad.signum() < 0) {
-	        throw new IllegalArgumentException(
-	                "Converted MAD total cannot be null or negative");
-	    }
+    public void validateDeletableDraft() {
+        if (status != SaleStatus.DRAFT) {
+            throw new IllegalStateException("Only draft sales can be deleted");
+        }
+    }
 
-	    if (confirmedAt == null) {
-	        throw new IllegalArgumentException(
-	                "Confirmation time is required");
-	    }
-	    if (rateSource == null || rateSource.isBlank()) {
-	        throw new IllegalArgumentException(
-	                "Rate source is required");
-	    }
+    public SaleItem addItem(Product product, int quantity, BigDecimal unitPriceCurrency) {
+        if (status != SaleStatus.DRAFT) {
+            throw new IllegalStateException("Only draft sales can be edited");
+        }
 
-	    if (rateRetrievedAt == null) {
-	        throw new IllegalArgumentException(
-	                "Rate retrieval time is required");
-	    }
+        SaleItem item = new SaleItem(this, product, quantity, unitPriceCurrency);
+        totalCurrency = totalCurrency.add(item.getLineTotalCurrency());
+        return item;
+    }
 
-	    this.rateToMadSnapshot = rateToMad;
-	    this.rateSourceSnapshot = rateSource;
-	    this.rateRetrievedAtSnapshot = rateRetrievedAt;
-	    this.rateOverriddenSnapshot = false;
-	    this.rateFromCacheSnapshot = rateFromCache;
-	    this.totalMad = convertedTotalMad;
-	    this.confirmedAt = confirmedAt;
-	    this.status = SaleStatus.CONFIRMED;
-	}
-	public void markHandedOver(LocalDateTime handedOverAt) {
-	    if (status != SaleStatus.CONFIRMED) {
-	        throw new IllegalStateException("Only confirmed sales can be handed over");
-	    }
-	    if (this.handedOverAt != null) {
-	        throw new IllegalStateException("Sale has already been handed over");
-	    }
-	    if (handedOverAt == null || handedOverAt.isBefore(confirmedAt)) {
-	        throw new IllegalArgumentException(
-	                "Handover time must be at or after confirmation");
-	    }
+    public void removeDraftItem(SaleItem item) {
+        if (status != SaleStatus.DRAFT) {
+            throw new IllegalStateException("Only draft sales can be edited");
+        }
+        if (item == null || (item.getSale() != this && (id == null || !id.equals(item.getSale().getId())))) {
+            throw new IllegalArgumentException("The item does not belong to this sale");
+        }
+        totalCurrency = totalCurrency.subtract(item.getLineTotalCurrency());
+        if (totalCurrency.signum() < 0) {
+            totalCurrency = BigDecimal.ZERO;
+        }
+    }
 
-	    this.handedOverAt = handedOverAt;
-	}
-	public void cancelBeforeHandover(LocalDateTime cancelledAt) {
-	    if (status != SaleStatus.CONFIRMED) {
-	        throw new SaleCancellationNotAllowedException("Only confirmed sales can be cancelled");
-	    }
+    public void confirmInMad(LocalDateTime confirmedAt) {
+        if (status != SaleStatus.DRAFT) {
+            throw new IllegalStateException("Only draft sales can be confirmed");
+        }
+        if (!"MAD".equals(currency.getCode())) {
+            throw new IllegalStateException("Only MAD sales can be confirmed for now");
+        }
+        if (confirmedAt == null) {
+            throw new IllegalArgumentException("Confirmation time is required");
+        }
 
-	    if (handedOverAt != null) {
-	        throw new SaleCancellationNotAllowedException("Cannot cancel a sale after handover");
-	    }
+        this.rateToMadSnapshot = BigDecimal.ONE;
+        this.totalMad = this.totalCurrency;
+        this.confirmedAt = confirmedAt;
+        this.status = SaleStatus.CONFIRMED;
+    }
 
-	    if (cancelledAt == null || cancelledAt.isBefore(confirmedAt)) {
-	        throw new IllegalArgumentException(
-	                "Cancellation time must be at or after confirmation");
-	    }
+    public void confirmWithRate(
+            BigDecimal rateToMad,
+            BigDecimal convertedTotalMad,
+            String rateSource,
+            LocalDateTime rateRetrievedAt,
+            boolean rateFromCache,
+            LocalDateTime confirmedAt) {
 
-	    this.cancelledAt = cancelledAt;
-	    this.status = SaleStatus.CANCELLED;
-	}
-	
+        if (status != SaleStatus.DRAFT) {
+            throw new IllegalStateException("Only draft sales can be confirmed");
+        }
+        if (rateToMad == null || rateToMad.signum() <= 0) {
+            throw new IllegalArgumentException("Exchange rate to MAD must be positive");
+        }
+        if (rateToMad.stripTrailingZeros().scale() > 10) {
+            throw new IllegalArgumentException("Exchange rate to MAD cannot have more than 10 decimal places");
+        }
+        if ("MAD".equals(currency.getCode()) && rateToMad.compareTo(BigDecimal.ONE) != 0) {
+            throw new IllegalArgumentException("MAD sales must use an exchange rate of 1");
+        }
+        if (convertedTotalMad == null || convertedTotalMad.signum() < 0) {
+            throw new IllegalArgumentException("Converted MAD total cannot be null or negative");
+        }
+        if (confirmedAt == null) {
+            throw new IllegalArgumentException("Confirmation time is required");
+        }
+        if (rateSource == null || rateSource.isBlank()) {
+            throw new IllegalArgumentException("Rate source is required");
+        }
+        if (rateRetrievedAt == null) {
+            throw new IllegalArgumentException("Rate retrieval time is required");
+        }
+
+        this.rateToMadSnapshot = rateToMad;
+        this.rateSourceSnapshot = rateSource;
+        this.rateRetrievedAtSnapshot = rateRetrievedAt;
+        this.rateOverriddenSnapshot = false;
+        this.rateFromCacheSnapshot = rateFromCache;
+        this.totalMad = convertedTotalMad;
+        this.confirmedAt = confirmedAt;
+        this.status = SaleStatus.CONFIRMED;
+    }
+
+    public void markHandedOver(LocalDateTime handedOverAt) {
+        if (status != SaleStatus.CONFIRMED) {
+            throw new IllegalStateException("Only confirmed sales can be handed over");
+        }
+        if (this.handedOverAt != null) {
+            throw new IllegalStateException("Sale has already been handed over");
+        }
+        if (handedOverAt == null || handedOverAt.isBefore(confirmedAt)) {
+            throw new IllegalArgumentException("Handover time must be at or after confirmation");
+        }
+
+        this.handedOverAt = handedOverAt;
+    }
+
+    public void cancelBeforeHandover(LocalDateTime cancelledAt) {
+        if (status != SaleStatus.CONFIRMED) {
+            throw new SaleCancellationNotAllowedException("Only confirmed sales can be cancelled");
+        }
+        if (handedOverAt != null) {
+            throw new SaleCancellationNotAllowedException("Cannot cancel a sale after handover");
+        }
+        if (cancelledAt == null || cancelledAt.isBefore(confirmedAt)) {
+            throw new IllegalArgumentException("Cancellation time must be at or after confirmation");
+        }
+
+        this.cancelledAt = cancelledAt;
+        this.status = SaleStatus.CANCELLED;
+    }
 }

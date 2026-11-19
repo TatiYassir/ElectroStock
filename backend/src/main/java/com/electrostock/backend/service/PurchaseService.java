@@ -36,6 +36,7 @@ import com.electrostock.backend.repository.CurrencyRepository;
 import com.electrostock.backend.repository.StockMovementRepository;
 import com.electrostock.backend.dto.purchase.PurchaseItemResponse;
 import com.electrostock.backend.dto.purchase.PurchaseResponse;
+import com.electrostock.backend.dto.purchase.PurchaseSummaryResponse;
 
 @Service
 public class PurchaseService {
@@ -94,6 +95,23 @@ public class PurchaseService {
 
 	    return purchaseItemRepository.save(item);
 	}
+
+	@Transactional
+	public void removeDraftItem(Long purchaseId, Long itemId) {
+	    Purchase purchase = purchaseRepository.findById(purchaseId)
+	            .orElseThrow(() -> new IllegalArgumentException("Purchase not found: " + purchaseId));
+	    PurchaseItem item = purchaseItemRepository.findById(itemId)
+	            .orElseThrow(() -> new IllegalArgumentException("Purchase item not found: " + itemId));
+	    purchase.removeDraftItem(item);
+	    purchaseItemRepository.delete(item);
+	}
+
+	@Transactional(readOnly = true)
+	public List<PurchaseSummaryResponse> listPurchases() {
+	    return purchaseRepository.findPurchaseSummaries();
+	}
+
+	@Transactional(readOnly = true)
 	public PurchaseResponse getPurchase(Long purchaseId) {
 	    Purchase purchase = purchaseRepository.findById(purchaseId)
 	            .orElseThrow(() -> new IllegalArgumentException(
@@ -105,12 +123,18 @@ public class PurchaseService {
 	    List<PurchaseItemResponse> itemResponses = new ArrayList<>();
 
 	    for (PurchaseItem item : items) {
+	        Product product = item.getProduct();
+	        List<String> serialNumbers = product.isTracksSerials() && purchase.getStatus() != PurchaseStatus.DRAFT
+	                ? productUnitRepository.findByPurchaseItem_Id(item.getId()).stream()
+	                        .map(ProductUnit::getSerialNumber).sorted().toList()
+	                : List.of();
 	        PurchaseItemResponse itemResponse = new PurchaseItemResponse(
 	                item.getId(),
-	                item.getProduct().getId(),
+	                product.getId(),
 	                item.getQuantity(),
 	                item.getUnitPriceCurrency(),
-	                item.getLineTotalCurrency());
+	                item.getLineTotalCurrency(),
+	                product.getSku(), product.getName(), product.isTracksSerials(), serialNumbers);
 
 	        itemResponses.add(itemResponse);
 	    }
@@ -125,7 +149,9 @@ public class PurchaseService {
 	            purchase.getRateSourceSnapshot(),
 	            purchase.getRateRetrievedAtSnapshot(),
 	            purchase.isRateFromCacheSnapshot(),
-	            itemResponses);
+	            itemResponses,
+	            purchase.getSupplier().getName(), purchase.getPurchaseDate(),
+	            purchase.getConfirmedAt(), purchase.getCancelledAt());
 	}
 	@Transactional(readOnly = true)
 	public void validatePurchaseConfirmation(

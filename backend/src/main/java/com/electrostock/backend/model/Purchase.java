@@ -149,6 +149,16 @@ public class Purchase {
 
 		return item;
 	}
+	public void removeDraftItem(PurchaseItem item) {
+	    if (status != PurchaseStatus.DRAFT) {
+	        throw new IllegalStateException("Only draft purchases can be edited");
+	    }
+	    if (item == null || (item.getPurchase() != this
+	            && (id == null || !id.equals(item.getPurchase().getId())))) {
+	        throw new IllegalArgumentException("The item does not belong to this purchase");
+	    }
+	    totalCurrency = totalCurrency.subtract(item.getLineTotalCurrency());
+	}
 	public void confirmInMad(LocalDateTime confirmedAt) {
 	    if (status != PurchaseStatus.DRAFT) {
 	        throw new IllegalStateException("Only draft purchases can be confirmed");

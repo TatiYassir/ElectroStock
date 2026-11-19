@@ -18,6 +18,7 @@ import com.electrostock.frontend.api.InventoryReportClient.StockItem;
 
 import javafx.application.Platform;
 
+import javafx.css.PseudoClass;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.layout.Priority;
@@ -59,6 +60,7 @@ public class DashboardView extends VBox {
             new javafx.beans.property.SimpleIntegerProperty();
     private static final DateTimeFormatter ACTIVITY_TIME =
             DateTimeFormatter.ofPattern("MMM d, HH:mm", Locale.ENGLISH);
+    private static final PseudoClass ROW_HOVER = PseudoClass.getPseudoClass("row-hover");
 
     //Constructor
     public DashboardView(Runnable onNewSale, Runnable onNewPurchase) {
@@ -77,9 +79,7 @@ public class DashboardView extends VBox {
         newPurchase.getStyleClass().add("secondary-action");
         newPurchase.setOnAction(event -> onNewPurchase.run());
 
-        setStyle("-fx-background-color: #F3F5F9; -fx-font-weight: bold; -fx-font-size: 14px; -fx-text-background-color: #192330;");
         newSale.setGraphic(icon("New sale", "white"));
-        newSale.setStyle("-fx-background-color: #098879; -fx-text-fill: white;");
         newPurchase.setGraphic(icon("New purchase", "#09193D"));
         Button refreshAll = new Button("Refresh all", icon("Refresh", "#09193D"));
         refreshAll.getStyleClass().add("secondary-action");
@@ -182,14 +182,12 @@ public class DashboardView extends VBox {
     private Label movementBadge(String type) {
         String word = type.toLowerCase(Locale.ROOT).replace('_', ' ');
         Label badge = new Label(Character.toUpperCase(word.charAt(0)) + word.substring(1));
-        String fill = switch (type) {
-            case "SALE" -> "#D6E3F3";
-            case "PURCHASE" -> "#C1DAFF";
-            case "REVERSAL" -> "#EEE5FA";
-            default -> "#D7F0E9";
-        };
-        badge.setStyle("-fx-background-color: " + fill + "; -fx-background-radius: 6;"
-                + "-fx-text-fill: #09193D; -fx-padding: 3 10;");
+        badge.getStyleClass().addAll("movement-badge", switch (type) {
+            case "SALE" -> "movement-sale";
+            case "PURCHASE" -> "movement-purchase";
+            case "REVERSAL" -> "movement-reversal";
+            default -> "movement-other";
+        });
         badge.setMinWidth(76);
         badge.setAlignment(Pos.CENTER);
         return badge;
@@ -197,6 +195,9 @@ public class DashboardView extends VBox {
 
     private void decorateNavigation(javafx.scene.Scene scene) {
         // Navigation belongs to the application shell, outside the dashboard.
+        // Share the stylesheet with the scene so the sidebar gets its hover states.
+        String css = DashboardView.class.getResource("dashboard.css").toExternalForm();
+        if (!scene.getStylesheets().contains(css)) scene.getStylesheets().add(css);
         for (var node : scene.getRoot().lookupAll(".button")) {
             if (!(node instanceof Button button)) continue;
             if (!List.of("Dashboard", "Products", "Purchases", "Sales", "Suppliers",
@@ -270,30 +271,29 @@ public class DashboardView extends VBox {
     }
     private VBox createRecentActivityPanel() {
         Label heading = new Label("Recent stock activity");
-        heading.setStyle("-fx-font-size: 17px; -fx-font-weight: bold;");
+        heading.getStyleClass().add("panel-heading");
 
         HBox header = new HBox(heading);
         header.setAlignment(Pos.CENTER_LEFT);
 
         VBox content = new VBox();
         VBox panel = new VBox(10, header, content);
-        panel.getStyleClass().add("recent-stock-activity");
-        panel.setPadding(new Insets(14));
+        panel.getStyleClass().addAll("report-card", "recent-stock-activity");
 
         inventoryLoaders.add(() -> {
             pendingReports.set(pendingReports.get() + 1);
-            content.getChildren().setAll(new Label("Loading recent activity…"));
+            content.getChildren().setAll(emptyState("Loading recent activity…"));
 
             inventoryReports.fetchRecentActivity().whenComplete((activities, error) ->
                     Platform.runLater(() -> {
                         pendingReports.set(pendingReports.get() - 1);
 
                         if (error != null) {
-                            content.getChildren().setAll(
-                                    new Label("Couldn’t load activity. Check the backend and refresh."));
+                            content.getChildren().setAll(emptyState(
+                                    "Couldn’t load activity. Check the backend and refresh."));
                         } else if (activities.isEmpty()) {
                             content.getChildren().setAll(
-                                    new Label("No stock movements recorded yet."));
+                                    emptyState("No stock movements recorded yet."));
                         } else {
                             content.getChildren().setAll(createActivityTable(activities));
                         }
@@ -308,54 +308,72 @@ public class DashboardView extends VBox {
         table.getStyleClass().add("stock-activity-table");
         table.setMaxWidth(Double.MAX_VALUE);
 
-        // The product name gets the space left by the four shorter columns.
-        ColumnConstraints productColumn = new ColumnConstraints(75, 175, Double.MAX_VALUE);
+        // Columns: Time | Product (takes the leftover width) | Movement | Qty
+        ColumnConstraints timeColumn = new ColumnConstraints(110, 118, Region.USE_PREF_SIZE);
+        ColumnConstraints productColumn = new ColumnConstraints(90, 200, Double.MAX_VALUE);
         productColumn.setHgrow(Priority.ALWAYS);
+        ColumnConstraints movementColumn = new ColumnConstraints(96, 106, Region.USE_PREF_SIZE);
+        ColumnConstraints quantityColumn = new ColumnConstraints(46, 52, Region.USE_PREF_SIZE);
         table.getColumnConstraints().addAll(
-                new ColumnConstraints(98, 106, 106),
-                new ColumnConstraints(73, 96, 96),
-                productColumn,
-                new ColumnConstraints(42, 50, 50),
-                new ColumnConstraints(94, 106, 106));
+                timeColumn, productColumn, movementColumn, quantityColumn);
 
         addActivityRow(table, 0, activities.size(),
-                new Label("Movement"), new Label("SKU"), new Label("Product name"),
-                new Label("Qty"), new Label("Time"));
+                new Label("Time"), new Label("Product"),
+                new Label("Movement"), new Label("Qty"));
 
         int row = 1;
         for (StockActivity activity : activities) {
             Label quantity = new Label("%+d".formatted(activity.quantityChange()));
             quantity.getStyleClass().add("stock-activity-quantity");
+            if (activity.quantityChange() > 0) quantity.getStyleClass().add("gain");
+            if (activity.quantityChange() < 0) quantity.getStyleClass().add("loss");
 
+            // Show "SKU – name" in one column so the name has room to breathe.
             String name = activity.productName();
-            Label product = new Label(name == null || name.isBlank() ? "—" : name);
+            String text = name == null || name.isBlank()
+                    ? activity.sku() : activity.sku() + " – " + name;
+            Label product = new Label(text);
             product.setTextOverrun(javafx.scene.control.OverrunStyle.ELLIPSIS);
-            if (name != null && !name.isBlank()) {
-                product.setTooltip(new javafx.scene.control.Tooltip(name));
-            }
-            Label sku = new Label(activity.sku());
-            sku.setTooltip(new javafx.scene.control.Tooltip(activity.sku()));
+            product.setTooltip(new javafx.scene.control.Tooltip(text));
 
-            addActivityRow(table, row++, activities.size(), movementBadge(activity.movementType()),
-                    sku, product, quantity,
-                    new Label(ACTIVITY_TIME.format(activity.movementAt())));
+            Label time = new Label(ACTIVITY_TIME.format(activity.movementAt()));
+            time.getStyleClass().add("stock-activity-time");
+
+            addActivityRow(table, row++, activities.size(),
+                    time, product, movementBadge(activity.movementType()), quantity);
         }
         return table;
     }
 
     private void addActivityRow(GridPane table, int row, int lastRow, Label... labels) {
+        java.util.List<StackPane> cells = new java.util.ArrayList<>();
         for (int column = 0; column < labels.length; column++) {
             Label label = labels[column];
-            if (row == 0 || column != 0) label.setMinWidth(0);
+            // Only the text columns may shrink; time, badge and quantity keep their width.
+            if (row == 0 || column == 1) label.setMinWidth(0);
+            else label.setMinWidth(javafx.scene.layout.Region.USE_PREF_SIZE);
             StackPane cell = new StackPane(label);
-            cell.setAlignment(column == 3 ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT);
+            cell.setAlignment(column == labels.length - 1 ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT);
             cell.getStyleClass().add("stock-activity-cell");
             if (row == 0) cell.getStyleClass().add("stock-activity-heading");
-            if (row != 0 && row % 2 == 0) cell.getStyleClass().add("stock-activity-even");
             if (row == lastRow) cell.getStyleClass().add("stock-activity-last-row");
             if (column == labels.length - 1) cell.getStyleClass().add("stock-activity-last-column");
+            cells.add(cell);
             table.add(cell, column, row);
         }
+        if (row != 0) {
+            // GridPane has no row hover, so light up every cell of the hovered row.
+            for (StackPane cell : cells) {
+                cell.hoverProperty().addListener((obs, was, now) ->
+                        cells.forEach(c -> c.pseudoClassStateChanged(ROW_HOVER, now)));
+            }
+        }
+    }
+
+    private Label emptyState(String text) {
+        Label label = new Label(text);
+        label.getStyleClass().add("empty-state");
+        return label;
     }
     private VBox createLowStockPanel() {
         Label heading = new Label("Stock availability");
@@ -516,22 +534,17 @@ public class DashboardView extends VBox {
 
     private VBox createMetricCard(String title, String value, boolean negative) {
         Label caption = new Label(title);
-        caption.setStyle("-fx-font-size: 14px; -fx-text-fill: #202C39;");
+        caption.getStyleClass().add("metric-caption");
 
         Label amount = new Label(value);
-        String valueColor = negative ? "#A52F30" : "#172B40";
-        amount.setStyle(
-                "-fx-font-size: 17px; -fx-font-weight: bold; -fx-text-fill: "
-                + valueColor + ";");
+        amount.getStyleClass().add("metric-value");
+        if (negative) amount.getStyleClass().add("negative");
 
         VBox text = new VBox(4, caption, amount);
-        HBox contents = new HBox(8, icon(title, "#008C79"), text);
+        HBox contents = new HBox(10, icon(title, "#008C79"), text);
         contents.setAlignment(Pos.CENTER_LEFT);
         VBox card = new VBox(contents);
-        card.setPadding(new Insets(12));
-        card.setStyle(
-                "-fx-background-color: white; -fx-background-radius: 8;"
-                + "-fx-border-color: #D7DFE7; -fx-border-radius: 8;");
+        card.getStyleClass().add("metric-card");
         card.setPrefWidth(150);
         card.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(card, Priority.ALWAYS);
@@ -599,16 +612,16 @@ public class DashboardView extends VBox {
         BarChart<String, Number> chart = new BarChart<>(days, amounts);
         chart.setPrefHeight(275);
         chart.getStyleClass().add("sales-chart");
-        chart.setTitle("Daily sales and gross profit");
         chart.setAnimated(false);
         chart.setHorizontalGridLinesVisible(true);
-        chart.setVerticalGridLinesVisible(true);
+        chart.setVerticalGridLinesVisible(false);
+        chart.setLegendSide(javafx.geometry.Side.BOTTOM);
 
         XYChart.Series<String, Number> revenue = new XYChart.Series<>();
-        revenue.setName("Revenue");
+        revenue.setName("Revenue (MAD)");
 
         XYChart.Series<String, Number> profit = new XYChart.Series<>();
-        profit.setName("Gross profit");
+        profit.setName("Gross profit (MAD)");
 
         for (SalesDay day : selectedDays) {
             String label = day.date().format(DAY_LABEL);
@@ -625,8 +638,8 @@ public class DashboardView extends VBox {
             profit.getData().add(profitPoint);
         }
 
-        colorSeries(revenue, "#086EF9");
-        colorSeries(profit, STOCK_GREEN);
+        colorSeries(revenue, "#1677ED");
+        colorSeries(profit, "#14C8A0");
         chart.getData().add(revenue);
         chart.getData().add(profit);
         return chart;
@@ -649,23 +662,20 @@ public class DashboardView extends VBox {
 
         ToggleGroup stockFilter = new ToggleGroup();
         List<ToggleButton> buttons = List.of(overview, gains, losses);
-        String segmentStyle = "-fx-padding: 6 10; -fx-background-radius: 4;";
-
         for (ToggleButton button : buttons) {
             button.setToggleGroup(stockFilter);
-            button.styleProperty().bind(
-                    javafx.beans.binding.Bindings.when(button.selectedProperty())
-                            .then(segmentStyle
-                                    + "-fx-background-color: #008C79; -fx-text-fill: white;")
-                            .otherwise(segmentStyle
-                                    + "-fx-background-color: #EDF2F5; -fx-text-fill: #172B40;"));
+            button.getStyleClass().add("segment-button");
         }
         overview.setSelected(true);
 
         Label title = new Label("Potential profit by product");
-        title.setStyle("-fx-font-size: 17px; -fx-font-weight: bold;");
+        title.getStyleClass().add("panel-heading");
 
-        HBox filterBar = new HBox(overview, gains, losses);
+        HBox filterBar = new HBox(2, overview, gains, losses);
+        filterBar.getStyleClass().add("segment-bar");
+        filterBar.setMaxWidth(Region.USE_PREF_SIZE);
+        HBox titleRow = new HBox(8, title, flexibleSpace(), filterBar);
+        titleRow.setAlignment(Pos.CENTER_LEFT);
         VBox stockRows = new VBox(6);
 
         inventoryLoaders.add(() -> {
@@ -700,7 +710,7 @@ public class DashboardView extends VBox {
 
                         render.run();
                         content.getChildren().setAll(
-                                createStockSummary(items), title, filterBar, stockRows);
+                                createStockSummary(items), titleRow, stockRows);
                     }));
         });
 

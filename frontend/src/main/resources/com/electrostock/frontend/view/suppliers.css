@@ -1,0 +1,214 @@
+/* Supplier directory styles are scoped to the Suppliers page. */
+
+.suppliers-page {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 13px;
+    -fx-text-background-color: #14223B;
+}
+
+.suppliers-page {
+    -fx-background-color: #F2F5FA;
+    -fx-padding: 20;
+    -fx-spacing: 14;
+}
+
+.suppliers-page .supplier-page-title {
+    -fx-font-size: 30px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #09193D;
+}
+
+.suppliers-page .supplier-muted {
+    -fx-text-fill: #485B76;
+}
+
+.suppliers-page .supplier-card {
+    -fx-background-color: white;
+    -fx-background-radius: 8;
+    -fx-border-color: #CCD8E7;
+    -fx-border-radius: 8;
+    -fx-padding: 14;
+}
+
+.suppliers-page .supplier-card-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #102447;
+}
+
+.suppliers-page .supplier-field-label {
+    -fx-font-weight: bold;
+    -fx-text-fill: #1B3457;
+}
+
+.suppliers-page .button {
+    -fx-cursor: hand;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-font-weight: bold;
+    -fx-padding: 8 13;
+}
+
+.suppliers-page .supplier-primary {
+    -fx-background-color: #00786C;
+    -fx-border-color: transparent;
+    -fx-text-fill: white;
+}
+
+.suppliers-page .supplier-primary:hover {
+    -fx-background-color: #006358;
+}
+
+.suppliers-page .supplier-secondary {
+    -fx-background-color: white;
+    -fx-border-color: #ACBDD3;
+    -fx-text-fill: #15294C;
+}
+
+.suppliers-page .supplier-secondary:hover {
+    -fx-background-color: #EAF1FA;
+}
+
+.suppliers-page .supplier-danger {
+    -fx-background-color: #FFF3F2;
+    -fx-border-color: #E3AFAB;
+    -fx-text-fill: #972C29;
+}
+
+.suppliers-page .supplier-danger:hover {
+    -fx-background-color: #FBE2E0;
+}
+
+.suppliers-page .button:focused {
+    -fx-border-color: #398ECD;
+}
+
+.suppliers-page .text-field,
+.suppliers-page .combo-box,
+.suppliers-page .date-picker,
+.suppliers-page .text-area {
+    -fx-background-color: white;
+    -fx-border-color: #A7B9D0;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+}
+
+.suppliers-page .text-field,
+.suppliers-page .text-area {
+    -fx-padding: 7 9;
+    -fx-prompt-text-fill: #617694;
+}
+
+.suppliers-page .text-field:focused,
+.suppliers-page .combo-box:focused,
+.suppliers-page .date-picker:focused,
+.suppliers-page .text-area:focused {
+    -fx-border-color: #398ECD;
+}
+
+.suppliers-page .supplier-metric {
+    -fx-background-color: #F3F7FC;
+    -fx-background-radius: 6;
+    -fx-padding: 8 11;
+}
+
+.suppliers-page .supplier-metric-value {
+    -fx-text-fill: #102447;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+}
+
+.suppliers-page .supplier-notice,
+.suppliers-page .supplier-error {
+    -fx-padding: 8 11;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+}
+
+.suppliers-page .supplier-notice {
+    -fx-background-color: #E7F4EF;
+    -fx-border-color: #ADCBBC;
+    -fx-text-fill: #124E43;
+}
+
+.suppliers-page .supplier-error {
+    -fx-background-color: #FFF2F2;
+    -fx-border-color: #E6B1AF;
+    -fx-text-fill: #8D2928;
+}
+
+.suppliers-page .supplier-status {
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-background-radius: 12;
+    -fx-padding: 3 9;
+    -fx-background-color: #EEF2F8;
+    -fx-text-fill: #253D60;
+}
+
+.suppliers-page .supplier-status-active {
+    -fx-background-color: #DCF2E9;
+    -fx-text-fill: #12594C;
+}
+
+.suppliers-page .supplier-status-inactive {
+    -fx-background-color: #E8EDF5;
+    -fx-text-fill: #4C607F;
+}
+
+.suppliers-page .supplier-table {
+    -fx-background-color: white;
+    -fx-border-color: #B8C7D9;
+    -fx-border-radius: 5;
+    -fx-padding: 0;
+}
+
+.suppliers-page .supplier-table .column-header-background,
+.suppliers-page .supplier-table .column-header {
+    -fx-background-color: #E4ECF6;
+}
+
+.suppliers-page .supplier-table .column-header .label {
+    -fx-alignment: center-left;
+    -fx-text-fill: #102447;
+    -fx-font-weight: bold;
+    -fx-padding: 0 8;
+}
+
+.suppliers-page .supplier-table .column-header {
+    -fx-pref-height: 34;
+    -fx-border-color: #B8C7D9;
+    -fx-border-width: 0 1 1 0;
+}
+
+.suppliers-page .supplier-table .table-row-cell {
+    -fx-background-color: white;
+    -fx-cell-size: 36;
+}
+
+.suppliers-page .supplier-table .table-row-cell:odd:filled {
+    -fx-background-color: #F5F8FC;
+}
+
+.suppliers-page .supplier-table .table-row-cell:filled:selected {
+    -fx-background-color: #DCEFF2;
+}
+
+.suppliers-page .supplier-table .table-row-cell:filled .table-cell {
+    -fx-border-color: #DFE7F1;
+    -fx-border-width: 0 1 1 0;
+    -fx-text-fill: #172B40;
+    -fx-padding: 0 8;
+}
+
+.suppliers-page .supplier-validation {
+    -fx-text-fill: #8D2928;
+}
+.suppliers-page .supplier-field-label {
+    -fx-font-size: 13px;
+}
+.suppliers-page .supplier-address {
+    -fx-background-color: #F3F7FC;
+    -fx-background-radius: 5;
+    -fx-padding: 8 10;
+}

@@ -2,6 +2,7 @@ package com.electrostock.backend.repository;
 
 import com.electrostock.backend.model.ProductUnit;
 import java.util.List;
+import com.electrostock.backend.enums.UnitStatus;
 
 import org.springframework.data.jpa.repository.Query;
 
@@ -15,6 +16,8 @@ public interface ProductUnitRepository
 	boolean existsBySerialNumber(String serialNumber);
 	List<ProductUnit> findByPurchaseItem_Id(Long purchaseItemId);
 	Optional<ProductUnit> findBySerialNumber(String serialNumber);
+	List<ProductUnit> findByProduct_IdAndStatusOrderBySerialNumberAsc(
+	        Long productId, UnitStatus status);
 	@Query("""
 	        SELECT new com.electrostock.backend.dto.report.SerialUnitTraceRow(
 	            u.id,

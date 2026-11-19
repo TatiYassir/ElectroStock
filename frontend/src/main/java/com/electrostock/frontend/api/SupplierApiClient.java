@@ -1,0 +1,83 @@
+package com.electrostock.frontend.api;
+
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.json.JsonMapper;
+
+/** Supplier directory calls to the existing Spring Boot API. */
+public final class SupplierApiClient {
+    public record Supplier(long id, String name, String phone, String email, String address, String status) {
+        public boolean active() { return "ACTIVE".equals(status); }
+    }
+
+    public record SupplierInput(String name, String phone, String email, String address) {}
+    private record ErrorBody(String message, String detail, String error) {}
+
+    private static final URI API = URI.create("http://localhost:8080/api/");
+    private final HttpClient http = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(5)).build();
+    private final JsonMapper json = JsonMapper.builder()
+            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES).build();
+
+    public CompletableFuture<List<Supplier>> list() {
+        return request("GET", "suppliers", null, Supplier[].class).thenApply(List::of);
+    }
+
+    public CompletableFuture<Supplier> get(long id) {
+        return request("GET", "suppliers/" + id, null, Supplier.class);
+    }
+
+    public CompletableFuture<Supplier> create(SupplierInput input) {
+        return request("POST", "suppliers", input, Supplier.class);
+    }
+
+    public CompletableFuture<Supplier> update(long id, SupplierInput input) {
+        return request("PUT", "suppliers/" + id, input, Supplier.class);
+    }
+
+    public CompletableFuture<Supplier> setActive(long id, boolean active) {
+        return request("PATCH", "suppliers/" + id + (active ? "/reactivate" : "/deactivate"),
+                null, Supplier.class);
+    }
+
+    private <T> CompletableFuture<T> request(String method, String path, Object body, Class<T> type) {
+        var builder = HttpRequest.newBuilder(API.resolve(path))
+                .timeout(Duration.ofSeconds(25)).header("Accept", "application/json");
+        var payload = HttpRequest.BodyPublishers.noBody();
+        if (body != null) {
+            builder.header("Content-Type", "application/json");
+            payload = HttpRequest.BodyPublishers.ofString(json.writeValueAsString(body));
+        }
+        return http.sendAsync(builder.method(method, payload).build(), HttpResponse.BodyHandlers.ofString())
+                .thenApply(response -> {
+                    if (response.statusCode() / 100 != 2) {
+                        throw new IllegalStateException(errorMessage(response.statusCode(), response.body()));
+                    }
+                    return json.readValue(response.body(), type);
+                });
+    }
+
+    private String errorMessage(int status, String body) {
+        String text = body.strip();
+        if (text.startsWith("{")) {
+            try {
+                var problem = json.readValue(text, ErrorBody.class);
+                for (String detail : new String[] {problem.message(), problem.detail(), problem.error()}) {
+                    if (detail != null && !detail.isBlank()) return detail;
+                }
+            } catch (RuntimeException ignored) {
+                // Fall through to the status if the response isn't a normal API error.
+            }
+        } else if (!text.isEmpty() && !text.startsWith("<") && text.length() <= 300) {
+            return text;
+        }
+        return "Supplier request failed (HTTP " + status + ").";
+    }
+}

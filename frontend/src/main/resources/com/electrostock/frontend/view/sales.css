@@ -1,0 +1,341 @@
+/* Sales is scoped to its own root and dialogs. Other sections keep their styles. */
+.sales-page, .sales-dialog {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 13px;
+    -fx-text-background-color: #0F172A;
+}
+
+.sales-page {
+    -fx-background-color: #F4F7FB;
+    -fx-padding: 22;
+    -fx-spacing: 16;
+}
+
+.sales-page .sale-page-title {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #09193D;
+}
+
+.sales-page .sale-muted, .sales-dialog .sale-muted {
+    -fx-text-fill: #52647C;
+    -fx-font-size: 12px;
+}
+
+.sales-page .sale-card {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 10;
+    -fx-border-color: #D6E0EC;
+    -fx-border-radius: 10;
+    -fx-padding: 16;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.04), 10, 0, 0, 2);
+}
+
+.sales-page .sale-card-title, .sales-dialog .sale-card-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #0F2342;
+}
+
+.sales-page .sale-field-label, .sales-dialog .sale-field-label {
+    -fx-font-weight: bold;
+    -fx-text-fill: #1E3A5F;
+}
+
+/* Interactive KPI Cards */
+.sales-page .sale-kpi-card {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 10;
+    -fx-border-color: #D6E0EC;
+    -fx-border-radius: 10;
+    -fx-padding: 12 16;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.03), 8, 0, 0, 1);
+}
+
+.sales-page .sale-kpi-card:hover {
+    -fx-border-color: #0F766E;
+    -fx-background-color: #F8FCFB;
+}
+
+.sales-page .sale-kpi-card-active {
+    -fx-border-color: #0F766E;
+    -fx-border-width: 1.5;
+    -fx-background-color: #F0FDFA;
+}
+
+.sales-page .sale-kpi-value {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #09193D;
+}
+
+/* Lifecycle Stepper */
+.sales-page .sale-stepper {
+    -fx-padding: 2 0 4 0;
+}
+
+.sales-page .sale-step {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-padding: 4 11;
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+}
+
+.sales-page .sale-step-done {
+    -fx-background-color: #DCFCE7;
+    -fx-border-color: #86EFAC;
+    -fx-text-fill: #166534;
+}
+
+.sales-page .sale-step-current {
+    -fx-background-color: #E0F2FE;
+    -fx-border-color: #7DD3FC;
+    -fx-text-fill: #075985;
+}
+
+.sales-page .sale-step-pending {
+    -fx-background-color: #F1F5F9;
+    -fx-border-color: #CBD5E1;
+    -fx-text-fill: #64748B;
+}
+
+.sales-page .sale-step-cancelled {
+    -fx-background-color: #FEE2E2;
+    -fx-border-color: #FCA5A5;
+    -fx-text-fill: #991B1B;
+}
+
+/* Buttons */
+.sales-page .button, .sales-dialog .button {
+    -fx-cursor: hand;
+    -fx-background-radius: 7;
+    -fx-border-radius: 7;
+    -fx-font-weight: bold;
+    -fx-padding: 8 14;
+}
+
+.sales-page .sale-primary, .sales-dialog .sale-primary {
+    -fx-background-color: #0F766E;
+    -fx-border-color: transparent;
+    -fx-text-fill: #FFFFFF;
+}
+
+.sales-page .sale-primary:hover, .sales-dialog .sale-primary:hover {
+    -fx-background-color: #115E59;
+}
+
+.sales-page .sale-secondary, .sales-dialog .sale-secondary {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #CBD5E1;
+    -fx-text-fill: #1E293B;
+}
+
+.sales-page .sale-secondary:hover, .sales-dialog .sale-secondary:hover {
+    -fx-background-color: #F1F5F9;
+}
+
+.sales-page .sale-danger {
+    -fx-background-color: #FFF5F5;
+    -fx-border-color: #FEB2B2;
+    -fx-text-fill: #9B2C2C;
+}
+
+.sales-page .sale-danger:hover {
+    -fx-background-color: #FED7D7;
+}
+
+.sales-dialog .sale-qty-btn {
+    -fx-background-color: #F1F5F9;
+    -fx-border-color: #CBD5E1;
+    -fx-text-fill: #0F172A;
+    -fx-padding: 5 10;
+    -fx-font-size: 12px;
+}
+
+.sales-dialog .sale-qty-btn:hover {
+    -fx-background-color: #E2E8F0;
+}
+
+.sales-page .button:focused, .sales-dialog .button:focused {
+    -fx-border-color: #0284C7;
+}
+
+/* Inputs */
+.sales-page .text-field, .sales-page .combo-box, .sales-page .date-picker,
+.sales-dialog .text-field, .sales-dialog .list-view {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #CBD5E1;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+}
+
+.sales-page .text-field, .sales-dialog .text-field {
+    -fx-padding: 7 10;
+    -fx-prompt-text-fill: #64748B;
+}
+
+.sales-page .text-field:focused, .sales-page .combo-box:focused, .sales-page .date-picker:focused,
+.sales-dialog .text-field:focused, .sales-dialog .list-view:focused {
+    -fx-border-color: #0F766E;
+}
+
+/* Metrics & Summary */
+.sales-page .sale-metric {
+    -fx-background-color: #F8FAFC;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 10 14;
+}
+
+.sales-page .sale-metric-value {
+    -fx-text-fill: #0F172A;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.sales-page .sale-items-footer {
+    -fx-background-color: #F8FAFC;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 7;
+    -fx-background-radius: 7;
+    -fx-padding: 9 14;
+}
+
+/* Feedback Banners */
+.sales-page .sale-notice, .sales-page .sale-error {
+    -fx-padding: 10 14;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-font-weight: bold;
+}
+
+.sales-page .sale-notice {
+    -fx-background-color: #ECFDF5;
+    -fx-border-color: #A7F3D0;
+    -fx-text-fill: #065F46;
+}
+
+.sales-page .sale-error {
+    -fx-background-color: #FEF2F2;
+    -fx-border-color: #FECACA;
+    -fx-text-fill: #991B1B;
+}
+
+.sales-dialog .sale-dialog-error {
+    -fx-text-fill: #991B1B;
+    -fx-font-weight: bold;
+}
+
+/* Status & Stock Pills */
+.sales-page .sale-status {
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-background-radius: 12;
+    -fx-padding: 3 10;
+    -fx-background-color: #EEF2F6;
+    -fx-text-fill: #334155;
+}
+
+.sales-page .sale-status-awaiting {
+    -fx-background-color: #FEF3C7;
+    -fx-text-fill: #92400E;
+}
+
+.sales-page .sale-status-handed {
+    -fx-background-color: #DCFCE7;
+    -fx-text-fill: #166534;
+}
+
+.sales-page .sale-status-cancelled {
+    -fx-background-color: #FEE2E2;
+    -fx-text-fill: #991B1B;
+}
+
+.sales-dialog .sale-pill {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 2 8;
+    -fx-background-radius: 10;
+}
+
+.sales-dialog .sale-pill-stock {
+    -fx-background-color: #DCFCE7;
+    -fx-text-fill: #166534;
+}
+
+.sales-dialog .sale-pill-low {
+    -fx-background-color: #FEF3C7;
+    -fx-text-fill: #92400E;
+}
+
+.sales-dialog .sale-pill-out {
+    -fx-background-color: #FEE2E2;
+    -fx-text-fill: #991B1B;
+}
+
+/* Tables & Dialog Lists */
+.sales-page .sale-table {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #CBD5E1;
+    -fx-border-radius: 7;
+    -fx-padding: 0;
+}
+
+.sales-page .sale-table .column-header-background,
+.sales-page .sale-table .column-header {
+    -fx-background-color: #EEF3F9;
+}
+
+.sales-page .sale-table .column-header .label {
+    -fx-alignment: center-left;
+    -fx-text-fill: #0F2342;
+    -fx-font-weight: bold;
+    -fx-padding: 0 10;
+}
+
+.sales-page .sale-table .column-header {
+    -fx-pref-height: 36;
+    -fx-border-color: #CBD5E1;
+    -fx-border-width: 0 1 1 0;
+}
+
+.sales-page .sale-table .table-row-cell {
+    -fx-background-color: #FFFFFF;
+    -fx-cell-size: 38;
+}
+
+.sales-page .sale-table .table-row-cell:odd:filled {
+    -fx-background-color: #F8FAFC;
+}
+
+.sales-page .sale-table .table-row-cell:filled:hover {
+    -fx-background-color: #F0FDFA;
+}
+
+.sales-page .sale-table .table-row-cell:filled:selected {
+    -fx-background-color: #CCFBF1;
+}
+
+.sales-page .sale-table .table-row-cell:filled .table-cell {
+    -fx-border-color: #E2E8F0;
+    -fx-border-width: 0 1 1 0;
+    -fx-text-fill: #1E293B;
+    -fx-padding: 0 10;
+}
+
+.sales-dialog .list-cell:filled {
+    -fx-padding: 7 10;
+    -fx-border-color: transparent transparent #F1F5F9 transparent;
+}
+
+.sales-dialog .list-cell:filled:hover {
+    -fx-background-color: #F8FAFC;
+}
+
+.sales-dialog .list-cell:filled:selected {
+    -fx-background-color: #E6FFFA;
+    -fx-text-fill: #0F172A;
+}
