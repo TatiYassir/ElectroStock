@@ -1,7 +1,14 @@
-
 -- ======================================================
--- ELECTROSTOCK DATABASE SCHEMA - VERSION 1
--- Target: MariaDB 10.4+
+-- ELECTROSTOCK DATABASE SCHEMA
+-- Target: MariaDB 11.4 (CHECK constraints need 10.2+)
+--
+-- The backend runs with spring.jpa.hibernate.ddl-auto=none,
+-- so this file is the single source of truth for the schema.
+-- Every table below is mapped by a JPA entity in
+-- backend/src/main/java/com/electrostock/backend/model.
+--
+-- Usage (default port in application.properties is 3307):
+--   mariadb -u root -p -P 3307 < database/schema.sql
 -- ======================================================
 
 CREATE DATABASE IF NOT EXISTS electrostock
@@ -62,7 +69,7 @@ CREATE TABLE products (
     description TEXT,
     tracks_serials BOOLEAN NOT NULL DEFAULT FALSE,
     selling_price_mad DECIMAL(19,4) NOT NULL DEFAULT 0,
-    average_cost_mad DECIMAL(19,6),
+    average_cost_mad DECIMAL(19,6),   -- NULL for serial-tracked products or when stock is 0
     low_stock_threshold INT NOT NULL DEFAULT 0,
     warranty_months INT NOT NULL DEFAULT 0,
     status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
@@ -97,42 +104,12 @@ CREATE TABLE products (
 
 
 -- ======================================================
--- 5. EXCHANGE RATES
+-- 5. EXCHANGE RATE CACHE
 -- ======================================================
 
-CREATE TABLE exchange_rates (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    currency_id BIGINT NOT NULL,
-    rate_to_mad DECIMAL(20,10) NOT NULL,
-    effective_at DATETIME NOT NULL,
-    retrieved_at DATETIME,
-    provider_name VARCHAR(100) NOT NULL,
-    manually_overridden BOOLEAN NOT NULL DEFAULT FALSE,
-
-    INDEX idx_rates_currency_time
-        (currency_id, effective_at),
-
-    CONSTRAINT fk_rates_currency
-        FOREIGN KEY (currency_id)
-        REFERENCES currencies(id)
-        ON DELETE RESTRICT,
-
-    CONSTRAINT chk_rate_positive
-        CHECK (rate_to_mad > 0),
-
-    CONSTRAINT chk_rate_override
-        CHECK (manually_overridden IN (0, 1)),
-
-    CONSTRAINT chk_rate_source_time
-        CHECK (retrieved_at IS NOT NULL
-               OR manually_overridden = 1)
-) ENGINE=InnoDB;
-
-
--- ======================================================
--- 5A. EXCHANGE RATE CACHE
--- ======================================================
-
+-- Latest rate per currency pair, written by ExchangeRateService each time
+-- the Frankfurter API answers. It is the fallback when the API is down.
+-- Pairs are stored as (currency, 'MAD'), so one row per foreign currency.
 CREATE TABLE exchange_rate_cache (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     base_currency_code VARCHAR(3) NOT NULL,
@@ -161,6 +138,9 @@ CREATE TABLE purchases (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     status VARCHAR(20) NOT NULL DEFAULT 'DRAFT',
 
+    -- Filled once, when the purchase is confirmed. rate_from_cache_snapshot is 1
+    -- when the live rate was unavailable and the cached rate was used.
+    -- rate_overridden_snapshot is always 0: manual overrides are not implemented.
     rate_to_mad_snapshot DECIMAL(20,10),
     rate_source_snapshot VARCHAR(100),
     rate_retrieved_at_snapshot DATETIME,
@@ -279,6 +259,8 @@ CREATE TABLE product_units (
     serial_number VARCHAR(150) NOT NULL UNIQUE,
     acquisition_cost_mad DECIMAL(19,4) NOT NULL,
     status VARCHAR(30) NOT NULL DEFAULT 'IN_STOCK',
+    -- Both stay NULL until the sale is handed over; then
+    -- warranty_start = handover date, warranty_end = start + warranty_months.
     warranty_start DATE,
     warranty_end DATE,
 
@@ -328,6 +310,7 @@ CREATE TABLE sales (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     status VARCHAR(20) NOT NULL DEFAULT 'DRAFT',
 
+    -- Rate snapshot, filled when the sale is confirmed (see purchases).
     rate_to_mad_snapshot DECIMAL(20,10),
     rate_source_snapshot VARCHAR(100),
     rate_retrieved_at_snapshot DATETIME,
@@ -336,6 +319,8 @@ CREATE TABLE sales (
     total_currency DECIMAL(19,4) NOT NULL DEFAULT 0,
     total_mad DECIMAL(19,4),
 
+    -- Handover is a timestamp, not a status: a CONFIRMED sale with
+    -- handed_over_at IS NULL is "awaiting handover".
     confirmed_at DATETIME,
     handed_over_at DATETIME,
     cancelled_at DATETIME,
@@ -403,6 +388,7 @@ CREATE TABLE sale_items (
     line_total_currency DECIMAL(19,4) NOT NULL,
     line_total_mad DECIMAL(19,4),
     cost_of_goods_sold_mad DECIMAL(19,4),
+    -- Category as it was at confirmation, so reports survive renames and recategorising.
     category_id_snapshot BIGINT NULL,
     category_name_snapshot VARCHAR(100) NULL,
 
@@ -474,6 +460,8 @@ CREATE TABLE stock_movements (
     reversal_of_movement_id BIGINT,
 
     movement_type VARCHAR(25) NOT NULL,
+    -- Stock on hand = SUM(quantity_change); stock value = SUM(value_change_mad).
+    -- Rows are never updated or deleted; corrections are REVERSAL or ADJUSTMENT rows.
     quantity_change INT NOT NULL,
     value_change_mad DECIMAL(19,4) NOT NULL,
 
@@ -595,6 +583,8 @@ CREATE TABLE stock_movements (
 -- INITIAL CURRENCY
 -- ======================================================
 
+-- MAD is the base currency and must exist. More currencies can be added from the
+-- API (POST /api/currencies), which checks that an exchange rate is available.
 INSERT INTO currencies (code, name, symbol)
 VALUES
     ('MAD', 'Moroccan Dirham', 'DH'),
