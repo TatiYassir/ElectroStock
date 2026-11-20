@@ -1,362 +1,421 @@
-/* Sales is scoped to its own root and dialogs. Other sections keep their styles. */
+/* Aurora styling for the Sales screen and its dialogs (scoped to .sales-page / .sales-dialog). */
 .sales-page, .sales-dialog {
     -fx-font-family: "Segoe UI";
     -fx-font-size: 13px;
-    -fx-text-background-color: #0F172A;
+    -fx-text-background-color: #14162B;
 }
 
 .sales-page {
-    -fx-background-color: #F4F7FB;
-    -fx-padding: 22;
+    -fx-background-color: linear-gradient(to bottom right, #F8F6FF, #F4F5FC 55%, #F6F2FF);
+    -fx-padding: 24;
     -fx-spacing: 16;
 }
 
-.sales-page .sale-page-title {
-    -fx-font-size: 28px;
+/* ---------------------------------------------------------------- Hero band */
+
+.sales-page .sale-hero {
+    -fx-background-color:
+        radial-gradient(center 92% 0%, radius 84%, rgba(188, 174, 255, 0.32), transparent),
+        radial-gradient(center 4% 104%, radius 74%, rgba(164, 228, 255, 0.22), transparent),
+        linear-gradient(to bottom right, #FFFFFF, #FCFBFF 58%, #F4F1FF);
+    -fx-background-radius: 22;
+    -fx-border-radius: 22;
+    -fx-border-color: #E9E6F8;
+    -fx-padding: 20 24;
+    -fx-effect: dropshadow(gaussian, rgba(38, 32, 90, 0.10), 26, 0.04, 0, 8);
+}
+
+.sales-page .sale-hero .sale-page-title {
+    -fx-font-size: 27px;
     -fx-font-weight: bold;
-    -fx-text-fill: #09193D;
+    -fx-text-fill: #14162B;
+}
+
+.sales-page .sale-hero .sale-muted {
+    -fx-text-fill: #6B7290;
+    -fx-font-size: 12.5px;
+}
+
+/* ------------------------------------------------------------------- Titles */
+
+.sales-page .sale-page-title {
+    -fx-font-size: 27px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #14162B;
 }
 
 .sales-page .sale-muted, .sales-dialog .sale-muted {
-    -fx-text-fill: #52647C;
+    -fx-text-fill: #6B7290;
     -fx-font-size: 12px;
 }
 
 .sales-page .sale-eyebrow, .sales-dialog .sale-eyebrow {
-    -fx-font-size: 11px;
+    -fx-font-size: 10.5px;
     -fx-font-weight: bold;
-    -fx-text-fill: #0F766E;
+    -fx-text-fill: #5D4CE2;
 }
 
 .sales-dialog .sale-eyebrow-danger {
-    -fx-font-size: 11px;
+    -fx-font-size: 10.5px;
     -fx-font-weight: bold;
-    -fx-text-fill: #B91C1C;
+    -fx-text-fill: #C2334A;
 }
+
+/* -------------------------------------------------------------------- Cards */
 
 .sales-page .sale-card {
     -fx-background-color: #FFFFFF;
-    -fx-background-radius: 12;
-    -fx-border-color: #D6E0EC;
-    -fx-border-radius: 12;
-    -fx-padding: 18;
-    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.04), 10, 0, 0, 2);
+    -fx-background-radius: 18;
+    -fx-border-color: #E7E9F4;
+    -fx-border-radius: 18;
+    -fx-padding: 20;
+    -fx-effect: dropshadow(gaussian, rgba(20, 22, 43, 0.05), 18, 0.03, 0, 6);
 }
 
-/* Centered New Sale Setup Card */
 .sales-page .sale-setup-card {
     -fx-background-color: #FFFFFF;
-    -fx-background-radius: 14;
-    -fx-border-color: #D6E0EC;
-    -fx-border-radius: 14;
+    -fx-background-radius: 22;
+    -fx-border-color: #E4E1F6;
+    -fx-border-radius: 22;
     -fx-padding: 28;
-    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.08), 22, 0, 0, 6);
+    -fx-effect: dropshadow(gaussian, rgba(48, 38, 133, 0.12), 30, 0.05, 0, 12);
 }
 
 .sales-page .sale-setup-title {
     -fx-font-size: 20px;
     -fx-font-weight: bold;
-    -fx-text-fill: #09193D;
+    -fx-text-fill: #14162B;
 }
 
 .sales-page .sale-card-title, .sales-dialog .sale-card-title {
     -fx-font-size: 15px;
     -fx-font-weight: bold;
-    -fx-text-fill: #0F2342;
+    -fx-text-fill: #1B1E38;
 }
 
 .sales-page .sale-field-label, .sales-dialog .sale-field-label {
+    -fx-font-size: 11.5px;
     -fx-font-weight: bold;
-    -fx-text-fill: #1E3A5F;
+    -fx-text-fill: #4C5273;
 }
 
-/* Callout Boxes */
+/* ----------------------------------------------------------------- Callouts */
+
 .sales-page .sale-callout-info, .sales-dialog .sale-callout-info {
-    -fx-background-color: #F0FDFA;
-    -fx-border-color: #99F6E4;
-    -fx-border-radius: 8;
-    -fx-background-radius: 8;
-    -fx-padding: 11 14;
+    -fx-background-color: #F4F1FF;
+    -fx-border-color: #DDD6FF;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-padding: 12 15;
 }
 
 .sales-dialog .sale-callout-amber {
-    -fx-background-color: #FFFBEB;
-    -fx-border-color: #FDE68A;
-    -fx-border-radius: 8;
-    -fx-background-radius: 8;
-    -fx-padding: 11 14;
+    -fx-background-color: #FFF8EC;
+    -fx-border-color: #FBE0B4;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-padding: 12 15;
 }
 
 .sales-dialog .sale-callout-danger {
-    -fx-background-color: #FEF2F2;
-    -fx-border-color: #FECACA;
-    -fx-border-radius: 8;
-    -fx-background-radius: 8;
-    -fx-padding: 11 14;
+    -fx-background-color: #FFF3F4;
+    -fx-border-color: #FAD3D8;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-padding: 12 15;
 }
 
-/* Dialog Chrome */
+/* ------------------------------------------------------------ Dialog chrome */
+
 .sales-dialog {
     -fx-background-color: #FFFFFF;
 }
 
 .sales-dialog:header .header-panel {
-    -fx-background-color: #F8FAFC;
-    -fx-border-color: transparent transparent #E2E8F0 transparent;
+    -fx-background-color: linear-gradient(to right, #F7F5FF, #FAF9FF);
+    -fx-border-color: transparent transparent #EBE8F8 transparent;
     -fx-border-width: 0 0 1 0;
-    -fx-padding: 16 22 14 22;
+    -fx-padding: 18 24 16 24;
 }
 
 .sales-dialog:header .header-panel .label {
     -fx-font-size: 18px;
     -fx-font-weight: bold;
-    -fx-text-fill: #09193D;
+    -fx-text-fill: #14162B;
 }
 
 .sales-dialog > .content.label,
 .sales-dialog > .content {
-    -fx-padding: 14 22 12 22;
+    -fx-padding: 16 24 14 24;
 }
 
 .sales-dialog > .button-bar {
-    -fx-background-color: #F8FAFC;
-    -fx-border-color: #E2E8F0 transparent transparent transparent;
+    -fx-background-color: #FAF9FF;
+    -fx-border-color: #EBE8F8 transparent transparent transparent;
     -fx-border-width: 1 0 0 0;
-    -fx-padding: 12 22 16 22;
+    -fx-padding: 14 24 18 24;
 }
 
 .sales-dialog .sale-confirm-dialog-title {
     -fx-font-size: 18px;
     -fx-font-weight: bold;
-    -fx-text-fill: #09193D;
+    -fx-text-fill: #14162B;
 }
 
 .sales-dialog .sale-confirm-dialog-body {
     -fx-font-size: 13px;
-    -fx-text-fill: #334155;
+    -fx-text-fill: #454B6B;
 }
 
-/* Confirm Sale Hero Card */
+/* Confirm-sale hero */
+
 .sales-dialog .sale-confirm-hero {
-    -fx-background-color: #F8FAFC;
-    -fx-border-color: #CBD5E1;
-    -fx-border-radius: 10;
-    -fx-background-radius: 10;
-    -fx-padding: 14 18;
+    -fx-background-color: linear-gradient(to bottom right, #F7F5FF, #F1EEFF);
+    -fx-border-color: #E3DDFB;
+    -fx-border-radius: 14;
+    -fx-background-radius: 14;
+    -fx-padding: 16 20;
 }
 
 .sales-dialog .sale-confirm-amount {
-    -fx-font-size: 24px;
+    -fx-font-size: 25px;
     -fx-font-weight: bold;
-    -fx-text-fill: #09193D;
+    -fx-text-fill: #14162B;
 }
 
 .sales-dialog .sale-pill-neutral {
-    -fx-background-color: #E2E8F0;
-    -fx-text-fill: #1E293B;
-    -fx-font-size: 12px;
+    -fx-background-color: #EFEDF9;
+    -fx-text-fill: #4C5273;
+    -fx-font-size: 11.5px;
     -fx-font-weight: bold;
     -fx-padding: 3 10;
-    -fx-background-radius: 12;
+    -fx-background-radius: 999;
 }
 
-/* Add Product Dialog Cards & Tags */
+/* -------------------------------------------------------- Dialog add-product */
+
 .sales-dialog .sale-sku-tag {
-    -fx-background-color: #F1F5F9;
-    -fx-border-color: #CBD5E1;
-    -fx-border-radius: 4;
-    -fx-background-radius: 4;
-    -fx-padding: 1 6;
+    -fx-background-color: #F5F4FD;
+    -fx-border-color: #E1DEFA;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 1 7;
     -fx-font-size: 11px;
     -fx-font-weight: bold;
-    -fx-text-fill: #334155;
+    -fx-text-fill: #4C5273;
 }
 
 .sales-dialog .sale-meta-tag {
-    -fx-background-color: #EFF6FF;
-    -fx-text-fill: #1D4ED8;
-    -fx-padding: 1 7;
-    -fx-background-radius: 4;
+    -fx-background-color: #EDE9FF;
+    -fx-text-fill: #5D4CE2;
+    -fx-padding: 1 8;
+    -fx-background-radius: 6;
     -fx-font-size: 11px;
     -fx-font-weight: bold;
 }
 
 .sales-dialog .sale-selection-strip {
-    -fx-background-color: #F8FAFC;
-    -fx-border-color: #E2E8F0;
-    -fx-border-radius: 8;
-    -fx-background-radius: 8;
-    -fx-padding: 9 13;
+    -fx-background-color: #FAF9FF;
+    -fx-border-color: #EBE8F8;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-padding: 10 14;
 }
 
 .sales-dialog .sale-line-summary-box {
-    -fx-background-color: #F0FDFA;
-    -fx-border-color: #99F6E4;
-    -fx-border-radius: 8;
-    -fx-background-radius: 8;
-    -fx-padding: 10 14;
+    -fx-background-color: #F4F1FF;
+    -fx-border-color: #DDD6FF;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-padding: 12 15;
 }
 
 .sales-dialog .sale-total-highlight {
     -fx-font-size: 18px;
     -fx-font-weight: bold;
-    -fx-text-fill: #0F766E;
+    -fx-text-fill: #5D4CE2;
 }
 
-/* Interactive KPI Cards */
+/* --------------------------------------------------------------- KPI cards */
+
 .sales-page .sale-kpi-card {
     -fx-background-color: #FFFFFF;
-    -fx-background-radius: 10;
-    -fx-border-color: #D6E0EC;
-    -fx-border-radius: 10;
-    -fx-padding: 12 16;
+    -fx-background-radius: 16;
+    -fx-border-color: #E7E9F4;
+    -fx-border-radius: 16;
+    -fx-padding: 14 16;
     -fx-cursor: hand;
-    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.03), 8, 0, 0, 1);
+    -fx-effect: dropshadow(gaussian, rgba(20, 22, 43, 0.04), 12, 0.02, 0, 3);
 }
 
 .sales-page .sale-kpi-card:hover {
-    -fx-border-color: #0F766E;
-    -fx-background-color: #F8FCFB;
+    -fx-border-color: #C9C2FF;
+    -fx-background-color: #FBF9FF;
 }
 
 .sales-page .sale-kpi-card-active {
-    -fx-border-color: #0F766E;
-    -fx-border-width: 1.5;
-    -fx-background-color: #F0FDFA;
+    -fx-border-color: #B4A9FF;
+    -fx-border-width: 1.4;
+    -fx-background-color: linear-gradient(to bottom right, #F5F2FF, #EDE8FF);
 }
 
 .sales-page .sale-kpi-value {
-    -fx-font-size: 22px;
+    -fx-font-size: 23px;
     -fx-font-weight: bold;
-    -fx-text-fill: #09193D;
+    -fx-text-fill: #14162B;
 }
 
-/* Lifecycle Stepper */
+.sales-page .sale-kpi-card-active .sale-kpi-value {
+    -fx-text-fill: #4B3FD0;
+}
+
+/* ---------------------------------------------------------------- Lifecycle */
+
 .sales-page .sale-stepper {
     -fx-padding: 2 0 4 0;
 }
 
 .sales-page .sale-step {
-    -fx-font-size: 12px;
+    -fx-font-size: 11.5px;
     -fx-font-weight: bold;
-    -fx-padding: 4 11;
-    -fx-background-radius: 14;
-    -fx-border-radius: 14;
+    -fx-padding: 4 12;
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-border-width: 1;
 }
 
 .sales-page .sale-step-done {
-    -fx-background-color: #DCFCE7;
-    -fx-border-color: #86EFAC;
-    -fx-text-fill: #166534;
+    -fx-background-color: #E9F9F2;
+    -fx-border-color: #A8E7CE;
+    -fx-text-fill: #0C7A5C;
 }
 
 .sales-page .sale-step-current {
-    -fx-background-color: #E0F2FE;
-    -fx-border-color: #7DD3FC;
-    -fx-text-fill: #075985;
-}
-
-.sales-page .sale-step-pending {
-    -fx-background-color: #F1F5F9;
-    -fx-border-color: #CBD5E1;
-    -fx-text-fill: #64748B;
-}
-
-.sales-page .sale-step-cancelled {
-    -fx-background-color: #FEE2E2;
-    -fx-border-color: #FCA5A5;
-    -fx-text-fill: #991B1B;
-}
-
-/* Buttons */
-.sales-page .button, .sales-dialog .button {
-    -fx-cursor: hand;
-    -fx-background-radius: 7;
-    -fx-border-radius: 7;
-    -fx-font-weight: bold;
-    -fx-padding: 8 15;
-}
-
-.sales-page .sale-primary, .sales-dialog .sale-primary {
-    -fx-background-color: #0F766E;
+    -fx-background-color: linear-gradient(to bottom right, #6C5BF6, #5D4CE2);
     -fx-border-color: transparent;
     -fx-text-fill: #FFFFFF;
 }
 
+.sales-page .sale-step-pending {
+    -fx-background-color: #F4F4FA;
+    -fx-border-color: #E1E2EF;
+    -fx-text-fill: #8A90AC;
+}
+
+.sales-page .sale-step-cancelled {
+    -fx-background-color: #FFF3F4;
+    -fx-border-color: #FAD3D8;
+    -fx-text-fill: #B32E42;
+}
+
+/* ------------------------------------------------------------------ Buttons */
+
+.sales-page .button, .sales-dialog .button {
+    -fx-cursor: hand;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+    -fx-font-weight: bold;
+    -fx-font-size: 12.5px;
+    -fx-padding: 9 16;
+}
+
+.sales-page .sale-primary, .sales-dialog .sale-primary {
+    -fx-background-color: linear-gradient(to bottom right, #6C5BF6, #5D4CE2);
+    -fx-border-color: transparent;
+    -fx-text-fill: #FFFFFF;
+    -fx-effect: dropshadow(gaussian, rgba(80, 64, 210, 0.30), 12, 0.03, 0, 4);
+}
+
 .sales-page .sale-primary:hover, .sales-dialog .sale-primary:hover {
-    -fx-background-color: #115E59;
+    -fx-background-color: linear-gradient(to bottom right, #5B4AE8, #4B3FD0);
+}
+
+/* Confirm actions take the "confirmed / handed over" jade status colour. */
+
+.sales-page .sale-confirm-action, .sales-dialog .sale-confirm-action {
+    -fx-background-color: linear-gradient(to bottom right, #18B98B, #0C8A68);
+    -fx-border-color: transparent;
+    -fx-text-fill: #FFFFFF;
+    -fx-effect: dropshadow(gaussian, rgba(12, 122, 92, 0.28), 12, 0.03, 0, 4);
+}
+
+.sales-page .sale-confirm-action:hover, .sales-dialog .sale-confirm-action:hover {
+    -fx-background-color: linear-gradient(to bottom right, #12A67E, #0A7A5B);
 }
 
 .sales-page .sale-secondary, .sales-dialog .sale-secondary {
     -fx-background-color: #FFFFFF;
-    -fx-border-color: #CBD5E1;
-    -fx-text-fill: #1E293B;
+    -fx-border-color: #E1E3F1;
+    -fx-text-fill: #2A2E4A;
 }
 
 .sales-page .sale-secondary:hover, .sales-dialog .sale-secondary:hover {
-    -fx-background-color: #F1F5F9;
+    -fx-background-color: #F4F3FE;
+    -fx-border-color: #D6D3F2;
 }
 
 .sales-page .sale-chip-btn {
-    -fx-background-color: #F8FAFC;
-    -fx-border-color: #CBD5E1;
-    -fx-text-fill: #334155;
-    -fx-padding: 8 12;
+    -fx-background-color: #FAF9FF;
+    -fx-border-color: #E5E3F3;
+    -fx-text-fill: #4C5273;
+    -fx-padding: 8 13;
 }
 
 .sales-page .sale-chip-btn:hover {
-    -fx-background-color: #F1F5F9;
+    -fx-background-color: #F1EEFF;
 }
 
 .sales-page .sale-chip-btn-active {
-    -fx-background-color: #F0FDFA;
-    -fx-border-color: #0F766E;
-    -fx-text-fill: #0F766E;
+    -fx-background-color: #EFEBFF;
+    -fx-border-color: #B4A9FF;
+    -fx-text-fill: #4B3FD0;
 }
 
 .sales-page .sale-danger {
-    -fx-background-color: #FFF5F5;
-    -fx-border-color: #FEB2B2;
-    -fx-text-fill: #9B2C2C;
+    -fx-background-color: #FFF5F6;
+    -fx-border-color: #F7C9CF;
+    -fx-text-fill: #B32E42;
 }
 
 .sales-page .sale-danger:hover {
-    -fx-background-color: #FED7D7;
+    -fx-background-color: #FFE9EC;
 }
 
 .sales-dialog .sale-danger-solid {
-    -fx-background-color: #DC2626;
+    -fx-background-color: linear-gradient(to bottom right, #E05064, #C2334A);
     -fx-border-color: transparent;
     -fx-text-fill: #FFFFFF;
 }
 
 .sales-dialog .sale-danger-solid:hover {
-    -fx-background-color: #B91C1C;
+    -fx-background-color: #B02B40;
 }
 
 .sales-dialog .sale-qty-btn {
-    -fx-background-color: #F1F5F9;
-    -fx-border-color: #CBD5E1;
-    -fx-text-fill: #0F172A;
-    -fx-padding: 4 10;
+    -fx-background-color: #F4F3FC;
+    -fx-border-color: #E3E1F1;
+    -fx-text-fill: #2A2E4A;
+    -fx-padding: 4 11;
     -fx-font-size: 13px;
 }
 
 .sales-dialog .sale-qty-btn:hover {
-    -fx-background-color: #E2E8F0;
+    -fx-background-color: #E9E6F9;
 }
 
 .sales-page .button:focused, .sales-dialog .button:focused {
-    -fx-border-color: #0284C7;
+    -fx-border-color: #8C7BFF;
 }
 
-/* Inputs */
+/* ------------------------------------------------------------------- Inputs */
+
 .sales-page .text-field, .sales-page .combo-box, .sales-page .date-picker,
-.sales-dialog .text-field, .sales-dialog .list-view {
+.sales-dialog .text-field, .sales-dialog .text-area, .sales-dialog .list-view {
     -fx-background-color: #FFFFFF;
-    -fx-border-color: #CBD5E1;
-    -fx-border-radius: 7;
-    -fx-background-radius: 7;
+    -fx-border-color: #E1E3F1;
+    -fx-border-radius: 9;
+    -fx-background-radius: 9;
 }
 
 .sales-page .combo-box, .sales-page .date-picker {
@@ -373,70 +432,79 @@
     -fx-background-color: transparent;
 }
 
+.sales-page .combo-box > .list-cell {
+    -fx-text-fill: #2A2E4A;
+}
+
 .sales-page .text-field, .sales-dialog .text-field {
-    -fx-padding: 8 11;
-    -fx-prompt-text-fill: #64748B;
+    -fx-padding: 9 12;
+    -fx-prompt-text-fill: #9AA0BA;
 }
 
 .sales-page .text-field:focused, .sales-page .combo-box:focused, .sales-page .date-picker:focused,
-.sales-dialog .text-field:focused, .sales-dialog .list-view:focused {
-    -fx-border-color: #0F766E;
+.sales-dialog .text-field:focused, .sales-dialog .text-area:focused,
+.sales-dialog .list-view:focused {
+    -fx-border-color: #8C7BFF;
 }
 
-/* Metrics & Summary */
+/* ---------------------------------------------------------- Metrics & totals */
+
 .sales-page .sale-metric {
-    -fx-background-color: #F8FAFC;
-    -fx-border-color: #E2E8F0;
-    -fx-border-radius: 8;
-    -fx-background-radius: 8;
-    -fx-padding: 10 14;
+    -fx-background-color: #FAF9FF;
+    -fx-border-color: #EBE8F8;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-padding: 11 15;
 }
 
 .sales-page .sale-metric-value {
-    -fx-text-fill: #0F172A;
-    -fx-font-size: 16px;
+    -fx-text-fill: #14162B;
+    -fx-font-size: 16.5px;
     -fx-font-weight: bold;
 }
 
 .sales-page .sale-items-footer {
-    -fx-background-color: #F8FAFC;
-    -fx-border-color: #E2E8F0;
-    -fx-border-radius: 8;
-    -fx-background-radius: 8;
-    -fx-padding: 10 14;
+    -fx-background-color: #FAF9FF;
+    -fx-border-color: #EBE8F8;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-padding: 11 15;
 }
 
-/* Feedback Banners */
+/* --------------------------------------------------------------- Feedback */
+
 .sales-page .sale-notice, .sales-page .sale-error {
-    -fx-padding: 10 14;
-    -fx-background-radius: 8;
-    -fx-border-radius: 8;
+    -fx-padding: 11 15;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
     -fx-font-weight: bold;
 }
 
 .sales-page .sale-notice {
-    -fx-background-color: #ECFDF5;
-    -fx-border-color: #A7F3D0;
-    -fx-text-fill: #065F46;
+    -fx-background-color: #EAF9F2;
+    -fx-border-color: #A8E7CE;
+    -fx-text-fill: #0C7A5C;
 }
 
 .sales-page .sale-error {
-    -fx-background-color: #FEF2F2;
-    -fx-border-color: #FECACA;
-    -fx-text-fill: #991B1B;
+    -fx-background-color: #FFF3F4;
+    -fx-border-color: #FAD3D8;
+    -fx-text-fill: #B32E42;
 }
 
 .sales-dialog .sale-dialog-error {
-    -fx-text-fill: #991B1B;
+    -fx-text-fill: #B32E42;
     -fx-font-weight: bold;
 }
 
-/* Compact Status & Stock Pills */
+/* ------------------------------------------------------------ Status pills */
+
 .sales-page .sale-status {
     -fx-background-radius: 999;
     -fx-border-radius: 999;
     -fx-border-width: 1;
-    -fx-padding: 3 10;
+    -fx-padding: 3 11;
 }
 
 .sales-page .sale-status-text {
@@ -449,85 +517,86 @@
 }
 
 .sales-page .sale-status-draft {
-    -fx-background-color: #F1F5F9;
-    -fx-border-color: #CBD5E1;
+    -fx-background-color: #F4F4FA;
+    -fx-border-color: #E1E2EF;
 }
 .sales-page .sale-status-text-draft {
-    -fx-text-fill: #334155;
+    -fx-text-fill: #5A6080;
 }
 .sales-page .sale-status-dot-draft {
-    -fx-background-color: #64748B;
+    -fx-background-color: #8A90AC;
 }
 
 .sales-page .sale-status-awaiting {
-    -fx-background-color: #FFFBEB;
-    -fx-border-color: #FDE68A;
+    -fx-background-color: #FFF8EC;
+    -fx-border-color: #FBE0B4;
 }
 .sales-page .sale-status-text-awaiting {
-    -fx-text-fill: #92400E;
+    -fx-text-fill: #9A6412;
 }
 .sales-page .sale-status-dot-awaiting {
-    -fx-background-color: #D97706;
+    -fx-background-color: #E39B25;
 }
 
 .sales-page .sale-status-handed {
-    -fx-background-color: #ECFDF5;
-    -fx-border-color: #A7F3D0;
+    -fx-background-color: #EAF9F2;
+    -fx-border-color: #A8E7CE;
 }
 .sales-page .sale-status-text-handed {
-    -fx-text-fill: #065F46;
+    -fx-text-fill: #0C7A5C;
 }
 .sales-page .sale-status-dot-handed {
-    -fx-background-color: #059669;
+    -fx-background-color: #12A67E;
 }
 
 .sales-page .sale-status-cancelled {
-    -fx-background-color: #FEF2F2;
-    -fx-border-color: #FECACA;
+    -fx-background-color: #FFF3F4;
+    -fx-border-color: #FAD3D8;
 }
 .sales-page .sale-status-text-cancelled {
-    -fx-text-fill: #991B1B;
+    -fx-text-fill: #B32E42;
 }
 .sales-page .sale-status-dot-cancelled {
-    -fx-background-color: #DC2626;
+    -fx-background-color: #DA4A5F;
 }
 
 .sales-dialog .sale-pill {
     -fx-font-size: 11px;
     -fx-font-weight: bold;
-    -fx-padding: 3 9;
-    -fx-background-radius: 10;
+    -fx-padding: 3 10;
+    -fx-background-radius: 999;
 }
 
 .sales-dialog .sale-pill-stock {
-    -fx-background-color: #DCFCE7;
-    -fx-text-fill: #166534;
+    -fx-background-color: #EAF9F2;
+    -fx-text-fill: #0C7A5C;
 }
 
 .sales-dialog .sale-pill-low {
-    -fx-background-color: #FEF3C7;
-    -fx-text-fill: #92400E;
+    -fx-background-color: #FFF6E6;
+    -fx-text-fill: #9A6412;
 }
 
 .sales-dialog .sale-pill-out {
-    -fx-background-color: #FEE2E2;
-    -fx-text-fill: #991B1B;
+    -fx-background-color: #FFF0F2;
+    -fx-text-fill: #B32E42;
 }
 
-/* Modern Borderless-Column Tables */
+/* ------------------------------------------------------------------ Tables */
+
 .sales-page .sale-table {
-    -fx-background-color: #FFFFFF;
-    -fx-border-color: #E2E8F0;
-    -fx-border-radius: 9;
-    -fx-background-radius: 9;
+    -fx-background-color: transparent;
+    -fx-border-color: #EBE8F8;
+    -fx-border-radius: 14;
+    -fx-background-radius: 14;
     -fx-table-cell-border-color: transparent;
     -fx-padding: 0;
 }
 
 .sales-page .sale-table .column-header-background {
-    -fx-background-color: #F8FAFC;
-    -fx-background-radius: 9 9 0 0;
-    -fx-border-color: transparent transparent #E2E8F0 transparent;
+    -fx-background-color: #F7F5FF;
+    -fx-background-radius: 14 14 0 0;
+    -fx-border-color: transparent transparent #EBE8F8 transparent;
     -fx-border-width: 0 0 1 0;
 }
 
@@ -536,13 +605,13 @@
 .sales-page .sale-table .show-hide-columns-button {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
-    -fx-pref-height: 40;
+    -fx-pref-height: 42;
 }
 
 .sales-page .sale-table .column-header .label {
     -fx-alignment: center-left;
-    -fx-text-fill: #475569;
-    -fx-font-size: 12px;
+    -fx-text-fill: #6B7290;
+    -fx-font-size: 11.5px;
     -fx-font-weight: bold;
     -fx-padding: 0 14;
 }
@@ -552,33 +621,33 @@
 }
 
 .sales-page .sale-table .column-header .arrow {
-    -fx-background-color: #0F766E;
+    -fx-background-color: #5D4CE2;
 }
 
 .sales-page .sale-table .table-row-cell {
     -fx-background-color: #FFFFFF;
-    -fx-cell-size: 48;
-    -fx-border-color: transparent transparent #F1F5F9 transparent;
+    -fx-cell-size: 50;
+    -fx-border-color: transparent transparent #F1F1F9 transparent;
     -fx-border-width: 0 0 1 0;
     -fx-background-insets: 0;
 }
 
 .sales-page .sale-table .table-row-cell:odd:filled {
-    -fx-background-color: #FAFBFD;
+    -fx-background-color: #FCFBFF;
 }
 
 .sales-page .sale-table .table-row-cell:filled:hover {
-    -fx-background-color: #EEF2F6;
+    -fx-background-color: #F5F2FF;
     -fx-background-insets: 3 6;
-    -fx-background-radius: 8;
+    -fx-background-radius: 10;
     -fx-cursor: hand;
 }
 
 .sales-page .sale-table .table-row-cell:filled:selected {
-    -fx-background-color: #E6F7F5;
+    -fx-background-color: #ECE8FF;
     -fx-background-insets: 3 6;
-    -fx-background-radius: 8;
-    -fx-border-color: transparent transparent #CCFBF1 transparent;
+    -fx-background-radius: 10;
+    -fx-border-color: transparent;
 }
 
 .sales-page .sale-table .table-row-cell:empty {
@@ -589,39 +658,40 @@
 .sales-page .sale-table .table-row-cell:filled .table-cell {
     -fx-border-color: transparent;
     -fx-background-color: transparent;
-    -fx-text-fill: #334155;
+    -fx-text-fill: #454B6B;
     -fx-padding: 0 14;
 }
 
 .sales-page .sale-table .table-row-cell:filled .table-cell.sale-cell-strong,
 .sales-page .sale-table .table-row-cell:filled .table-cell.sale-cell-amount {
     -fx-font-weight: bold;
-    -fx-text-fill: #09193D;
+    -fx-text-fill: #14162B;
 }
 
 .sales-page .sale-currency-tag {
-    -fx-background-color: #F1F5F9;
-    -fx-border-color: #E2E8F0;
-    -fx-border-radius: 5;
-    -fx-background-radius: 5;
+    -fx-background-color: #F4F4FA;
+    -fx-border-color: #E7E9F4;
+    -fx-border-radius: 7;
+    -fx-background-radius: 7;
     -fx-padding: 2 8;
     -fx-font-size: 11px;
     -fx-font-weight: bold;
-    -fx-text-fill: #334155;
+    -fx-text-fill: #4C5273;
 }
 
 .sales-page .sale-sku-cell-tag {
-    -fx-background-color: #F8FAFC;
-    -fx-border-color: #CBD5E1;
-    -fx-border-radius: 5;
-    -fx-background-radius: 5;
+    -fx-background-color: #F7F5FF;
+    -fx-border-color: #E1DEFA;
+    -fx-border-radius: 7;
+    -fx-background-radius: 7;
     -fx-padding: 2 8;
     -fx-font-size: 11px;
     -fx-font-weight: bold;
-    -fx-text-fill: #1E293B;
+    -fx-text-fill: #4C5273;
 }
 
-/* Sleek Table Scrollbars */
+/* --------------------------------------------------------------- Scrollbars */
+
 .sales-page .sale-table .scroll-bar:vertical,
 .sales-page .sale-table .scroll-bar:horizontal {
     -fx-background-color: transparent;
@@ -641,12 +711,12 @@
 }
 
 .sales-page .sale-table .scroll-bar .thumb {
-    -fx-background-color: #CBD5E1;
+    -fx-background-color: #DEDCF0;
     -fx-background-radius: 99;
 }
 
 .sales-page .sale-table .scroll-bar .thumb:hover {
-    -fx-background-color: #94A3B8;
+    -fx-background-color: #C4C0E4;
 }
 
 .sales-page .sale-table .scroll-bar .increment-button,
@@ -662,16 +732,19 @@
     -fx-padding: 0;
 }
 
+/* ------------------------------------------------------------- Dialog list */
+
 .sales-dialog .list-cell:filled {
-    -fx-padding: 9 12;
-    -fx-border-color: transparent transparent #E2E8F0 transparent;
+    -fx-padding: 9 13;
+    -fx-border-color: transparent transparent #F1F1F9 transparent;
+    -fx-text-fill: #2A2E4A;
 }
 
 .sales-dialog .list-cell:filled:hover {
-    -fx-background-color: #F8FAFC;
+    -fx-background-color: #F7F5FF;
 }
 
 .sales-dialog .list-cell:filled:selected {
-    -fx-background-color: #E6FFFA;
-    -fx-text-fill: #0F172A;
+    -fx-background-color: #ECE8FF;
+    -fx-text-fill: #14162B;
 }

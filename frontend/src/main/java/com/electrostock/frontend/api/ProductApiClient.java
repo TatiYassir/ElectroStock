@@ -24,6 +24,9 @@ public class ProductApiClient {
             boolean tracksSerials, String description, BigDecimal sellingPriceMad,
             BigDecimal averageCostMad, String status, int warrantyMonths, int lowStockThreshold) {}
 
+    public record CategoryRequest(String name,
+            @JsonInclude(JsonInclude.Include.NON_NULL) String description) {}
+
     public record Edit(String sku, String name, String description, BigDecimal sellingPriceMad) {}
     public record Create(long categoryId, String sku, String name, boolean tracksSerials,
             String description, BigDecimal sellingPriceMad, int warrantyMonths, int lowStockThreshold) {}
@@ -51,6 +54,15 @@ public class ProductApiClient {
     }
     public CompletableFuture<List<Category>> categories() {
         return request("GET", "categories", null, Category[].class).thenApply(List::of);
+    }
+    public CompletableFuture<Category> createCategory(String name, String description) {
+        return request("POST", "categories", new CategoryRequest(name, description), Category.class);
+    }
+    public CompletableFuture<Category> updateCategory(long id, String name, String description) {
+        return request("PUT", "categories/" + id, new CategoryRequest(name, description), Category.class);
+    }
+    public CompletableFuture<Void> deleteCategory(long id) {
+        return request("DELETE", "categories/" + id, null, Void.class);
     }
     public CompletableFuture<Product> create(Create data) {
         return request("POST", "products", data, Product.class);

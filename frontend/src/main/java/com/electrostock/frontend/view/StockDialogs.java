@@ -91,11 +91,17 @@ final class StockDialogs {
                 default -> UNKNOWN;
             };
         }
+
+        /** True when the serial is settled enough to project the resulting quantity. */
+        boolean settled() {
+            return this == NOT_FOUND || this == IN_STOCK || this == LOST;
+        }
     }
 
     private static final class AdjustmentForm {
         private final ProductApiClient api;
         private final Product product;
+        private final long onHand;
         private final int removalLimit;
         private final boolean tracked;
         private final Dialog<Boolean> dialog = new Dialog<>();
@@ -110,7 +116,8 @@ final class StockDialogs {
         private final Label quantityHint = label("", "stock-dialog-muted");
         private final Label explanationLabel = label("Explanation (optional)", "stock-dialog-field");
         private final Label consequence = label("", "stock-dialog-warning");
-        private final Label guidance = label("", "stock-dialog-muted");
+        private final Label guidance = label("", "stock-dialog-guidance");
+        private final Label impact = label("", "stock-dialog-impact");
         private final Label feedback = label("", "stock-dialog-error");
         private final VBox serialRow;
         private final VBox quantityRow;
@@ -130,6 +137,7 @@ final class StockDialogs {
         AdjustmentForm(Window owner, Product product, long onHand, ProductApiClient api) {
             this.api = api;
             this.product = product;
+            this.onHand = Math.max(0, onHand);
             this.tracked = product.tracksSerials();
             this.removalLimit = (int) Math.max(0, Math.min(Integer.MAX_VALUE, onHand));
 
@@ -138,7 +146,7 @@ final class StockDialogs {
             dialog.setResizable(true);
             var pane = dialog.getDialogPane();
             pane.getStyleClass().add("stock-adjustment-dialog");
-            pane.setPrefWidth(450);
+            pane.setPrefWidth(470);
             var css = StockDialogs.class.getResource("stock.css");
             if (css != null) pane.getStylesheets().add(css.toExternalForm());
 
@@ -176,7 +184,7 @@ final class StockDialogs {
             }));
 
             checkAgain.getStyleClass().add("stock-dialog-recheck");
-            checkAgain.setOnAction(e -> queueLookup(false));
+            checkAgain.setOnAction(event -> queueLookup(false));
             HBox statusLine = new HBox(8, serialStatus, checkAgain);
             statusLine.setAlignment(Pos.CENTER_LEFT);
             HBox.setHgrow(serialStatus, Priority.ALWAYS);
@@ -186,14 +194,27 @@ final class StockDialogs {
             costRow = field("Unit cost (MAD)", cost);
             reasonRow = field("Reason", reason);
             explanationLabel.setLabelFor(explanation);
-            VBox notes = new VBox(4, explanationLabel, explanation);
+            VBox notes = new VBox(5, explanationLabel, explanation);
 
-            VBox title = new VBox(4, label(product.name(), "stock-dialog-title"),
-                    label(product.sku() + " · " + onHand + " on hand · "
-                            + (tracked ? "Serial-tracked" : "Not serial-tracked"), "stock-dialog-muted"));
-            form = new VBox(10, title, serialRow, field("Action", mode), quantityRow, costRow,
-                    reasonRow, consequence, notes, guidance);
-            pane.setContent(new VBox(9, form, feedback));
+            VBox header = new VBox(4,
+                    label("STOCK ADJUSTMENT", "stock-dialog-kicker"),
+                    label(product.name(), "stock-dialog-title"),
+                    label(product.sku() + "   ·   " + onHand + " on hand   ·   "
+                            + (tracked ? "Serial-tracked" : "Bulk quantity"), "stock-dialog-meta"));
+            header.getStyleClass().add("stock-dialog-hero");
+
+            HBox actionRow = new HBox(12, field("Apply", mode), impact);
+            actionRow.setAlignment(Pos.BOTTOM_LEFT);
+            HBox.setHgrow(impact, Priority.ALWAYS);
+            impact.setMaxWidth(Double.MAX_VALUE);
+
+            form = new VBox(14,
+                    header,
+                    section("MOVEMENT", actionRow),
+                    section(tracked ? "UNIT" : "QUANTITY", serialRow, quantityRow),
+                    section("VALUATION", costRow),
+                    section("AUDIT", reasonRow, consequence, notes, guidance));
+            pane.setContent(new VBox(11, form, feedback));
 
             ButtonType apply = new ButtonType("Apply adjustment", ButtonBar.ButtonData.OK_DONE);
             pane.getButtonTypes().addAll(ButtonType.CANCEL, apply);
@@ -201,30 +222,31 @@ final class StockDialogs {
             cancel = (Button) pane.lookupButton(ButtonType.CANCEL);
             save.setId("stock-adjust-save");
             save.getStyleClass().add("stock-dialog-apply");
-            save.addEventFilter(ActionEvent.ACTION, e -> {
-                e.consume();
+            cancel.getStyleClass().add("stock-dialog-cancel");
+            save.addEventFilter(ActionEvent.ACTION, event -> {
+                event.consume();
                 submit();
             });
             dialog.setResultConverter(button -> false);
-            dialog.setOnCloseRequest(e -> { if (busy) e.consume(); });
-            dialog.setOnHidden(e -> {
+            dialog.setOnCloseRequest(event -> { if (busy) event.consume(); });
+            dialog.setOnHidden(event -> {
                 closed = true;
                 lookupVersion++;
                 debounce.stop();
             });
 
-            debounce.setOnFinished(e -> performLookup(lookupVersion, serial.getText().strip()));
-            serial.textProperty().addListener((obs, before, after) -> queueLookup(true));
-            mode.valueProperty().addListener((obs, before, after) -> {
+            debounce.setOnFinished(event -> performLookup(lookupVersion, serial.getText().strip()));
+            serial.textProperty().addListener((observed, before, after) -> queueLookup(true));
+            mode.valueProperty().addListener((observed, before, after) -> {
                 if (syncingModes || after == null) return;
                 if (!tracked && after == Mode.REMOVE && quantityValue() > removalLimit) quantity.clear();
                 updateReasons();
                 updateForm();
             });
-            reason.valueProperty().addListener((obs, before, after) -> updateForm());
-            quantity.textProperty().addListener((obs, before, after) -> updateForm());
-            cost.textProperty().addListener((obs, before, after) -> updateForm());
-            explanation.textProperty().addListener((obs, before, after) -> updateForm());
+            reason.valueProperty().addListener((observed, before, after) -> updateForm());
+            quantity.textProperty().addListener((observed, before, after) -> updateForm());
+            cost.textProperty().addListener((observed, before, after) -> updateForm());
+            explanation.textProperty().addListener((observed, before, after) -> updateForm());
 
             setFeedback("");
             updateReasons();
@@ -290,6 +312,13 @@ final class StockDialogs {
             visible(quantityRow, !tracked);
             visible(costRow, action == Mode.ADD);
             visible(reasonRow, action != Mode.RECOVER);
+            serialStatus.getStyleClass().removeAll("stock-status-ok", "stock-status-warn", "stock-status-error");
+            serialStatus.getStyleClass().add(switch (state) {
+                case IN_STOCK, NOT_FOUND -> "stock-status-ok";
+                case LOST, VOIDED, SOLD, UNDER_REPAIR -> "stock-status-warn";
+                case FAILED, UNKNOWN -> "stock-status-error";
+                case EMPTY, CHECKING -> "stock-status-neutral";
+            });
             serialStatus.setText(state.label);
             checkAgain.setDisable(serial.getText().isBlank() || state == SerialState.CHECKING);
             explanationLabel.setText(why == Reason.OTHER ? "Explanation (required)" : "Explanation (optional)");
@@ -309,10 +338,30 @@ final class StockDialogs {
             consequence.setText(warning);
             visible(consequence, !warning.isEmpty());
 
+            String projection = projectionText();
+            impact.setText(projection);
+            visible(impact, !projection.isEmpty());
+
             String problem = validationMessage();
             guidance.setText(problem);
             visible(guidance, !problem.isEmpty());
             save.setDisable(busy || uncertain || !problem.isEmpty());
+        }
+
+        /** Mirrors the on-hand figure the backend should end up with, before saving. */
+        private String projectionText() {
+            Mode action = mode.getValue();
+            if (action == null) return "";
+            if (tracked) {
+                if (!state.settled()) return "";
+                long delta = action == Mode.REMOVE ? -1 : 1;
+                return "On hand  " + onHand + "  \u2192  " + Math.max(0, onHand + delta);
+            }
+            int units = quantityValue();
+            if (units <= 0) return "";
+            long result = action == Mode.REMOVE ? onHand - units : onHand + (long) units;
+            if (result < 0) return "";
+            return "On hand  " + onHand + "  \u2192  " + result;
         }
 
         private String validationMessage() {
@@ -405,7 +454,8 @@ final class StockDialogs {
                     setFeedback(detail);
                 } else {
                     uncertain = true;
-                    setFeedback("Couldn’t confirm whether the adjustment was saved. Close this dialog and refresh Stock before trying again.");
+                    setFeedback("Couldn’t confirm whether the adjustment was saved. Close this dialog and refresh "
+                            + "Stock before trying again.");
                 }
                 updateForm();
             }));
@@ -417,10 +467,17 @@ final class StockDialogs {
         }
     }
 
+    private static VBox section(String title, Node... content) {
+        VBox box = new VBox(9, label(title, "stock-dialog-section-title"));
+        box.getChildren().addAll(content);
+        box.getStyleClass().add("stock-dialog-section");
+        return box;
+    }
+
     private static VBox field(String name, Node input, Node... extras) {
         Label label = label(name, "stock-dialog-field");
         label.setLabelFor(input);
-        VBox row = new VBox(4, label, input);
+        VBox row = new VBox(5, label, input);
         row.getChildren().addAll(extras);
         return row;
     }

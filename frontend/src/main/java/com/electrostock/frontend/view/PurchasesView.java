@@ -5,7 +5,7 @@ import java.math.RoundingMode;
 import java.net.ConnectException;
 import java.net.http.HttpTimeoutException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
@@ -36,7 +36,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.DatePicker;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
@@ -71,6 +70,18 @@ public class PurchasesView extends VBox {
             DateTimeFormatter.ofPattern("dd MMM uuuu", Locale.ENGLISH);
     private static final DateTimeFormatter DATE_TIME =
             DateTimeFormatter.ofPattern("dd MMM uuuu, HH:mm", Locale.ENGLISH);
+
+    /** Fixed invoice date pill: set automatically, not editable by the user. */
+    private static final String FIXED_DATE_STYLE =
+            "-fx-background-color: linear-gradient(to right, #F0FDFA 0%, #F8FAFC 100%);"
+            + "-fx-background-radius: 10;"
+            + "-fx-border-color: #99F6E4;"
+            + "-fx-border-radius: 10;"
+            + "-fx-border-width: 1;"
+            + "-fx-text-fill: #0F766E;"
+            + "-fx-font-size: 13px;"
+            + "-fx-font-weight: bold;"
+            + "-fx-padding: 9 14;";
 
     private final PurchaseApiClient api = new PurchaseApiClient();
     private final PurchaseDialogs dialogs = new PurchaseDialogs();
@@ -248,35 +259,24 @@ public class PurchasesView extends VBox {
         Label cardTitle = new Label("Create a new purchase draft");
         cardTitle.getStyleClass().add("purchase-setup-title");
 
-        Label cardSub = small("Select the supplier, invoice date, and billing currency before adding line items.");
+        Label cardSub = small("Select the supplier and billing currency — today's invoice date is applied automatically.");
         cardSub.setWrapText(true);
 
         ComboBox<PurchaseApiClient.Supplier> supplier = new ComboBox<>();
         supplier.setPromptText("Loading suppliers…");
         supplier.setMaxWidth(Double.MAX_VALUE);
 
-        DatePicker purchaseDate = new DatePicker(LocalDate.now());
-        purchaseDate.setEditable(false);
-        purchaseDate.setMaxWidth(Double.MAX_VALUE);
-        HBox.setHgrow(purchaseDate, Priority.ALWAYS);
+        // The invoice date is not user-controlled: every draft lands on today.
+        LocalDate purchaseDate = LocalDate.now();
 
-        Button todayBtn = button("Today", "purchase-chip-btn", () -> purchaseDate.setValue(LocalDate.now()));
-        Button yesterdayBtn = button("Yesterday", "purchase-chip-btn", () -> purchaseDate.setValue(LocalDate.now().minusDays(1)));
+        Label dateValue = new Label(date(purchaseDate) + "  ·  Today");
+        dateValue.setStyle(FIXED_DATE_STYLE);
+        dateValue.setMaxWidth(Double.MAX_VALUE);
 
-        Runnable syncDateChips = () -> {
-            LocalDate val = purchaseDate.getValue();
-            todayBtn.getStyleClass().remove("purchase-chip-btn-active");
-            yesterdayBtn.getStyleClass().remove("purchase-chip-btn-active");
-            if (LocalDate.now().equals(val)) {
-                todayBtn.getStyleClass().add("purchase-chip-btn-active");
-            } else if (LocalDate.now().minusDays(1).equals(val)) {
-                yesterdayBtn.getStyleClass().add("purchase-chip-btn-active");
-            }
-        };
-        purchaseDate.valueProperty().addListener((obs, oldVal, newVal) -> syncDateChips.run());
-        syncDateChips.run();
+        Label dateNote = small("The purchase date is set to today automatically and cannot be changed.");
+        dateNote.setWrapText(true);
 
-        HBox dateRow = bar(purchaseDate, todayBtn, yesterdayBtn);
+        VBox dateRow = new VBox(6, dateValue, dateNote);
 
         ComboBox<Currency> currency = new ComboBox<>();
         currency.setPromptText("Loading currencies…");
@@ -297,10 +297,10 @@ public class PurchasesView extends VBox {
         Button submit = button("Create draft & add items →", "purchase-primary", () ->
                 write("Creating draft…", feedback,
                         () -> api.createDraft(supplier.getValue().id(), currency.getValue().code(),
-                                purchaseDate.getValue()),
+                                purchaseDate),
                         id -> loadPurchase(id, "Draft created. Add products below before confirming receipt.")));
         submit.disableProperty().bind(writing.or(currency.valueProperty().isNull())
-                .or(purchaseDate.valueProperty().isNull()).or(supplier.valueProperty().isNull()));
+                .or(supplier.valueProperty().isNull()));
 
         HBox footerActions = bar(cancelBtn, spacer(), submit);
 
@@ -462,6 +462,7 @@ public class PurchasesView extends VBox {
                             write("Confirming purchase…", feedback,
                                     () -> api.confirm(purchase.id(), serials),
                                     ignored -> loadPurchase(purchase.id(), "Purchase confirmed. Received stock has been added."))));
+            confirm.getStyleClass().add("purchase-confirm-action");
 
             remove.disableProperty().bind(writing.or(lines.getSelectionModel().selectedItemProperty().isNull()));
             add.disableProperty().bind(writing);
@@ -741,6 +742,7 @@ public class PurchasesView extends VBox {
         head.getStyleClass().add("purchase-page-title");
         HBox row = bar(new VBox(3, head, small(subtitle)), spacer());
         row.getChildren().addAll(actions);
+        row.getStyleClass().add("purchase-hero");
         return row;
     }
 

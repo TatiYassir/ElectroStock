@@ -100,7 +100,41 @@ final class ProductIcons {
             path = PACKAGE; color = fallback[0]; tint = fallback[1];
         }
 
-        double scale = size * 0.56 / 24.0;
+        return tile(path, color, tint, size);
+    }
+
+    /** Coloured rounded tile for the summary cards. kind: total | in | low | out. */
+    static StackPane stat(String kind, double size) {
+        return switch (kind) {
+            case "in"  -> tile("M22 11.08V12A10 10 0 1 1 15.7 3 M22 4L12 14.01L9 11.01", "#16a34a", "#e0f7e8", size);
+            case "low" -> tile("M12 3L22 20H2Z M12 10V14 M12 17H12.01", "#d97706", "#fff1d6", size);
+            case "out" -> tile("M12 22A10 10 0 1 0 12 2A10 10 0 1 0 12 22 M4.9 4.9L19.1 19.1", "#dc2626", "#ffe4e4", size);
+            default    -> tile(PACKAGE, "#0d9488", "#dcf5f1", size);
+        };
+    }
+
+    /** Bare stroked icon without a tile. */
+    static StackPane plain(String path, String color, double size) {
+        double scale = size / 24.0;
+        SVGPath drawing = new SVGPath();
+        drawing.setContent(path);
+        drawing.setFill(Color.TRANSPARENT);
+        drawing.setStroke(Color.web(color));
+        drawing.setStrokeWidth(2.0 / scale);
+        drawing.setStrokeLineCap(StrokeLineCap.ROUND);
+        drawing.setStrokeLineJoin(StrokeLineJoin.ROUND);
+        drawing.setScaleX(scale);
+        drawing.setScaleY(scale);
+        StackPane box = new StackPane(drawing);
+        box.setMinSize(size, size);
+        box.setPrefSize(size, size);
+        box.setMaxSize(size, size);
+        box.setMouseTransparent(true);
+        return box;
+    }
+
+    private static StackPane tile(String path, String color, String tint, double size) {
+        double scale = size * 0.52 / 24.0;
         SVGPath drawing = new SVGPath();
         drawing.setContent(path);
         drawing.setFill(Color.TRANSPARENT);
@@ -116,10 +150,11 @@ final class ProductIcons {
         box.setPrefSize(size, size);
         box.setMaxSize(size, size);
         box.setMouseTransparent(true);
-        box.setStyle("-fx-background-color: " + tint + ";"
-                + "-fx-background-radius: " + Math.round(size * 0.28) + ";"
-                + "-fx-border-color: " + rgba(color, 0.22) + ";"
-                + "-fx-border-radius: " + Math.round(size * 0.28) + ";");
+        long radius = Math.round(size * 0.3);
+        box.setStyle("-fx-background-color: linear-gradient(to bottom right, " + tint + ", " + rgba(color, 0.16) + ");"
+                + "-fx-background-radius: " + radius + ";"
+                + "-fx-border-color: " + rgba(color, 0.20) + ";"
+                + "-fx-border-radius: " + radius + ";");
         return box;
     }
 

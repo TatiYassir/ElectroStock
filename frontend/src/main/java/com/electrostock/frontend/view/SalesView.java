@@ -8,7 +8,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -36,7 +35,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.DatePicker;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
@@ -72,6 +70,18 @@ public class SalesView extends VBox {
             DateTimeFormatter.ofPattern("dd MMM uuuu", Locale.ENGLISH);
     private static final DateTimeFormatter DATE_TIME =
             DateTimeFormatter.ofPattern("dd MMM uuuu, HH:mm", Locale.ENGLISH);
+
+    /** Fixed transaction date pill: set automatically, not editable by the user. */
+    private static final String FIXED_DATE_STYLE =
+            "-fx-background-color: linear-gradient(to right, #F0FDFA 0%, #F8FAFC 100%);"
+            + "-fx-background-radius: 10;"
+            + "-fx-border-color: #99F6E4;"
+            + "-fx-border-radius: 10;"
+            + "-fx-border-width: 1;"
+            + "-fx-text-fill: #0F766E;"
+            + "-fx-font-size: 13px;"
+            + "-fx-font-weight: bold;"
+            + "-fx-padding: 9 14;";
 
     private final SaleApiClient api = new SaleApiClient();
     private final SaleDialogs dialogs = new SaleDialogs(api);
@@ -244,31 +254,20 @@ public class SalesView extends VBox {
         Label cardTitle = new Label("Create a new sale draft");
         cardTitle.getStyleClass().add("sale-setup-title");
 
-        Label cardSub = small("Configure the transaction date and billing currency before adding products.");
+        Label cardSub = small("Billing currency and today's date are applied before adding products.");
         cardSub.setWrapText(true);
 
-        DatePicker saleDate = new DatePicker(LocalDate.now());
-        saleDate.setEditable(false);
-        saleDate.setMaxWidth(Double.MAX_VALUE);
-        HBox.setHgrow(saleDate, Priority.ALWAYS);
+        // The sale date is not user-controlled: every draft lands on today.
+        LocalDate saleDate = LocalDate.now();
 
-        Button todayBtn = button("Today", "sale-chip-btn", () -> saleDate.setValue(LocalDate.now()));
-        Button yesterdayBtn = button("Yesterday", "sale-chip-btn", () -> saleDate.setValue(LocalDate.now().minusDays(1)));
+        Label dateValue = new Label(date(saleDate) + "  ·  Today");
+        dateValue.setStyle(FIXED_DATE_STYLE);
+        dateValue.setMaxWidth(Double.MAX_VALUE);
 
-        Runnable syncDateChips = () -> {
-            LocalDate val = saleDate.getValue();
-            todayBtn.getStyleClass().remove("sale-chip-btn-active");
-            yesterdayBtn.getStyleClass().remove("sale-chip-btn-active");
-            if (LocalDate.now().equals(val)) {
-                todayBtn.getStyleClass().add("sale-chip-btn-active");
-            } else if (LocalDate.now().minusDays(1).equals(val)) {
-                yesterdayBtn.getStyleClass().add("sale-chip-btn-active");
-            }
-        };
-        saleDate.valueProperty().addListener((obs, oldVal, newVal) -> syncDateChips.run());
-        syncDateChips.run();
+        Label dateNote = small("The sale date is set to today automatically and cannot be changed.");
+        dateNote.setWrapText(true);
 
-        HBox dateRow = bar(saleDate, todayBtn, yesterdayBtn);
+        VBox dateRow = new VBox(6, dateValue, dateNote);
 
         ComboBox<Currency> currency = new ComboBox<>();
         currency.setPromptText("Loading currencies…");
@@ -288,10 +287,9 @@ public class SalesView extends VBox {
         Button cancelBtn = button("Cancel", "sale-secondary", this::showList);
         Button submit = button("Create draft & add items →", "sale-primary", () ->
                 write("Creating draft…", feedback,
-                        () -> api.createDraft(currency.getValue().code(), saleDate.getValue()),
+                        () -> api.createDraft(currency.getValue().code(), saleDate),
                         id -> loadSale(id, "Draft created. Add products below before confirming.")));
-        submit.disableProperty().bind(writing.or(currency.valueProperty().isNull())
-                .or(saleDate.valueProperty().isNull()));
+        submit.disableProperty().bind(writing.or(currency.valueProperty().isNull()));
 
         HBox footerActions = bar(cancelBtn, spacer(), submit);
 
@@ -475,6 +473,7 @@ public class SalesView extends VBox {
                             write("Confirming sale…", feedback,
                                     () -> api.confirm(sale.id(), serials),
                                     ignored -> loadSale(sale.id(), "Sale confirmed and stock deducted."))));
+            confirm.getStyleClass().add("sale-confirm-action");
 
             edit.disableProperty().bind(writing.or(lines.getSelectionModel().selectedItemProperty().isNull()));
             remove.disableProperty().bind(writing.or(lines.getSelectionModel().selectedItemProperty().isNull()));
@@ -627,7 +626,7 @@ public class SalesView extends VBox {
         pane.getButtonTypes().setAll(ButtonType.CANCEL, accept);
         Node confirmBtn = pane.lookupButton(accept);
         if (confirmBtn != null) {
-            confirmBtn.getStyleClass().add(danger ? "sale-danger-solid" : "sale-primary");
+            confirmBtn.getStyleClass().add(danger ? "sale-danger-solid" : "sale-confirm-action");
         }
         Node cancelBtn = pane.lookupButton(ButtonType.CANCEL);
         if (cancelBtn != null) {
@@ -776,6 +775,7 @@ public class SalesView extends VBox {
         head.getStyleClass().add("sale-page-title");
         HBox row = bar(new VBox(3, head, small(subtitle)), spacer());
         row.getChildren().addAll(actions);
+        row.getStyleClass().add("sale-hero");
         return row;
     }
 

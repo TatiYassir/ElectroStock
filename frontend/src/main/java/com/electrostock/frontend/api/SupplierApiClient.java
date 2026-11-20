@@ -1,23 +1,32 @@
 package com.electrostock.frontend.api;
 
+import java.math.BigDecimal;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.json.JsonMapper;
 
-/** Supplier directory calls to the existing Spring Boot API. */
+/** Supplier directory and procurement summary calls to the Spring Boot API. */
 public final class SupplierApiClient {
     public record Supplier(long id, String name, String phone, String email, String address, String status) {
         public boolean active() { return "ACTIVE".equals(status); }
     }
 
     public record SupplierInput(String name, String phone, String email, String address) {}
+
+    public record SupplierSpend(long supplierId, String supplierName, long confirmedPurchases,
+            BigDecimal totalPurchasedMad) {}
+
+    public record SupplierPurchase(long id, String status, String supplierName, String currencyCode,
+            LocalDate purchaseDate, BigDecimal totalCurrency) {}
+
     private record ErrorBody(String message, String detail, String error) {}
 
     private static final URI API = URI.create("http://localhost:8080/api/");
@@ -47,6 +56,20 @@ public final class SupplierApiClient {
                 null, Supplier.class);
     }
 
+    /** Optional procurement spend aggregation per supplier (degrades gracefully if unavailable). */
+    public CompletableFuture<List<SupplierSpend>> spendSummary() {
+        return request("GET", "reports/purchases-by-supplier", null, SupplierSpend[].class)
+                .thenApply(List::of)
+                .exceptionally(ignored -> List.of());
+    }
+
+    /** Optional purchase order list used to display recent PO history per supplier. */
+    public CompletableFuture<List<SupplierPurchase>> purchases() {
+        return request("GET", "purchases", null, SupplierPurchase[].class)
+                .thenApply(List::of)
+                .exceptionally(ignored -> List.of());
+    }
+
     private <T> CompletableFuture<T> request(String method, String path, Object body, Class<T> type) {
         var builder = HttpRequest.newBuilder(API.resolve(path))
                 .timeout(Duration.ofSeconds(25)).header("Accept", "application/json");
@@ -65,7 +88,7 @@ public final class SupplierApiClient {
     }
 
     private String errorMessage(int status, String body) {
-        String text = body.strip();
+        String text = body == null ? "" : body.strip();
         if (text.startsWith("{")) {
             try {
                 var problem = json.readValue(text, ErrorBody.class);
@@ -73,7 +96,7 @@ public final class SupplierApiClient {
                     if (detail != null && !detail.isBlank()) return detail;
                 }
             } catch (RuntimeException ignored) {
-                // Fall through to the status if the response isn't a normal API error.
+                // Fall through to status code if payload is not a standard error body.
             }
         } else if (!text.isEmpty() && !text.startsWith("<") && text.length() <= 300) {
             return text;

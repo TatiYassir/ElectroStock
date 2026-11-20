@@ -1,211 +1,336 @@
-/* Suppliers & Vendor Directory — Exclusive Amethyst, Emerald, Bronze & Rose Palette */
+/* Suppliers & Vendors — "Aurora Glass" theme: deep indigo, violet and cyan on frosted white. */
 .suppliers-page {
-    -fx-background-color: #F3F4F7;
+    -fx-background-color: linear-gradient(to bottom right, #F7F8FD 0%, #EFF1FA 55%, #EDF0FA 100%);
     -fx-font-family: "Segoe UI";
     -fx-font-size: 13px;
     -fx-text-background-color: #0F172A;
-    -fx-padding: 22;
-    -fx-spacing: 16;
+    -fx-padding: 0;
 }
 
-.suppliers-page .supplier-page-title {
+.supplier-page-body {
+    -fx-background-color: transparent;
+}
+
+/* ---------- Hero band ---------- */
+.suppliers-page .suppliers-page .supplier-hero {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 20;
+    -fx-border-radius: 20;
+    -fx-border-color: #E7E9F4;
+    -fx-border-width: 1;
+    -fx-padding: 22 24;
+    -fx-effect: dropshadow(gaussian, rgba(20, 22, 43, 0.05), 16, 0.03, 0, 4);
+}
+
+.suppliers-page .supplier-hero-kicker {
+    -fx-font-size: 10.5px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #5B4BE8;
+}
+
+.suppliers-page .supplier-hero-title {
     -fx-font-size: 28px;
     -fx-font-weight: bold;
-    -fx-text-fill: #0F172A;
+    -fx-text-fill: #10152A;
 }
 
-.suppliers-page .supplier-card-title {
-    -fx-font-size: 15px;
-    -fx-font-weight: bold;
-    -fx-text-fill: #0F172A;
-}
-
-.suppliers-page .supplier-muted {
-    -fx-text-fill: #52637A;
-    -fx-font-size: 12px;
-}
-
-.suppliers-page .supplier-field-label {
-    -fx-font-weight: bold;
+.suppliers-page .supplier-hero-sub {
     -fx-font-size: 12.5px;
-    -fx-text-fill: #334155;
+    -fx-text-fill: #6B7288;
 }
 
-/* Elevated Cards & Interactive KPI Filter Cards */
-.suppliers-page .supplier-card {
-    -fx-background-color: #FFFFFF;
-    -fx-background-radius: 12;
-    -fx-border-color: #DCE3EC;
-    -fx-border-radius: 12;
-    -fx-padding: 16 18;
-    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.04), 10, 0, 0, 2);
-}
-
-.suppliers-page .supplier-metric {
-    -fx-background-color: #FFFFFF;
-    -fx-border-color: #DCE3EC;
-    -fx-border-width: 1 1 1 4;
-    -fx-background-radius: 11;
-    -fx-border-radius: 11;
-    -fx-padding: 12 16;
-    -fx-cursor: hand;
-    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.03), 8, 0, 0, 1);
-}
-
-.suppliers-page .supplier-metric:hover {
-    -fx-background-color: #F8FAFC;
-}
-
-.suppliers-page .supplier-metric-all {
-    -fx-border-color: #DCE3EC #DCE3EC #DCE3EC #6D28D9;
-}
-
-.suppliers-page .supplier-metric-active {
-    -fx-border-color: #DCE3EC #DCE3EC #DCE3EC #059669;
-}
-
-.suppliers-page .supplier-metric-inactive {
-    -fx-border-color: #DCE3EC #DCE3EC #DCE3EC #D97706;
-}
-
-.suppliers-page .supplier-metric-all.supplier-metric-selected {
-    -fx-background-color: #F5F3FF;
-    -fx-border-color: #C4B5FD #C4B5FD #C4B5FD #6D28D9;
-}
-
-.suppliers-page .supplier-metric-active.supplier-metric-selected {
-    -fx-background-color: #ECFDF5;
-    -fx-border-color: #6EE7B7 #6EE7B7 #6EE7B7 #059669;
-}
-
-.suppliers-page .supplier-metric-inactive.supplier-metric-selected {
-    -fx-background-color: #FFFBEB;
-    -fx-border-color: #FCD34D #FCD34D #FCD34D #D97706;
-}
-
-.suppliers-page .supplier-metric-label {
-    -fx-font-size: 11px;
-    -fx-font-weight: bold;
-    -fx-text-fill: #64748B;
-}
-
-.suppliers-page .supplier-metric-value {
-    -fx-font-size: 24px;
-    -fx-font-weight: bold;
-    -fx-text-fill: #0F172A;
-}
-
-.suppliers-page .supplier-metric-sub {
-    -fx-font-size: 11.5px;
-    -fx-text-fill: #475569;
-}
-
-/* Header Pills & Count Badges */
-.suppliers-page .supplier-count-pill {
-    -fx-background-color: #F5F3FF;
-    -fx-border-color: #DDD6FE;
+.suppliers-page .supplier-hero-badge {
+    -fx-background-color: #EEF0FF;
+    -fx-border-color: #D9DCFB;
     -fx-border-radius: 999;
     -fx-background-radius: 999;
-    -fx-text-fill: #5B21B6;
-    -fx-font-size: 11.5px;
+    -fx-text-fill: #4338CA;
+    -fx-font-size: 10.5px;
     -fx-font-weight: bold;
     -fx-padding: 4 11;
 }
 
-.suppliers-page .supplier-scope-pill {
-    -fx-background-color: #F5F3FF;
-    -fx-border-color: #DDD6FE;
-    -fx-border-radius: 999;
-    -fx-background-radius: 999;
-    -fx-text-fill: #6D28D9;
-    -fx-font-size: 11px;
-    -fx-font-weight: bold;
-    -fx-padding: 4 11;
-}
-
-/* Buttons & Segmented Filter Tabs */
+/* ---------- Buttons ---------- */
 .suppliers-page .button,
 .suppliers-page .toggle-button {
     -fx-cursor: hand;
-    -fx-background-radius: 7;
-    -fx-border-radius: 7;
+    -fx-font-size: 12.5px;
     -fx-font-weight: bold;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-background-insets: 0;
 }
 
 .suppliers-page .supplier-primary {
-    -fx-background-color: #6D28D9;
+    -fx-background-color: linear-gradient(to right, #7C3AED 0%, #5B4BE8 55%, #4F46E5 100%);
     -fx-border-color: transparent;
     -fx-text-fill: #FFFFFF;
-    -fx-padding: 8 16;
+    -fx-padding: 9 17;
+    -fx-effect: dropshadow(gaussian, rgba(91, 75, 232, 0.34), 14, 0, 0, 5);
 }
 
 .suppliers-page .supplier-primary:hover {
-    -fx-background-color: #5B21B6;
+    -fx-background-color: linear-gradient(to right, #8B5CF6 0%, #6558F0 55%, #5A51EA 100%);
+}
+
+.suppliers-page .supplier-primary:disabled {
+    -fx-opacity: 0.45;
+    -fx-effect: null;
+}
+
+.suppliers-page .supplier-inverse {
+    -fx-background-color: linear-gradient(to right, #6D5BE8 0%, #4F46E5 100%);
+    -fx-border-color: transparent;
+    -fx-text-fill: #FFFFFF;
+    -fx-padding: 9 17;
+    -fx-effect: dropshadow(gaussian, rgba(79, 70, 229, 0.30), 14, 0, 0, 5);
+}
+
+.suppliers-page .supplier-inverse:hover {
+    -fx-background-color: linear-gradient(to right, #7C6BF0 0%, #5B54EE 100%);
+}
+
+.suppliers-page .supplier-ghost-light {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #E1E4F0;
+    -fx-text-fill: #24293C;
+    -fx-padding: 9 15;
+}
+
+.suppliers-page .supplier-ghost-light:hover {
+    -fx-background-color: #F5F6FC;
+    -fx-border-color: #CFD4E6;
+}
+
+.suppliers-page .supplier-ghost-light:disabled {
+    -fx-opacity: 0.5;
 }
 
 .suppliers-page .supplier-secondary {
     -fx-background-color: #FFFFFF;
-    -fx-border-color: #CBD5E1;
-    -fx-text-fill: #1E293B;
-    -fx-padding: 8 15;
+    -fx-border-color: #E1E4F0;
+    -fx-text-fill: #24293C;
+    -fx-padding: 9 15;
 }
 
 .suppliers-page .supplier-secondary:hover {
-    -fx-background-color: #F1F5F9;
+    -fx-background-color: #F5F6FC;
+    -fx-border-color: #CFD4E6;
 }
 
 .suppliers-page .supplier-danger {
-    -fx-background-color: #FFF1F2;
-    -fx-border-color: #FECDD3;
+    -fx-background-color: #FFF1F5;
+    -fx-border-color: #FBCFE0;
     -fx-text-fill: #BE123C;
-    -fx-padding: 8 15;
+    -fx-padding: 9 15;
 }
 
 .suppliers-page .supplier-danger:hover {
-    -fx-background-color: #FFE4E6;
+    -fx-background-color: #FFE4EC;
 }
 
 .suppliers-page .supplier-chip-btn {
-    -fx-background-color: #F8FAFC;
-    -fx-border-color: #CBD5E1;
-    -fx-text-fill: #334155;
+    -fx-background-color: #F4F5FB;
+    -fx-border-color: #E3E6F2;
+    -fx-text-fill: #454C61;
     -fx-font-size: 12px;
-    -fx-padding: 7 12;
+    -fx-padding: 8 11;
 }
 
 .suppliers-page .supplier-chip-btn:hover {
-    -fx-background-color: #F5F3FF;
-    -fx-border-color: #C4B5FD;
+    -fx-background-color: #EEE9FF;
+    -fx-border-color: #D6CCFB;
     -fx-text-fill: #5B21B6;
 }
 
+.suppliers-page .supplier-mini-btn {
+    -fx-background-color: #F2EFFF;
+    -fx-border-color: #E3DAFB;
+    -fx-text-fill: #6D28D9;
+    -fx-font-size: 10.5px;
+    -fx-padding: 2 9;
+    -fx-background-radius: 7;
+    -fx-border-radius: 7;
+}
+
+.suppliers-page .supplier-mini-btn:hover {
+    -fx-background-color: #E7DEFF;
+    -fx-border-color: #CDBBF7;
+}
+
+.suppliers-page .supplier-chip-toggle {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #E3E6F2;
+    -fx-text-fill: #4B5165;
+    -fx-font-size: 12px;
+    -fx-padding: 8 13;
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+}
+
+.suppliers-page .supplier-chip-toggle:hover {
+    -fx-border-color: #D6CCFB;
+    -fx-text-fill: #5B21B6;
+}
+
+.suppliers-page .supplier-chip-toggle:selected {
+    -fx-background-color: #F1EBFF;
+    -fx-border-color: #C9B6FB;
+    -fx-text-fill: #5B21B6;
+}
+
+/* ---------- Cards ---------- */
+.suppliers-page .supplier-card {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 18;
+    -fx-border-color: #E8EAF4;
+    -fx-border-radius: 18;
+    -fx-border-width: 1;
+    -fx-padding: 17 18;
+    -fx-effect: dropshadow(gaussian, rgba(23, 27, 58, 0.06), 20, 0, 0, 6);
+}
+
+.suppliers-page .supplier-card-title {
+    -fx-font-size: 14.5px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #10152A;
+}
+
+.suppliers-page .supplier-muted {
+    -fx-text-fill: #6B7288;
+    -fx-font-size: 11.5px;
+}
+
+.suppliers-page .supplier-section-label {
+    -fx-font-size: 10.5px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #8C93A8;
+}
+
+/* ---------- Interactive KPI cards ---------- */
+.suppliers-page .supplier-metric {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #E8EAF4 #E8EAF4 #E8EAF4 #C9B6FB;
+    -fx-border-width: 1 1 1 4;
+    -fx-background-radius: 16;
+    -fx-border-radius: 16;
+    -fx-padding: 14 17;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(23, 27, 58, 0.05), 16, 0, 0, 4);
+}
+
+.suppliers-page .supplier-metric:hover {
+    -fx-background-color: #FCFBFF;
+    -fx-border-color: #DFDAF6 #DFDAF6 #DFDAF6 #A78BFA;
+}
+
+.suppliers-page .supplier-metric-all {
+    -fx-border-color: #E8EAF4 #E8EAF4 #E8EAF4 #7C3AED;
+}
+
+.suppliers-page .supplier-metric-active {
+    -fx-border-color: #E8EAF4 #E8EAF4 #E8EAF4 #10B981;
+}
+
+.suppliers-page .supplier-metric-inactive {
+    -fx-border-color: #E8EAF4 #E8EAF4 #E8EAF4 #F59E0B;
+}
+
+.suppliers-page .supplier-metric-all.supplier-metric-selected {
+    -fx-background-color: linear-gradient(to bottom right, #FAF7FF, #F3ECFF);
+    -fx-border-color: #D8C9FB #D8C9FB #D8C9FB #7C3AED;
+}
+
+.suppliers-page .supplier-metric-active.supplier-metric-selected {
+    -fx-background-color: linear-gradient(to bottom right, #F5FFFB, #E9FBF2);
+    -fx-border-color: #B6EED3 #B6EED3 #B6EED3 #10B981;
+}
+
+.suppliers-page .supplier-metric-inactive.supplier-metric-selected {
+    -fx-background-color: linear-gradient(to bottom right, #FFFBF2, #FDF3DF);
+    -fx-border-color: #F8DFB0 #F8DFB0 #F8DFB0 #F59E0B;
+}
+
+.suppliers-page .supplier-metric-kicker {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #7C8499;
+}
+
+.suppliers-page .supplier-metric-value {
+    -fx-font-size: 26px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #10152A;
+}
+
+.suppliers-page .supplier-metric-sub {
+    -fx-font-size: 11.5px;
+    -fx-text-fill: #5A617A;
+}
+
+/* ---------- Progress meters ---------- */
+.suppliers-page .supplier-meter {
+    -fx-padding: 0;
+    -fx-background-color: transparent;
+}
+
+.suppliers-page .supplier-meter > .track {
+    -fx-background-color: #EDEFF8;
+    -fx-background-radius: 99;
+    -fx-background-insets: 0;
+}
+
+.suppliers-page .supplier-meter > .bar {
+    -fx-background-color: linear-gradient(to right, #8B5CF6 0%, #5B4BE8 55%, #22D3EE 100%);
+    -fx-background-radius: 99;
+    -fx-background-insets: 0;
+}
+
+.suppliers-page .supplier-meter-text {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #6B7288;
+}
+
+/* ---------- Pills & segmented filter ---------- */
+.suppliers-page .supplier-count-pill {
+    -fx-background-color: #F2EBFF;
+    -fx-border-color: #DED0FB;
+    -fx-border-radius: 999;
+    -fx-background-radius: 999;
+    -fx-text-fill: #5B21B6;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 4 11;
+}
+
 .suppliers-page .supplier-seg-group {
-    -fx-background-color: #F1F5F9;
-    -fx-border-color: #CBD5E1;
-    -fx-border-radius: 8;
-    -fx-background-radius: 8;
-    -fx-padding: 2;
+    -fx-background-color: #F2F3FA;
+    -fx-border-color: #E5E7F2;
+    -fx-border-radius: 11;
+    -fx-background-radius: 11;
+    -fx-padding: 3;
 }
 
 .suppliers-page .supplier-seg-btn {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
-    -fx-text-fill: #475569;
+    -fx-text-fill: #565E75;
     -fx-font-size: 12px;
-    -fx-padding: 5 13;
-    -fx-background-radius: 6;
-    -fx-border-radius: 6;
+    -fx-padding: 6 14;
+    -fx-background-radius: 9;
+    -fx-border-radius: 9;
 }
 
 .suppliers-page .supplier-seg-btn:hover {
-    -fx-text-fill: #0F172A;
+    -fx-text-fill: #161B2E;
 }
 
 .suppliers-page .supplier-seg-btn:selected {
     -fx-background-color: #FFFFFF;
-    -fx-border-color: #E2E8F0;
-    -fx-text-fill: #5B21B6;
-    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.06), 4, 0, 0, 1);
+    -fx-border-color: #E7E9F4;
+    -fx-text-fill: #4C1D95;
+    -fx-effect: dropshadow(gaussian, rgba(23, 27, 58, 0.10), 8, 0, 0, 2);
 }
 
 .suppliers-page .supplier-seg-active:selected {
@@ -216,84 +341,154 @@
     -fx-text-fill: #B45309;
 }
 
-/* Inputs */
+/* ---------- Inputs ---------- */
 .suppliers-page .text-field,
 .suppliers-page .text-area {
-    -fx-background-color: #FFFFFF;
-    -fx-border-color: #CBD5E1;
-    -fx-border-radius: 7;
-    -fx-background-radius: 7;
-    -fx-padding: 8 11;
-    -fx-prompt-text-fill: #64748B;
+    -fx-background-color: #FCFCFE;
+    -fx-border-color: #E2E5F0;
+    -fx-border-radius: 11;
+    -fx-background-radius: 11;
+    -fx-padding: 9 12;
+    -fx-font-size: 12.5px;
+    -fx-prompt-text-fill: #9AA1B4;
+    -fx-text-fill: #10152A;
 }
 
-.suppliers-page .supplier-search {
-    -fx-padding: 7 11;
+.suppliers-page .text-field:hover,
+.suppliers-page .text-area:hover {
+    -fx-border-color: #D2D6E7;
 }
 
-.suppliers-page .button:focused,
-.suppliers-page .toggle-button:focused,
 .suppliers-page .text-field:focused,
 .suppliers-page .text-area:focused {
-    -fx-border-color: #6D28D9;
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #8B5CF6;
+    -fx-effect: dropshadow(gaussian, rgba(124, 58, 237, 0.22), 10, 0, 0, 2);
 }
 
-/* Notices & Validation */
+.suppliers-page .text-area .content {
+    -fx-background-color: transparent;
+    -fx-background-radius: 11;
+}
+
+.suppliers-page .text-area .scroll-pane,
+.suppliers-page .text-area .viewport {
+    -fx-background-color: transparent;
+}
+
+.suppliers-page .supplier-input-invalid {
+    -fx-border-color: #F43F5E;
+    -fx-background-color: #FFF5F7;
+}
+
+.suppliers-page .supplier-search-row {
+    -fx-alignment: center-left;
+}
+
+.suppliers-page .supplier-toolbar {
+    -fx-padding: 2 0 4 0;
+}
+
+.suppliers-page .supplier-field-label {
+    -fx-font-weight: bold;
+    -fx-font-size: 11.5px;
+    -fx-text-fill: #3B4259;
+}
+
+.suppliers-page .supplier-counter {
+    -fx-font-size: 10.5px;
+    -fx-text-fill: #98A0B4;
+}
+
+/* ---------- Notices, validation & toasts ---------- */
 .suppliers-page .supplier-notice,
 .suppliers-page .supplier-error {
     -fx-padding: 10 14;
-    -fx-background-radius: 8;
-    -fx-border-radius: 8;
+    -fx-background-radius: 11;
+    -fx-border-radius: 11;
+    -fx-border-width: 1;
     -fx-font-weight: bold;
+    -fx-font-size: 12px;
 }
 
 .suppliers-page .supplier-notice {
-    -fx-background-color: #ECFDF5;
-    -fx-border-color: #A7F3D0;
-    -fx-text-fill: #065F46;
+    -fx-background-color: #F2F5FF;
+    -fx-border-color: #DCE4FF;
+    -fx-text-fill: #3730A3;
 }
 
 .suppliers-page .supplier-error {
-    -fx-background-color: #FFF1F2;
-    -fx-border-color: #FECDD3;
+    -fx-background-color: #FFF3F5;
+    -fx-border-color: #FBD0DA;
     -fx-text-fill: #9F1239;
 }
 
 .suppliers-page .supplier-validation {
     -fx-text-fill: #BE123C;
+    -fx-font-size: 11.5px;
     -fx-font-weight: bold;
 }
 
-/* Monogram Avatars & Status Pills */
+.suppliers-page .supplier-toast {
+    -fx-background-color: #14182C;
+    -fx-background-radius: 13;
+    -fx-text-fill: #F5F6FF;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-padding: 11 17;
+    -fx-effect: dropshadow(gaussian, rgba(10, 12, 30, 0.45), 18, 0, 0, 6);
+}
+
+/* ---------- Monogram avatars ---------- */
 .suppliers-page .supplier-avatar {
     -fx-background-radius: 999;
     -fx-border-radius: 999;
     -fx-border-width: 1;
+    -fx-border-color: rgba(255, 255, 255, 0.55);
+    -fx-effect: dropshadow(gaussian, rgba(23, 27, 58, 0.16), 8, 0, 0, 2);
 }
 
 .suppliers-page .supplier-avatar-active {
-    -fx-background-color: #F5F3FF;
-    -fx-border-color: #DDD6FE;
+    -fx-background-color: linear-gradient(to bottom right, #8B5CF6, #4F46E5);
 }
 
-.suppliers-page .supplier-avatar-inactive {
-    -fx-background-color: #F1F5F9;
-    -fx-border-color: #CBD5E1;
+.suppliers-page .supplier-avatar-tone-0 { -fx-background-color: linear-gradient(to bottom right, #8B5CF6, #4F46E5); }
+.suppliers-page .supplier-avatar-tone-1 { -fx-background-color: linear-gradient(to bottom right, #6366F1, #0EA5E9); }
+.suppliers-page .supplier-avatar-tone-2 { -fx-background-color: linear-gradient(to bottom right, #0EA5E9, #14B8A6); }
+.suppliers-page .supplier-avatar-tone-3 { -fx-background-color: linear-gradient(to bottom right, #14B8A6, #22C55E); }
+.suppliers-page .supplier-avatar-tone-4 { -fx-background-color: linear-gradient(to bottom right, #F59E0B, #F43F5E); }
+.suppliers-page .supplier-avatar-tone-5 { -fx-background-color: linear-gradient(to bottom right, #D946EF, #7C3AED); }
+
+.suppliers-page .supplier-avatar-inactive,
+.suppliers-page .supplier-avatar-inactive.supplier-avatar-tone-0,
+.suppliers-page .supplier-avatar-inactive.supplier-avatar-tone-1,
+.suppliers-page .supplier-avatar-inactive.supplier-avatar-tone-2,
+.suppliers-page .supplier-avatar-inactive.supplier-avatar-tone-3,
+.suppliers-page .supplier-avatar-inactive.supplier-avatar-tone-4,
+.suppliers-page .supplier-avatar-inactive.supplier-avatar-tone-5 {
+    -fx-background-color: linear-gradient(to bottom right, #EEF0F7, #DDE1EC);
+    -fx-border-color: #E1E4EF;
+    -fx-effect: dropshadow(gaussian, rgba(23, 27, 58, 0.08), 6, 0, 0, 1);
 }
 
 .suppliers-page .supplier-avatar-text {
     -fx-font-size: 11px;
     -fx-font-weight: bold;
-    -fx-text-fill: #5B21B6;
+    -fx-text-fill: #FFFFFF;
+}
+
+.suppliers-page .supplier-avatar-text-lg {
+    -fx-font-size: 16px;
 }
 
 .suppliers-page .supplier-avatar-inactive .supplier-avatar-text {
-    -fx-text-fill: #64748B;
+    -fx-text-fill: #7A839A;
 }
 
+/* ---------- Status chips ---------- */
 .suppliers-page .supplier-status {
     -fx-font-weight: bold;
-    -fx-font-size: 11.5px;
+    -fx-font-size: 11px;
     -fx-background-radius: 999;
     -fx-border-radius: 999;
     -fx-border-width: 1;
@@ -302,34 +497,40 @@
 
 .suppliers-page .supplier-status-active {
     -fx-background-color: #ECFDF5;
-    -fx-border-color: #A7F3D0;
-    -fx-text-fill: #065F46;
+    -fx-border-color: #B7EFD4;
+    -fx-text-fill: #047857;
 }
 
 .suppliers-page .supplier-status-inactive {
-    -fx-background-color: #FFFBEB;
-    -fx-border-color: #FDE68A;
-    -fx-text-fill: #92400E;
+    -fx-background-color: #FFF8EC;
+    -fx-border-color: #F7DFAF;
+    -fx-text-fill: #B45309;
 }
 
-/* Modern Borderless-Column Data Table */
+.suppliers-page .supplier-status-draft {
+    -fx-background-color: #EEF2FF;
+    -fx-border-color: #C9D4FF;
+    -fx-text-fill: #4338CA;
+}
+
+/* ---------- Data table ---------- */
 .suppliers-page .supplier-table {
-    -fx-background-color: #FFFFFF;
-    -fx-border-color: #E2E8F0;
-    -fx-background-radius: 9;
-    -fx-border-radius: 9;
+    -fx-background-color: transparent;
+    -fx-border-color: #EDEFF7;
+    -fx-border-radius: 14;
+    -fx-background-radius: 14;
     -fx-table-cell-border-color: transparent;
     -fx-padding: 0;
 }
 
 .suppliers-page .supplier-table:focused {
-    -fx-border-color: #6D28D9;
+    -fx-border-color: #DDD5F8;
 }
 
 .suppliers-page .supplier-table .column-header-background {
-    -fx-background-color: #F8FAFC;
-    -fx-background-radius: 9 9 0 0;
-    -fx-border-color: transparent transparent #E2E8F0 transparent;
+    -fx-background-color: #F9FAFE;
+    -fx-background-radius: 14 14 0 0;
+    -fx-border-color: transparent transparent #EDEFF7 transparent;
     -fx-border-width: 0 0 1 0;
 }
 
@@ -343,39 +544,39 @@
 
 .suppliers-page .supplier-table .column-header .label {
     -fx-alignment: center-left;
-    -fx-text-fill: #475569;
-    -fx-font-size: 12px;
+    -fx-text-fill: #7C8499;
+    -fx-font-size: 10.5px;
     -fx-font-weight: bold;
-    -fx-padding: 0 14;
+    -fx-padding: 0 15;
 }
 
 .suppliers-page .supplier-table .column-header .arrow {
-    -fx-background-color: #6D28D9;
+    -fx-background-color: #7C3AED;
 }
 
 .suppliers-page .supplier-table .table-row-cell {
     -fx-background-color: #FFFFFF;
-    -fx-cell-size: 48;
-    -fx-border-color: transparent transparent #F1F5F9 transparent;
+    -fx-cell-size: 62;
+    -fx-border-color: transparent transparent #F1F3F9 transparent;
     -fx-border-width: 0 0 1 0;
     -fx-background-insets: 0;
 }
 
-.suppliers-page .supplier-table .table-row-cell:odd:filled {
-    -fx-background-color: #FAFBFD;
-}
-
 .suppliers-page .supplier-table .table-row-cell:filled:hover {
-    -fx-background-color: #F4F2FA;
-    -fx-background-insets: 3 6;
-    -fx-background-radius: 8;
+    -fx-background-color: #F7F5FF;
+    -fx-background-insets: 3 7;
+    -fx-background-radius: 11;
+    -fx-border-color: transparent;
 }
 
 .suppliers-page .supplier-table .table-row-cell:filled:selected {
-    -fx-background-color: #F5F3FF;
-    -fx-background-insets: 3 6;
-    -fx-background-radius: 8;
-    -fx-border-color: transparent transparent #DDD6FE transparent;
+    -fx-background-color: #F3EEFF;
+    -fx-background-insets: 3 7;
+    -fx-background-radius: 11;
+    -fx-border-color: transparent transparent transparent #7C3AED;
+    -fx-border-width: 0 0 0 3;
+    -fx-border-insets: 3 7;
+    -fx-border-radius: 11;
 }
 
 .suppliers-page .supplier-table .table-row-cell:empty {
@@ -386,44 +587,116 @@
 .suppliers-page .supplier-table .table-row-cell:filled .table-cell {
     -fx-border-color: transparent;
     -fx-background-color: transparent;
-    -fx-padding: 0 14;
-    -fx-text-fill: #334155;
+    -fx-padding: 0 15;
+    -fx-text-fill: #333A50;
+    -fx-alignment: center-left;
 }
 
 .suppliers-page .supplier-cell-strong {
+    -fx-font-size: 13px;
     -fx-font-weight: bold;
-    -fx-text-fill: #0F172A;
+    -fx-text-fill: #10152A;
 }
 
-.suppliers-page .supplier-cell-phone {
-    -fx-font-weight: bold;
-    -fx-text-fill: #1E293B;
+.suppliers-page .supplier-cell-sub {
+    -fx-font-size: 10.5px;
+    -fx-text-fill: #959CAD;
 }
 
-.suppliers-page .supplier-cell-email {
-    -fx-text-fill: #0369A1;
+.suppliers-page .supplier-contact-phone {
+    -fx-font-size: 12.5px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1B2233;
+}
+
+.suppliers-page .supplier-contact-email {
+    -fx-font-size: 11px;
+    -fx-text-fill: #6B7288;
 }
 
 .suppliers-page .supplier-cell-address {
-    -fx-text-fill: #64748B;
+    -fx-text-fill: #5C6479;
+    -fx-font-size: 12px;
 }
 
-/* Selected Supplier Inspector Strip */
+.suppliers-page .supplier-empty {
+    -fx-text-fill: #A7ADBD;
+    -fx-font-style: italic;
+    -fx-font-weight: normal;
+}
+
+/* ---------- Inspector ---------- */
 .suppliers-page .supplier-inspector {
-    -fx-background-color: #FAF9FF;
-    -fx-border-color: #DDD6FE;
-    -fx-border-radius: 9;
-    -fx-background-radius: 9;
-    -fx-padding: 11 14;
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #E8EAF4;
+    -fx-border-radius: 18;
+    -fx-background-radius: 18;
+    -fx-padding: 16;
+    -fx-effect: dropshadow(gaussian, rgba(23, 27, 58, 0.08), 22, 0, 0, 8);
+}
+
+.suppliers-page .supplier-inspector-head {
+    -fx-background-color: linear-gradient(to bottom right, #F8F6FF 0%, #EFF3FF 100%);
+    -fx-border-color: #E9E4FB;
+    -fx-border-radius: 14;
+    -fx-background-radius: 14;
+    -fx-padding: 16;
 }
 
 .suppliers-page .supplier-inspector-name {
-    -fx-font-size: 14px;
+    -fx-font-size: 17px;
     -fx-font-weight: bold;
-    -fx-text-fill: #0F172A;
+    -fx-text-fill: #10152A;
 }
 
-/* Sleek Table Scrollbars */
+.suppliers-page .supplier-inspector-row {
+    -fx-background-color: #FAFAFE;
+    -fx-border-color: #EFF1F8;
+    -fx-border-radius: 11;
+    -fx-background-radius: 11;
+    -fx-padding: 9 11;
+}
+
+.suppliers-page .supplier-inspector-label {
+    -fx-font-size: 9.5px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #8C93A8;
+}
+
+.suppliers-page .supplier-inspector-value {
+    -fx-font-size: 12.5px;
+    -fx-text-fill: #222A3D;
+    -fx-wrap-text: true;
+}
+
+/* ---------- Preview card on the form ---------- */
+.suppliers-page .supplier-preview {
+    -fx-background-color: linear-gradient(to bottom right, #FBFAFF 0%, #F2F5FF 100%);
+    -fx-border-color: #E7E4F8;
+}
+
+.suppliers-page .supplier-preview-name {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #10152A;
+}
+
+/* ---------- Placeholders & spinner ---------- */
+.suppliers-page .supplier-placeholder {
+    -fx-padding: 26;
+    -fx-background-color: transparent;
+}
+
+.suppliers-page .supplier-placeholder-glyph {
+    -fx-font-size: 30px;
+    -fx-text-fill: #C3C8DC;
+}
+
+.suppliers-page .supplier-spinner {
+    -fx-progress-color: #7C3AED;
+}
+
+/* ---------- Slim scrollbars ---------- */
 .suppliers-page .supplier-table .scroll-bar:vertical,
 .suppliers-page .supplier-table .scroll-bar:horizontal {
     -fx-background-color: transparent;
@@ -443,12 +716,12 @@
 }
 
 .suppliers-page .supplier-table .scroll-bar .thumb {
-    -fx-background-color: #CBD5E1;
+    -fx-background-color: #D3D7E6;
     -fx-background-radius: 99;
 }
 
 .suppliers-page .supplier-table .scroll-bar .thumb:hover {
-    -fx-background-color: #94A3B8;
+    -fx-background-color: #B4BACD;
 }
 
 .suppliers-page .supplier-table .scroll-bar .increment-button,

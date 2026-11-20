@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import com.electrostock.frontend.api.InventoryReportClient;
@@ -21,12 +22,16 @@ import com.electrostock.frontend.api.ProductApiClient.Product;
 
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.css.PseudoClass;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 
 public class ProductsView extends VBox {
+    private static final String SEARCH_ICON = "M11 19A8 8 0 1 0 11 3A8 8 0 1 0 11 19 M21 21L16.65 16.65";
+    private static final PseudoClass FOCUS_WITHIN = PseudoClass.getPseudoClass("focus-within");
+
     private final ProductApiClient api = new ProductApiClient();
     private final InventoryReportClient reports = new InventoryReportClient();
     private final List<Product> catalogue = new ArrayList<>();
@@ -42,10 +47,15 @@ public class ProductsView extends VBox {
     private final TableView<Product> table = new TableView<>();
     private final Label count = new Label();
     private final Label notice = new Label();
-    private final VBox inspector = new VBox(12);
+    private final Label statTotal = new Label("0");
+    private final Label statIn = new Label("0");
+    private final Label statLow = new Label("0");
+    private final Label statOut = new Label("0");
+    private final VBox inspector = new VBox(14);
     private final Button add = new Button("+  New product");
     private final Button refresh = new Button("Refresh");
-    private final HBox toolbar = new HBox(10, search, category, level, status);
+    private final Button manageCategories = new Button("Categories");
+    private final HBox toolbar = new HBox(10);
     private boolean busy;
     private boolean editing;
 
@@ -55,15 +65,36 @@ public class ProductsView extends VBox {
         add.getStyleClass().add("product-primary");
         add.setOnAction(e -> form(null));
         refresh.setOnAction(e -> onOpen());
-        search.setPromptText("Search by name or SKU");
-        HBox.setHgrow(search, Priority.ALWAYS);
+        manageCategories.setOnAction(e -> manageCategories());
         category.getItems().add(allCategories);
         category.setValue(allCategories);
         makeTable();
 
-        Label title = styled("Products", "product-title");
-        HBox header = line(title, spacer(), refresh, add);
-        VBox list = new VBox(12, line(styled("Product catalogue", "product-heading"), spacer(), count), table);
+        // toolbar with an icon search box
+        search.setPromptText("Search by name or SKU");
+        HBox searchBox = new HBox(8, ProductIcons.plain(SEARCH_ICON, "#64748b", 18), search);
+        searchBox.getStyleClass().add("search-box");
+        searchBox.setAlignment(Pos.CENTER_LEFT);
+        search.focusedProperty().addListener((o, a, focused) -> searchBox.pseudoClassStateChanged(FOCUS_WITHIN, focused));
+        HBox.setHgrow(search, Priority.ALWAYS);
+        HBox.setHgrow(searchBox, Priority.ALWAYS);
+        toolbar.setAlignment(Pos.CENTER_LEFT);
+        toolbar.getChildren().addAll(searchBox, category, level, status);
+
+        // header
+        VBox titles = new VBox(2, styled("Products", "product-title"),
+                styled("Manage your catalogue, prices and stock levels", "product-subtitle"));
+        HBox header = line(titles, spacer(), refresh, manageCategories, add);
+        header.setSpacing(10);
+
+        // summary cards
+        HBox stats = new HBox(14, statCard("Active products", "total", statTotal),
+                statCard("In stock", "in", statIn), statCard("Low stock", "low", statLow),
+                statCard("Out of stock", "out", statOut));
+
+        // list + inspector
+        count.getStyleClass().add("product-chip");
+        VBox list = new VBox(14, line(styled("Product catalogue", "product-heading"), spacer(), count), table);
         list.getStyleClass().add("product-card");
         list.setMinWidth(0);
         VBox.setVgrow(table, Priority.ALWAYS);
@@ -73,8 +104,8 @@ public class ProductsView extends VBox {
         details.setMinWidth(0);
         inspector.getStyleClass().add("product-card");
         GridPane body = new GridPane();
-        body.setHgap(12);
-        for (double percent : new double[]{63, 37}) {
+        body.setHgap(14);
+        for (double percent : new double[]{62, 38}) {
             ColumnConstraints col = new ColumnConstraints();
             col.setPercentWidth(percent);
             body.getColumnConstraints().add(col);
@@ -84,15 +115,23 @@ public class ProductsView extends VBox {
         body.getRowConstraints().add(row);
         body.addRow(0, list, details);
         VBox.setVgrow(body, Priority.ALWAYS);
+
         notice.setWrapText(true);
+        notice.getStyleClass().add("product-notice");
         notice.visibleProperty().bind(notice.textProperty().isNotEmpty());
         notice.managedProperty().bind(notice.visibleProperty());
-        getChildren().addAll(header, toolbar, notice, body);
-        search.textProperty().addListener((o,a,b) -> filter());
+        notice.textProperty().addListener((o, a, text) -> {
+            boolean info = text.startsWith("Loading") || text.startsWith("Saving") || text.startsWith("Saved");
+            notice.getStyleClass().removeAll("notice-info", "notice-error");
+            notice.getStyleClass().add(info ? "notice-info" : "notice-error");
+        });
+
+        getChildren().addAll(header, stats, toolbar, notice, body);
+        search.textProperty().addListener((o, a, b) -> filter());
         category.setOnAction(e -> filter());
         level.setOnAction(e -> filter());
         status.setOnAction(e -> filter());
-        table.getSelectionModel().selectedItemProperty().addListener((o,a,b) -> {
+        table.getSelectionModel().selectedItemProperty().addListener((o, a, b) -> {
             if (!editing) detail(b);
         });
         detail(null);
@@ -112,14 +151,7 @@ public class ProductsView extends VBox {
                 notice.setText("Couldn’t refresh products. " + message(error));
                 return;
             }
-            Category previous = category.getValue();
-            categories.clear();
-            categories.addAll(groups.join());
-            categories.sort(Comparator.comparing(Category::name, String.CASE_INSENSITIVE_ORDER));
-            category.getItems().setAll(allCategories);
-            category.getItems().addAll(categories);
-            category.setValue(categories.stream().filter(c -> previous != null && c.id() == previous.id())
-                    .findFirst().orElse(allCategories));
+            applyCategories(groups.join());
             quantities.clear();
             stock.join().forEach(item -> quantities.put(item.productId(), item.stockQuantity()));
             catalogue.clear();
@@ -129,29 +161,156 @@ public class ProductsView extends VBox {
         }));
     }
 
+    // ------------------------------------------------------------------ categories
+
+    private void applyCategories(List<Category> loaded) {
+        Category previous = category.getValue();
+        categories.clear();
+        categories.addAll(loaded);
+        categories.sort(Comparator.comparing(Category::name, String.CASE_INSENSITIVE_ORDER));
+        category.getItems().setAll(allCategories);
+        category.getItems().addAll(categories);
+        category.setValue(categories.stream().filter(c -> previous != null && c.id() == previous.id())
+                .findFirst().orElse(allCategories));
+    }
+
+    private void reloadCategories(Runnable done) {
+        api.categories().whenComplete((list, error) -> Platform.runLater(() -> {
+            if (error != null) { notice.setText("Couldn’t reload categories. " + message(error)); return; }
+            applyCategories(list);
+            done.run();
+        }));
+    }
+
+    private void manageCategories() {
+        Dialog<Void> dialog = new Dialog<>();
+        dialog.initOwner(getScene().getWindow());
+        dialog.setTitle("Manage categories");
+        DialogPane pane = dialog.getDialogPane();
+        styleDialog(pane);
+        pane.getButtonTypes().add(ButtonType.CLOSE);
+        pane.setPrefWidth(470);
+
+        ListView<Category> list = new ListView<>();
+        list.setCellFactory(v -> new ListCell<>() {
+            @Override protected void updateItem(Category c, boolean empty) {
+                super.updateItem(c, empty);
+                if (empty || c == null) { setGraphic(null); return; }
+                VBox text = new VBox(1, styled(c.name(), "product-name"));
+                if (c.description() != null && !c.description().isBlank())
+                    text.getChildren().add(styled(c.description(), "product-muted"));
+                HBox row = new HBox(12, ProductIcons.forProduct(c.name(), c.name(), 38), text);
+                row.setAlignment(Pos.CENTER_LEFT);
+                setGraphic(row);
+            }
+        });
+        list.setPlaceholder(new Label("No categories yet. Add the first one below."));
+        list.getItems().setAll(categories);
+        list.setPrefHeight(250);
+
+        TextField name = new TextField();
+        name.setPromptText("e.g. Monitors");
+        TextField desc = new TextField();
+        desc.setPromptText("Optional");
+        Label error = styled("", "product-error");
+        error.setWrapText(true);
+        error.visibleProperty().bind(error.textProperty().isNotEmpty());
+        error.managedProperty().bind(error.visibleProperty());
+
+        list.getSelectionModel().selectedItemProperty().addListener((o, a, c) -> {
+            name.setText(c == null ? "" : c.name());
+            desc.setText(c == null || c.description() == null ? "" : c.description());
+        });
+
+        Button addCategory = new Button("Add new");
+        addCategory.getStyleClass().add("product-primary");
+        Button save = new Button("Save changes");
+        Button delete = new Button("Delete");
+        delete.getStyleClass().add("product-danger");
+        save.disableProperty().bind(list.getSelectionModel().selectedItemProperty().isNull());
+        delete.disableProperty().bind(list.getSelectionModel().selectedItemProperty().isNull());
+
+        VBox content = new VBox(12,
+                styled("Manage categories", "product-heading"),
+                styled("Select a category to rename or delete it, or add a new one.", "product-muted"),
+                list, styled("DETAILS", "product-subhead"),
+                input("Name", name), input("Description", desc), error,
+                line(addCategory, save, spacer(), delete));
+        pane.setContent(content);
+
+        Runnable refreshList = () -> {
+            list.getItems().setAll(categories);
+            list.getSelectionModel().clearSelection();
+            name.clear();
+            desc.clear();
+        };
+        Consumer<CompletableFuture<?>> run = request -> {
+            content.setDisable(true);
+            error.setText("");
+            request.whenComplete((r, e) -> Platform.runLater(() -> {
+                if (e != null) { content.setDisable(false); error.setText(message(e)); return; }
+                reloadCategories(() -> { content.setDisable(false); refreshList.run(); });
+            }));
+        };
+
+        addCategory.setOnAction(e -> {
+            if (name.getText().isBlank()) { error.setText("Enter a category name."); return; }
+            run.accept(api.createCategory(name.getText().strip(), blankToNull(desc.getText())));
+        });
+        save.setOnAction(e -> {
+            if (name.getText().isBlank()) { error.setText("Enter a category name."); return; }
+            run.accept(api.updateCategory(list.getSelectionModel().getSelectedItem().id(),
+                    name.getText().strip(), blankToNull(desc.getText())));
+        });
+        delete.setOnAction(e -> {
+            Category selected = list.getSelectionModel().getSelectedItem();
+            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Delete the category “" + selected.name() + "”?",
+                    ButtonType.CANCEL, ButtonType.OK);
+            confirm.initOwner(pane.getScene().getWindow());
+            styleDialog(confirm.getDialogPane());
+            if (confirm.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK)
+                run.accept(api.deleteCategory(selected.id()));
+        });
+
+        dialog.showAndWait();
+        onOpen(); // products embed the category name, so refresh after renames and deletes
+    }
+
+    private static String blankToNull(String text) {
+        return text == null || text.isBlank() ? null : text.strip();
+    }
+
+    private static void styleDialog(DialogPane pane) {
+        pane.getStylesheets().add(ProductsView.class.getResource("products.css").toExternalForm());
+        pane.getStyleClass().add("products-page");
+    }
+
+    // ------------------------------------------------------------------ table
+
     private void makeTable() {
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
         table.setPlaceholder(new Label("No matching products"));
         TableColumn<Product, Product> identity = new TableColumn<>("Product");
         identity.setCellValueFactory(v -> new ReadOnlyObjectWrapper<>(v.getValue()));
         identity.setSortable(false);
-        identity.setPrefWidth(260);
+        identity.setPrefWidth(290);
         identity.getStyleClass().add("align-left");
         identity.setCellFactory(col -> new TableCell<>() {
             { setContentDisplay(ContentDisplay.GRAPHIC_ONLY); getStyleClass().add("align-left"); }
             @Override protected void updateItem(Product p, boolean empty) {
                 super.updateItem(p, empty);
                 if (empty || p == null) { setGraphic(null); return; }
-                VBox text = new VBox(2, styled(p.name(), "product-name"), styled(p.sku(), "product-muted"));
+                VBox text = new VBox(2, styled(p.name(), "product-name"),
+                        styled(p.sku() + "  ·  " + p.category().name(), "product-muted"));
                 text.setAlignment(Pos.CENTER_LEFT);
-                HBox row = new HBox(12, ProductIcons.forProduct(p.name(), p.category().name(), 46), text);
+                HBox row = new HBox(14, ProductIcons.forProduct(p.name(), p.category().name(), 48), text);
                 row.setAlignment(Pos.CENTER_LEFT);
                 setGraphic(row);
             }
         });
         table.getColumns().add(identity);
         table.getColumns().add(column("On hand", 80, p -> quantity(p), Pos.CENTER));
-        TableColumn<Product, String> stock = column("Stock level", 116, this::stockLevel, Pos.CENTER_LEFT);
+        TableColumn<Product, String> stock = column("Stock level", 124, this::stockLevel, Pos.CENTER_LEFT);
         stock.setCellFactory(col -> new TableCell<>() {
             { getStyleClass().add("align-left"); }
             @Override protected void updateItem(String value, boolean empty) {
@@ -161,7 +320,7 @@ public class ProductsView extends VBox {
         });
         table.getColumns().add(stock);
         table.getColumns().add(column("Price (MAD)", 120, p -> money.format(p.sellingPriceMad()), Pos.CENTER_RIGHT));
-        table.setFixedCellSize(68);
+        table.setFixedCellSize(72);
     }
 
     private TableColumn<Product,String> column(String title, int width, Function<Product,String> text, Pos align) {
@@ -198,9 +357,18 @@ public class ProductsView extends VBox {
         return selected == null ? null : selected.id();
     }
 
+    private void updateStats() {
+        List<Product> active = catalogue.stream().filter(p -> "ACTIVE".equals(p.status())).toList();
+        statTotal.setText(String.valueOf(active.size()));
+        statIn.setText(String.valueOf(active.stream().filter(p -> "In stock".equals(stockLevel(p))).count()));
+        statLow.setText(String.valueOf(active.stream().filter(p -> "Low stock".equals(stockLevel(p))).count()));
+        statOut.setText(String.valueOf(active.stream().filter(p -> "Out of stock".equals(stockLevel(p))).count()));
+    }
+
     private void filter() { filter(selectedId()); }
 
     private void filter(Long preferred) {
+        updateStats();
         String query = search.getText().strip().toLowerCase(Locale.ROOT);
         Category group = category.getValue();
         var rows = catalogue.stream()
@@ -218,48 +386,71 @@ public class ProductsView extends VBox {
         if (!editing) detail(p);
     }
 
+    // ------------------------------------------------------------------ inspector
+
     private void detail(Product p) {
         inspector.getChildren().clear();
         if (p == null) {
-            inspector.getChildren().add(new Label("Select a product to see its details."));
+            VBox empty = new VBox(8, ProductIcons.stat("total", 64),
+                    styled("Select a product", "product-heading"),
+                    styled("Pick a product from the list to see its details.", "product-muted"));
+            empty.setAlignment(Pos.CENTER);
+            empty.getStyleClass().add("empty-state");
+            inspector.getChildren().add(empty);
             return;
         }
-        Label name = styled(p.name(), "product-heading");
+        boolean active = "ACTIVE".equals(p.status());
+        Label name = styled(p.name(), "product-hero-name");
         name.setWrapText(true);
+        HBox badges = line(badge(active ? "Active" : "Inactive"), badge(stockLevel(p)));
+        HBox hero = new HBox(16, ProductIcons.forProduct(p.name(), p.category().name(), 76),
+                new VBox(5, name, styled(p.sku(), "product-muted"), badges));
+        hero.setAlignment(Pos.CENTER_LEFT);
+
+        VBox price = new VBox(2, styled("Selling price", "product-muted"),
+                styled(money.format(p.sellingPriceMad()) + " MAD", "product-price"));
+        VBox cost = new VBox(2, styled("Average cost", "product-muted"),
+                styled(p.averageCostMad() == null ? "—" : money.format(p.averageCostMad()) + " MAD", "product-value-lg"));
+        cost.setAlignment(Pos.CENTER_RIGHT);
+        HBox priceBox = line(price, spacer(), cost);
+        priceBox.getStyleClass().add("price-box");
+
+        HBox tiles = new HBox(12, miniStat("On hand", quantity(p)),
+                miniStat("Low-stock at", String.valueOf(p.lowStockThreshold())));
+
         Button edit = new Button("Edit product");
+        edit.getStyleClass().add("product-primary");
         edit.setOnAction(e -> form(p));
-        Label state = badge("ACTIVE".equals(p.status()) ? "Active" : "Inactive");
-        String action = "ACTIVE".equals(p.status()) ? "Deactivate" : "Reactivate";
+        String action = active ? "Deactivate" : "Reactivate";
         Button lifecycle = new Button(action);
+        if (active) lifecycle.getStyleClass().add("product-danger");
         lifecycle.setOnAction(e -> {
             Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, action + " " + p.sku() + "?",
                     ButtonType.CANCEL, ButtonType.OK);
             confirm.initOwner(getScene().getWindow());
+            styleDialog(confirm.getDialogPane());
             if (confirm.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK)
                 persist(api.changeStatus(p), false);
         });
-        inspector.getChildren().addAll(line(ProductIcons.forProduct(p.name(), p.category().name(), 64), state, spacer(), edit),
-                name, styled(p.sku(), "product-muted"), new Separator(),
-                styled("Selling price", "product-muted"), styled(money.format(p.sellingPriceMad()) + " MAD", "product-price"),
-                styled("Inventory", "product-subhead"), field("On hand", quantity(p)),
-                field("Low-stock threshold", String.valueOf(p.lowStockThreshold())),
-                field("Serial tracking", p.tracksSerials() ? "On" : "Off"),
-                styled("Product details", "product-subhead"), field("Category", p.category().name()),
-                field("Warranty", p.warrantyMonths() + " months"));
+
+        inspector.getChildren().addAll(hero, priceBox, tiles,
+                styled("DETAILS", "product-subhead"),
+                field("Category", p.category().name()),
+                field("Warranty", p.warrantyMonths() + " months"),
+                field("Serial tracking", p.tracksSerials() ? "On" : "Off"));
         if (p.description() != null && !p.description().isBlank()) {
             Label description = new Label(p.description());
             description.setWrapText(true);
-            inspector.getChildren().add(description);
+            description.getStyleClass().add("product-description");
+            inspector.getChildren().addAll(styled("DESCRIPTION", "product-subhead"), description);
         }
-        inspector.getChildren().addAll(new Separator(), lifecycle);
+        HBox actions = line(edit, lifecycle);
+        actions.setSpacing(10);
+        inspector.getChildren().addAll(new Separator(), actions);
     }
 
     private void form(Product p) {
         boolean creating = p == null;
-        if (creating && categories.isEmpty()) {
-            notice.setText("Create a category before adding a product, then refresh.");
-            return;
-        }
         editing = true;
         controls();
         notice.setText("");
@@ -267,18 +458,46 @@ public class ProductsView extends VBox {
         TextField name = new TextField(creating ? "" : p.name());
         TextField price = new TextField(creating ? "" : p.sellingPriceMad().toPlainString());
         TextArea description = new TextArea(creating ? "" : p.description());
-        description.setPrefRowCount(2);
+        description.setPrefRowCount(3);
         description.setWrapText(true);
         ComboBox<Category> group = new ComboBox<>();
         group.getItems().setAll(categories);
         group.setPromptText("Choose category");
+        group.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(group, Priority.ALWAYS);
         CheckBox serials = new CheckBox("Track individual serial numbers");
         TextField warranty = new TextField("0");
         TextField threshold = new TextField("0");
+
+        Button newCategory = new Button("+ New category");
+        newCategory.setOnAction(e -> {
+            TextInputDialog ask = new TextInputDialog();
+            ask.initOwner(getScene().getWindow());
+            styleDialog(ask.getDialogPane());
+            ask.setHeaderText("New category");
+            ask.setContentText("Name:");
+            ask.showAndWait().map(String::strip).filter(s -> !s.isEmpty()).ifPresent(n -> {
+                setBusy(true);
+                api.createCategory(n, null).whenComplete((saved, error) -> Platform.runLater(() -> {
+                    setBusy(false);
+                    if (error != null) { notice.setText("Couldn’t create category. " + message(error)); return; }
+                    notice.setText("");
+                    List<Category> all = new ArrayList<>(categories);
+                    all.add(saved);
+                    applyCategories(all);
+                    group.getItems().setAll(categories);
+                    group.setValue(categories.stream().filter(c -> c.id() == saved.id()).findFirst().orElse(null));
+                }));
+            });
+        });
+        VBox categoryField = new VBox(4, new Label("Category"), line(group, newCategory));
+
         inspector.getChildren().setAll(styled(creating ? "New product" : "Edit product", "product-heading"),
+                styled(creating ? "Fill in the details below to add it to the catalogue."
+                        : "Update the name, SKU, price or description.", "product-muted"),
                 input("Product name", name), input("SKU", sku), input("Selling price (MAD)", price),
                 input("Description", description));
-        if (creating) inspector.getChildren().addAll(input("Category", group), serials,
+        if (creating) inspector.getChildren().addAll(categoryField, serials,
                 input("Warranty (months)", warranty), input("Low-stock threshold", threshold));
         Button save = new Button("Save product");
         save.getStyleClass().add("product-primary");
@@ -317,7 +536,9 @@ public class ProductsView extends VBox {
                 notice.setText(ex.getMessage());
             }
         });
-        inspector.getChildren().add(line(save, cancel));
+        HBox buttons = line(save, cancel);
+        buttons.setSpacing(10);
+        inspector.getChildren().add(buttons);
         name.requestFocus();
     }
 
@@ -348,11 +569,15 @@ public class ProductsView extends VBox {
     }
 
     private void controls() {
-        toolbar.setDisable(busy || editing);
-        table.setDisable(busy || editing);
-        add.setDisable(busy || editing);
-        refresh.setDisable(busy || editing);
+        boolean locked = busy || editing;
+        toolbar.setDisable(locked);
+        table.setDisable(locked);
+        add.setDisable(locked);
+        refresh.setDisable(locked);
+        manageCategories.setDisable(locked);
     }
+
+    // ------------------------------------------------------------------ helpers
 
     private static String message(Throwable error) {
         while (error instanceof CompletionException && error.getCause() != null) error = error.getCause();
@@ -366,23 +591,48 @@ public class ProductsView extends VBox {
         return box;
     }
 
+    private static HBox statCard(String title, String kind, Label value) {
+        value.getStyleClass().add("stat-value");
+        HBox card = new HBox(14, ProductIcons.stat(kind, 48), new VBox(0, value, styled(title, "product-muted")));
+        card.getStyleClass().add("stat-card");
+        card.setAlignment(Pos.CENTER_LEFT);
+        card.setPrefWidth(1);
+        HBox.setHgrow(card, Priority.ALWAYS);
+        return card;
+    }
+
+    private static VBox miniStat(String title, String value) {
+        VBox tile = new VBox(2, styled(value, "mini-value"), styled(title, "product-muted"));
+        tile.getStyleClass().add("mini-stat");
+        tile.setPrefWidth(1);
+        HBox.setHgrow(tile, Priority.ALWAYS);
+        return tile;
+    }
+
     private static HBox field(String title, String value) {
         Label right = new Label(value);
         right.setWrapText(true);
         right.getStyleClass().add("product-value");
-        return line(styled(title, "product-muted"), spacer(), right);
+        HBox row = line(styled(title, "product-muted"), spacer(), right);
+        row.getStyleClass().add("detail-row");
+        return row;
     }
 
     private static VBox input(String title, Control control) {
         Label label = new Label(title);
+        label.getStyleClass().add("field-label");
         label.setLabelFor(control);
         control.setMaxWidth(Double.MAX_VALUE);
-        return new VBox(4, label, control);
+        return new VBox(5, label, control);
     }
 
     private static Label badge(String text) {
         Label badge = styled(text, "product-badge");
         badge.getStyleClass().add("badge-" + text.toLowerCase(Locale.ROOT).replace(' ', '-'));
+        Region dot = new Region();
+        dot.getStyleClass().add("badge-dot");
+        badge.setGraphic(dot);
+        badge.setGraphicTextGap(6);
         return badge;
     }
 

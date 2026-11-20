@@ -18,6 +18,13 @@ import javafx.stage.Stage;
 
 public class ElectroStockApp extends Application {
 
+    // Opening window size (outer size, including the title bar). The whole dashboard
+    // is laid out to fit inside this without scrolling.
+    private static final double WINDOW_WIDTH = 1486;
+    private static final double WINDOW_HEIGHT = 912;
+    private static final double WINDOW_MIN_WIDTH = 1100;
+    private static final double WINDOW_MIN_HEIGHT = 640;
+
     private final BorderPane root = new BorderPane();
     private final AppSidebar sidebar = new AppSidebar(this::openSection);
 
@@ -48,8 +55,11 @@ public class ElectroStockApp extends Application {
         stage.setTitle("ElectroStock");
         stage.setScene(scene);
         var screen = javafx.stage.Screen.getPrimary().getVisualBounds();
-        stage.setWidth(Math.min(1560, screen.getWidth()));
-        stage.setHeight(Math.min(940, screen.getHeight()));
+        stage.setMinWidth(Math.min(WINDOW_MIN_WIDTH, screen.getWidth()));
+        stage.setMinHeight(Math.min(WINDOW_MIN_HEIGHT, screen.getHeight()));
+        // Never larger than the usable screen, e.g. on a smaller monitor.
+        stage.setWidth(Math.min(WINDOW_WIDTH, screen.getWidth()));
+        stage.setHeight(Math.min(WINDOW_HEIGHT, screen.getHeight()));
         stage.centerOnScreen();
         stage.show();
     }
