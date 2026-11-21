@@ -20,7 +20,7 @@ public class ElectroStockApp extends Application {
 
     // Opening window size (outer size, including the title bar). The whole dashboard
     // is laid out to fit inside this without scrolling.
-    private static final double WINDOW_WIDTH = 1486;
+    private static final double WINDOW_WIDTH = 1700;
     private static final double WINDOW_HEIGHT = 912;
     private static final double WINDOW_MIN_WIDTH = 1100;
     private static final double WINDOW_MIN_HEIGHT = 640;

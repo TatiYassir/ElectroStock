@@ -65,14 +65,14 @@ public class DashboardView extends VBox {
     private static final String ACCENT = "#5D4CE2";
     private static final String INK = "#14162B";
     private static final String MUTED = "#6B7290";
-    private static final String CHART_REVENUE = "#5B54EE";
-    private static final String CHART_PROFIT = "#F0A22E";
-    // Bars are painted with a gradient that ends dark where the amount label sits,
-    // so the white figures stay readable at both ends of the chart.
-    private static final String GAIN_GRADIENT =
-            "linear-gradient(to right, #3EDCB4 0%, #10A97E 55%, #0A7F63 100%)";
-    private static final String LOSS_GRADIENT =
-            "linear-gradient(to right, #B5352E 0%, #E2544C 55%, #FF9A7A 100%)";
+    // Bar colours shared by the sales chart and the product-profit chart.
+    private static final String CHART_REVENUE = "#0870F8";
+    private static final String CHART_PROFIT = "#43B7A1";
+    private static final String BAR_GAIN = CHART_PROFIT;
+    private static final String BAR_LOSS = "#F86E67";
+    // Amounts printed on the bars are dark so they stay readable on the light bar colours.
+    private static final String BAR_LABEL_INK = "#101822";
+    private static final String METRIC_ICON = "#008C79";
 
     private static final DateTimeFormatter DAY_LABEL =
             DateTimeFormatter.ofPattern("MMM d", Locale.ENGLISH);
@@ -87,11 +87,11 @@ public class DashboardView extends VBox {
     // The opening screen must fit without scrolling, so the lists are short on purpose:
     // the profit chart shows only the top movers and the activity card the latest rows.
     private static final int PROFIT_ROWS = 5;
-    private static final double PROFIT_ROW_HEIGHT = 34;
+    private static final double PROFIT_ROW_HEIGHT = 20;
     private static final int ACTIVITY_ROWS = 5;
 
     // Widest a single sales bar may grow, so one quiet day doesn't become a slab.
-    private static final double MAX_SALES_BAR_WIDTH = 34;
+    private static final double MAX_SALES_BAR_WIDTH = 15;
 
     private long salesRequestNumber;
 
@@ -209,7 +209,7 @@ public class DashboardView extends VBox {
             String label, BigDecimal amount, String color, String caption) {
         XYChart.Data<String, Number> point = new XYChart.Data<>(label, amount);
         boolean negative = amount.signum() < 0;
-        String fill = negative ? STOCK_RED : color;
+        String fill = negative ? BAR_LOSS : color;
 
         StackPane bar = new StackPane();
         bar.setStyle("-fx-bar-fill: " + fill + "; -fx-background-color: " + fill
@@ -654,17 +654,12 @@ public class DashboardView extends VBox {
         };
     }
 
-    private VBox createMetricCard(String title, String value, boolean negative, String tone) {
+    private HBox createMetricCard(String title, String value, boolean negative, String tone) {
         Label caption = new Label(title);
         caption.getStyleClass().add("metric-caption");
         caption.setMinWidth(Region.USE_PREF_SIZE);
 
-        StackPane iconTile = new StackPane(icon(title, toneColor(tone)));
-        iconTile.getStyleClass().addAll("metric-icon", "tone-" + tone);
-        HBox top = new HBox(10, iconTile, caption);
-        top.setAlignment(Pos.CENTER_LEFT);
-
-        // "58,937.50 MAD" -> big number + small unit, so the whole amount always fits.
+        // "58,937.50 MAD" -> amount + unit, shown at the same size.
         String unit = null;
         if (value.endsWith(" MAD")) {
             unit = "MAD";
@@ -684,7 +679,11 @@ public class DashboardView extends VBox {
             valueRow.getChildren().add(unitLabel);
         }
 
-        VBox card = new VBox(11, top, valueRow);
+        VBox text = new VBox(2, caption, valueRow);
+        text.setAlignment(Pos.CENTER_LEFT);
+
+        HBox card = new HBox(10, icon(title, METRIC_ICON), text);
+        card.setAlignment(Pos.CENTER_LEFT);
         card.getStyleClass().addAll("metric-card", "tone-" + tone);
         card.setPrefWidth(150);
         card.setMaxWidth(Double.MAX_VALUE);
@@ -774,7 +773,7 @@ public class DashboardView extends VBox {
         chart.setHorizontalGridLinesVisible(true);
         chart.setVerticalGridLinesVisible(false);
         chart.setLegendSide(Side.BOTTOM);
-        chart.setBarGap(3);
+        chart.setBarGap(5);
 
         double baseGap = dense ? 6 : 14;
         chart.setCategoryGap(baseGap);
@@ -998,7 +997,7 @@ public class DashboardView extends VBox {
         chart.setLegendVisible(false);
         chart.setHorizontalGridLinesVisible(true);
         chart.setVerticalGridLinesVisible(true);
-        chart.setCategoryGap(compact ? 4 : 9);
+        chart.setCategoryGap(compact ? 3 : 5);
         chart.setBarGap(0);
 
         XYChart.Series<Number, String> series = new XYChart.Series<>();
@@ -1015,20 +1014,19 @@ public class DashboardView extends VBox {
             value.setMaxWidth(Region.USE_PREF_SIZE);
 
             // Gains round on their right end, losses on their left (the end away from zero).
-            String barFill = loss ? LOSS_GRADIENT : GAIN_GRADIENT;
+            String barFill = loss ? BAR_LOSS : BAR_GAIN;
             StackPane bar = new StackPane(value);
             bar.setAlignment(Pos.CENTER);
             bar.setStyle("-fx-bar-fill: " + barFill + "; -fx-background-color: " + barFill
                     + "; -fx-background-radius: " + (loss ? "6 0 0 6" : "0 6 6 0") + ";");
 
-            // The amount sits inside the bar's far end (white on the dark end of the gradient)
-            // when it fits. Otherwise it moves just outside the bar and turns dark, because
-            // white text would vanish against the white card.
+            // The amount sits inside the bar's far end when it fits, otherwise just outside it.
+            // It is dark either way, which reads on both the bar and the white card.
             String textStyle = "-fx-font-size: " + (compact ? 11.5 : 12.5)
                     + "px; -fx-font-weight: bold; -fx-text-fill: ";
-            String outsideInk = loss ? "#C7443A" : "#0A7F63";
+            String outsideInk = BAR_LABEL_INK;
             boolean[] inside = {true};
-            value.setStyle(textStyle + "white;");
+            value.setStyle(textStyle + BAR_LABEL_INK + ";");
             Runnable place = () -> {
                 double labelWidth = value.prefWidth(-1);
                 double barWidth = bar.getWidth();
@@ -1039,7 +1037,7 @@ public class DashboardView extends VBox {
                         : barWidth / 2 + labelWidth / 2 + 6));
                 if (fits != inside[0]) { // restyle only when it flips, never on every layout pass
                     inside[0] = fits;
-                    value.setStyle(textStyle + (fits ? "white;" : outsideInk + ";"));
+                    value.setStyle(textStyle + (fits ? BAR_LABEL_INK : outsideInk) + ";");
                 }
             };
             bar.widthProperty().addListener((obs, was, now) -> place.run());
