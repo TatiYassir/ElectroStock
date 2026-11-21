@@ -538,14 +538,14 @@
     -fx-background-color: #E39B25;
 }
 
-.purchases-page .purchase-status-handed {
+.purchases-page .purchase-status-confirmed {
     -fx-background-color: #EAF9F2;
     -fx-border-color: #A8E7CE;
 }
-.purchases-page .purchase-status-text-handed {
+.purchases-page .purchase-status-text-confirmed {
     -fx-text-fill: #0C7A5C;
 }
-.purchases-page .purchase-status-dot-handed {
+.purchases-page .purchase-status-dot-confirmed {
     -fx-background-color: #12A67E;
 }
 
