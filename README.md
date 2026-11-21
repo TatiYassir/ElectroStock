@@ -1,46 +1,83 @@
-# ElectroStock
+<div align="center">
 
-**A desktop inventory management system for electronics shops, built as a learning project.**
+# ⚡ ElectroStock
 
-ElectroStock tracks products, suppliers, purchases, sales and stock movements in one place. It handles serial-numbered devices one by one, supports purchases in foreign currencies with MAD as the base currency, and reports inventory value and gross profit from historical cost data.
-
-> **About this project.** ElectroStock was built for education: to practise layered backend design, transactional business rules, relational modelling and a JavaFX interface. It is not finished and not meant for production use. The [limitations](#known-limitations) are listed openly below.
+**A desktop inventory system for electronics shops.**
+Serial-numbered devices, multi-currency purchases, and profit reports built on real historical cost.
 
 ![Java](https://img.shields.io/badge/Java-25-orange)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1-6DB33F)
 ![JavaFX](https://img.shields.io/badge/JavaFX-21-blue)
 ![MariaDB](https://img.shields.io/badge/MariaDB-11.4-003545)
+![Status](https://img.shields.io/badge/status-learning%20project-lightgrey)
 
-<!--
-SCREENSHOTS: put PNG files in docs/screenshots/, then remove the comment markers around the block below.
+<br>
+
+<img src="docs/screenshots/dashboard.png" alt="ElectroStock dashboard" width="900">
+
+<sub>The dashboard, loaded with the demo data from <code>database/SeedDemoData.java</code></sub>
+
+</div>
+
+> **About this project.** ElectroStock was built for education: to practise layered backend design, transactional business rules, relational modelling and a JavaFX interface. It is not finished and not meant for production use. The [limitations](#known-limitations) are listed openly below.
+
+---
+
+## Contents
+
+[Overview](#overview) · [Screenshots](#screenshots) · [Features](#features) · [Architecture](#architecture) · [Tech stack](#tech-stack) · [Getting started](#getting-started) · [Configuration](#configuration) · [REST API](#rest-api) · [Business rules](#business-rules) · [Known limitations](#known-limitations) · [Project structure](#project-structure) · [Documentation](#documentation)
+
+---
+
+## Overview
+
+ElectroStock tracks products, suppliers, purchases, sales and stock movements in one place.
+
+- 🔢 **Serial-tracked units.** Phones, laptops and other devices are handled one by one, each with its own cost.
+- 💱 **Foreign currencies.** Buy from suppliers in EUR or USD; MAD is the base currency and the rate is stored with every transaction.
+- 📈 **Honest profit.** Cost of goods sold is captured at sale time, so later cost changes never rewrite past profit.
+- 🧾 **Stock you can trust.** Quantity on hand is derived from an append-only movement history.
 
 ## Screenshots
 
-| Dashboard | Products |
-| --- | --- |
-| ![Dashboard](docs/screenshots/dashboard.png) | ![Products](docs/screenshots/products.png) |
-
-| Sales | Reports |
-| --- | --- |
-| ![Sales](docs/screenshots/sales.png) | ![Reports](docs/screenshots/reports.png) |
--->
-
----
-
-## Table of contents
-
-- [Features](#features)
-- [Architecture](#architecture)
-- [Tech stack](#tech-stack)
-- [Getting started](#getting-started)
-- [Configuration](#configuration)
-- [REST API](#rest-api)
-- [Business rules](#business-rules)
-- [Known limitations](#known-limitations)
-- [Project structure](#project-structure)
-- [Documentation](#documentation)
-
----
+<table>
+  <tr>
+    <td width="50%" align="center">
+      <img src="docs/screenshots/products.png" alt="Products screen"><br>
+      <b>Products</b><br>
+      <sub>Search, filter, and manage categories in place</sub>
+    </td>
+    <td width="50%" align="center">
+      <img src="docs/screenshots/stock.png" alt="Stock screen"><br>
+      <b>Stock</b><br>
+      <sub>Adjustments, serial units and movement history</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" align="center">
+      <img src="docs/screenshots/sales.png" alt="Sales screen"><br>
+      <b>Sales</b><br>
+      <sub>Draft, confirm, hand over, cancel</sub>
+    </td>
+    <td width="50%" align="center">
+      <img src="docs/screenshots/purchases.png" alt="Purchases screen"><br>
+      <b>Purchases</b><br>
+      <sub>Multi-currency drafts that add stock on confirm</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" align="center">
+      <img src="docs/screenshots/suppliers.png" alt="Suppliers screen"><br>
+      <b>Suppliers</b><br>
+      <sub>Contacts with their purchase history kept</sub>
+    </td>
+    <td width="50%" align="center">
+      <img src="docs/screenshots/reports.png" alt="Reports screen"><br>
+      <b>Reports</b><br>
+      <sub>Valuation, profit, serial tracing, CSV export</sub>
+    </td>
+  </tr>
+</table>
 
 ## Features
 
@@ -59,9 +96,9 @@ SCREENSHOTS: put PNG files in docs/screenshots/, then remove the comment markers
 A client-server application. The JavaFX client holds no business rules; the backend validates every request.
 
 ```text
-JavaFX desktop  ──HTTP/JSON──▶  Spring Boot REST API  ──▶  Services  ──▶  Repositories  ──▶  MariaDB
-                                                              │
-                                                              └──▶  Frankfurter API (exchange rates, cached)
+JavaFX desktop ──HTTP/JSON──▶ Spring Boot REST API ──▶ Services ──▶ Repositories ──▶ MariaDB
+                                                          │
+                                                          └──▶ Frankfurter API (exchange rates, cached)
 ```
 
 - **Controllers** expose the REST endpoints and map requests to DTOs.
@@ -82,11 +119,7 @@ More detail in [`docs/architecture.md`](docs/architecture.md).
 
 ## Getting started
 
-### Prerequisites
-
-- JDK 25 (the frontend also builds with Java 17+)
-- Maven 3.9+ for the frontend
-- MariaDB 11.4
+**Prerequisites:** JDK 25 (the frontend also builds with Java 17+), Maven 3.9+ for the frontend, MariaDB 11.4.
 
 ### 1. Create the database
 
@@ -127,7 +160,7 @@ Start the backend first. The client connects to `http://localhost:8080`.
 
 ### 4. Load demo data (optional)
 
-An empty database makes for a dull first run. With the backend running and a freshly created database:
+With the backend running and a freshly created database:
 
 ```bash
 java database/SeedDemoData.java
@@ -143,7 +176,7 @@ Backend settings are in `backend/src/main/resources/application.properties`:
 | --- | --- | --- |
 | `spring.datasource.url` | `jdbc:mariadb://127.0.0.1:3307/electrostock` | Change the host or port to match your MariaDB |
 | `spring.datasource.username` | `${DB_USERNAME:root}` | Set the `DB_USERNAME` environment variable |
-| `spring.datasource.password` | `${DB_PASSWORD}` | Set the `DB_PASSWORD` environment variable; never commit credentials |
+| `spring.datasource.password` | `${DB_PASSWORD:}` | Set the `DB_PASSWORD` environment variable; never commit credentials |
 | `server.port` | `8080` | The frontend expects this port |
 
 ## REST API
@@ -207,7 +240,10 @@ ElectroStock/
 │       │   └── view/   Screens and dialogs
 │       └── resources/  One stylesheet per screen
 ├── database/           schema.sql and the demo-data script
-└── docs/               Requirements and architecture
+└── docs/
+    ├── screenshots/    PNGs used by this README
+    ├── architecture.md
+    └── requirements.md
 ```
 
 ## Documentation
