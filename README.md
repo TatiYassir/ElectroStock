@@ -1,13 +1,29 @@
 # ElectroStock
 
-**Desktop inventory management for small and medium-sized electronics businesses.**
+**A desktop inventory management system for electronics shops, built as a learning project.**
 
-ElectroStock tracks products, suppliers, purchases, sales and stock movements in one place. It handles serial-numbered devices individually, supports multi-currency purchasing with MAD as the base currency, and reports inventory value and gross profit from historical cost data.
+ElectroStock tracks products, suppliers, purchases, sales and stock movements in one place. It handles serial-numbered devices one by one, supports purchases in foreign currencies with MAD as the base currency, and reports inventory value and gross profit from historical cost data.
+
+> **About this project.** ElectroStock was built for education: to practise layered backend design, transactional business rules, relational modelling and a JavaFX interface. It is not finished and not meant for production use. The [limitations](#known-limitations) are listed openly below.
 
 ![Java](https://img.shields.io/badge/Java-25-orange)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1-6DB33F)
 ![JavaFX](https://img.shields.io/badge/JavaFX-21-blue)
 ![MariaDB](https://img.shields.io/badge/MariaDB-11.4-003545)
+
+<!--
+SCREENSHOTS: put PNG files in docs/screenshots/, then remove the comment markers around the block below.
+
+## Screenshots
+
+| Dashboard | Products |
+| --- | --- |
+| ![Dashboard](docs/screenshots/dashboard.png) | ![Products](docs/screenshots/products.png) |
+
+| Sales | Reports |
+| --- | --- |
+| ![Sales](docs/screenshots/sales.png) | ![Reports](docs/screenshots/reports.png) |
+-->
 
 ---
 
@@ -20,27 +36,27 @@ ElectroStock tracks products, suppliers, purchases, sales and stock movements in
 - [Configuration](#configuration)
 - [REST API](#rest-api)
 - [Business rules](#business-rules)
+- [Known limitations](#known-limitations)
 - [Project structure](#project-structure)
 - [Documentation](#documentation)
-- [Scope and roadmap](#scope-and-roadmap)
 
 ---
 
 ## Features
 
-| Area | Highlights |
+| Screen | What it does |
 | --- | --- |
-| **Dashboard** | Sales performance (revenue, gross profit, units sold) for the month or today, stock availability donut, potential profit by product, latest stock movements |
-| **Products** | Catalogue with search and filters (category, stock level, status), create, edit, deactivate and reactivate, category management, per-product icons |
-| **Stock** | Opening stock, quantity adjustments, serial-unit additions, removals and recovery, full movement history per product |
-| **Sales** | Draft sales, stock verification, confirmation with cost-of-goods capture, handover, cancellation before handover |
-| **Purchases** | Draft purchases per supplier in any supported currency, confirmation increases stock atomically, cancellation when stock is still reversible |
-| **Suppliers** | Register, edit, activate and deactivate, with purchase history preserved |
-| **Reports** | Inventory valuation, low stock, sales by product and category, gross profit by product, purchases by supplier, serial-unit tracing |
+| **Dashboard** | Revenue, gross profit and units sold for the month or today with a daily chart, stock-availability donut, potential profit by product, and the latest stock movements |
+| **Products** | Searchable catalogue with filters (category, stock level, status); create, edit, deactivate and reactivate products; manage categories without leaving the screen |
+| **Stock** | Opening stock, quantity adjustments, serial-unit additions, removals and recovery, and a full movement history per product |
+| **Sales** | Draft sales, stock checks, confirmation with cost-of-goods capture, handover (which starts the warranty), and cancellation before handover |
+| **Purchases** | Draft purchases per supplier in any supported currency; confirming one adds stock in a single transaction; cancellation while the stock can still be taken back |
+| **Suppliers** | Register, edit, activate and deactivate suppliers, with their purchase history kept |
+| **Reports** | Inventory valuation, low stock, stock movements, sales by product and category, gross profit by product, purchases by supplier, daily sales and serial-number tracing, with CSV export |
 
 ## Architecture
 
-ElectroStock is a client-server application. The JavaFX client contains no business logic; every rule is enforced by the backend.
+A client-server application. The JavaFX client holds no business rules; the backend validates every request.
 
 ```text
 JavaFX desktop  ──HTTP/JSON──▶  Spring Boot REST API  ──▶  Services  ──▶  Repositories  ──▶  MariaDB
@@ -49,11 +65,11 @@ JavaFX desktop  ──HTTP/JSON──▶  Spring Boot REST API  ──▶  Servi
 ```
 
 - **Controllers** expose the REST endpoints and map requests to DTOs.
-- **Services** hold business rules and run each operation in a single transaction.
-- **Repositories** (Spring Data JPA) access MariaDB. The schema is managed manually through `database/schema.sql`; Hibernate does not alter it (`ddl-auto=none`).
-- **Exchange rates** come from the [Frankfurter](https://frankfurter.dev) API, with the latest cached rate used as a fallback when the provider is unreachable.
+- **Services** hold the business rules and run each operation in one transaction.
+- **Repositories** (Spring Data JPA) access MariaDB. The schema is created by hand from `database/schema.sql`; Hibernate never alters it (`ddl-auto=none`).
+- **Exchange rates** come from the [Frankfurter](https://frankfurter.dev) API. The latest rate is cached in the database and used when the API is unreachable.
 
-See [`docs/architecture.md`](docs/architecture.md) for the full design notes.
+More detail in [`docs/architecture.md`](docs/architecture.md).
 
 ## Tech stack
 
@@ -61,39 +77,39 @@ See [`docs/architecture.md`](docs/architecture.md) for the full design notes.
 | --- | --- |
 | Backend | Java 25, Spring Boot 4.1 (Web MVC, Data JPA, Validation) |
 | Frontend | JavaFX 21, Jackson 3, `java.net.http` client |
-| Database | MariaDB 11.4 (schema targets MariaDB 10.4+) |
-| Build | Maven (wrapper included for the backend) |
+| Database | MariaDB 11.4 |
+| Build | Maven (the backend includes the Maven wrapper) |
 
 ## Getting started
 
 ### Prerequisites
 
-- JDK 25 (the frontend compiles for Java 17 and above)
-- Maven 3.9+ for the frontend (the backend ships with `mvnw`)
-- MariaDB 10.4 or newer
+- JDK 25 (the frontend also builds with Java 17+)
+- Maven 3.9+ for the frontend
+- MariaDB 11.4
 
 ### 1. Create the database
 
+The default configuration expects MariaDB on port **3307**. Adjust `-P` if yours differs.
+
 ```bash
-mysql -u root -p -P 3307 < database/schema.sql
+mariadb -u root -p -h 127.0.0.1 -P 3307 < database/schema.sql
 ```
 
-This creates the `electrostock` database with all tables, constraints and indexes.
+This creates the `electrostock` database with its tables, constraints and the MAD, EUR and USD currencies.
 
 ### 2. Start the backend
 
 ```bash
 cd backend
-# Linux / macOS
-export DB_USERNAME=root
+export DB_USERNAME=root          # Linux / macOS
 export DB_PASSWORD=your_password
 ./mvnw spring-boot:run
 ```
 
 ```powershell
-# Windows PowerShell
 cd backend
-$env:DB_USERNAME = "root"
+$env:DB_USERNAME = "root"        # Windows PowerShell
 $env:DB_PASSWORD = "your_password"
 .\mvnw.cmd spring-boot:run
 ```
@@ -107,22 +123,32 @@ cd frontend
 mvn javafx:run
 ```
 
-The client connects to `http://localhost:8080`, so start the backend first.
+Start the backend first. The client connects to `http://localhost:8080`.
+
+### 4. Load demo data (optional)
+
+An empty database makes for a dull first run. With the backend running and a freshly created database:
+
+```bash
+java database/SeedDemoData.java
+```
+
+The script sends realistic products, suppliers, purchases and sales through the REST API, so costs, movements and profit are produced by the real business rules. Foreign-currency transactions fetch a live rate, so it needs an internet connection. All dates fall in the current month, so the dashboard charts are populated.
 
 ## Configuration
 
-Backend settings live in `backend/src/main/resources/application.properties`:
+Backend settings are in `backend/src/main/resources/application.properties`:
 
-| Property | Default | Notes |
+| Property | Value | Notes |
 | --- | --- | --- |
 | `spring.datasource.url` | `jdbc:mariadb://127.0.0.1:3307/electrostock` | Change the host or port to match your MariaDB |
 | `spring.datasource.username` | `${DB_USERNAME:root}` | Set the `DB_USERNAME` environment variable |
 | `spring.datasource.password` | `${DB_PASSWORD}` | Set the `DB_PASSWORD` environment variable; never commit credentials |
-| `server.port` | `8080` | The frontend currently expects this port |
+| `server.port` | `8080` | The frontend expects this port |
 
 ## REST API
 
-All endpoints are under `/api`. Errors return a plain-text message with an appropriate status: `400` for invalid input, `404` when something is not found, `409` for conflicts such as a duplicate name, a category still in use, or a cancellation that is no longer allowed.
+All routes are under `/api`. Errors return a plain-text message: `400` for invalid input, `404` when something is not found, and `409` for conflicts such as a duplicate name, a category still in use, or a cancellation that is no longer allowed.
 
 | Resource | Base path | Operations |
 | --- | --- | --- |
@@ -130,21 +156,36 @@ All endpoints are under `/api`. Errors return a plain-text message with an appro
 | Products | `/api/products` | list, get, create, update, deactivate, reactivate, stock lookup |
 | Stock | `/api/products/{id}/…` | opening stock, adjustments, tracked-unit addition, removal and recovery, movement history, unit status |
 | Suppliers | `/api/suppliers` | list, get, create, update, deactivate, reactivate |
-| Purchases | `/api/purchases` | create draft, manage items, confirm, cancel |
-| Sales | `/api/sales` | create draft, manage items, confirm, handover, cancel |
+| Purchases | `/api/purchases` | create draft, add and remove items, confirm, cancel |
+| Sales | `/api/sales` | create draft, manage items, discard draft, confirm, hand over, cancel |
 | Currencies | `/api/currencies` | list, create |
 | Reports | `/api/reports` | inventory valuation, low stock, stock availability, daily sales, sales by product and category, gross profit, purchases by supplier, recent and full stock movements, serial-unit trace |
 
 ## Business rules
 
-- **Atomic operations.** Confirming or cancelling a purchase or sale, and every stock adjustment, run in one transaction. A failure leaves no partial stock or status changes.
-- **No negative stock.** Sales and removals are rejected if they would take available stock below zero.
-- **Costing.** Non-serial products use a moving weighted average. Serial-tracked products use specific identification, so each unit keeps its own acquisition cost.
+- **Atomic operations.** Confirming or cancelling a purchase or sale, and every stock adjustment, run in one transaction. A failure leaves no half-applied change.
+- **Stock is derived.** Quantity on hand is the sum of a product's stock movements. Movements are never edited or deleted; corrections are recorded as reversals or adjustments.
+- **No negative stock.** Sales and removals are rejected if they would take stock below zero.
+- **Costing.** Products without serial tracking use a moving weighted average. Serial-tracked products use specific identification, so each unit keeps its own cost.
 - **Cost of goods sold** is captured when a sale is confirmed, so later cost changes never rewrite past profit.
-- **Money.** All calculations use `BigDecimal` and `DECIMAL` columns. MAD is the base currency, and the exchange rate used is stored with each confirmed transaction.
-- **History is preserved.** Stock movements are never deleted; corrections are recorded as reversals or adjustments. Adjustments require a reason (`DAMAGED`, `MISSING`, `COUNTING_CORRECTION` or `OTHER`), and `OTHER` requires an explanation.
-- **Inactive records.** Inactive products and suppliers keep their history but cannot be used in new stock operations or purchases.
-- **Sales lifecycle.** A sale can be cancelled before handover and not after.
+- **Money.** `BigDecimal` in Java and `DECIMAL` columns in the database. MAD is the base currency, and the exchange rate used is stored with every confirmed purchase and sale.
+- **Adjustments** need a reason (`DAMAGED`, `MISSING`, `COUNTING_CORRECTION` or `OTHER`); `OTHER` also needs an explanation.
+- **Warranty** starts when a sale is handed over and lasts the product's warranty months.
+- **Cancellation.** A sale can be cancelled before handover but not after. A purchase can be cancelled only while its stock can still be taken back.
+
+The full list is in [`docs/requirements.md`](docs/requirements.md).
+
+## Known limitations
+
+This is a learning project, and these are the known gaps:
+
+- **No authentication.** The API is open and meant to run on one machine.
+- **Single user.** There are no accounts or roles.
+- **Inactive records are only partly enforced.** Opening stock and stock adjustments require an active product, but an inactive supplier can still be chosen for a purchase and an inactive product can still be added to a draft.
+- **Fixed server address.** The client always connects to `http://localhost:8080`.
+- **Recent activity** on the dashboard asks the backend for the last five raw movements, so a purchase of several units can leave fewer than five rows.
+- **Out of scope:** customers, returns and refunds, partial handover, operating expenses, landed costs and manual exchange rates.
+- **Tests.** Only the default Spring Boot context test exists.
 
 ## Project structure
 
@@ -164,26 +205,14 @@ ElectroStock/
 │       ├── java/com/electrostock/frontend/
 │       │   ├── api/    HTTP clients for the backend
 │       │   └── view/   Screens and dialogs
-│       └── resources/  Per-view stylesheets
-├── database/           schema.sql
+│       └── resources/  One stylesheet per screen
+├── database/           schema.sql and the demo-data script
 └── docs/               Requirements and architecture
 ```
 
 ## Documentation
 
-- [`docs/requirements.md`](docs/requirements.md): functional requirements and scope exclusions
-- [`docs/architecture.md`](docs/architecture.md): layers, transaction integrity and financial calculation rules
+- [`docs/requirements.md`](docs/requirements.md): what the application does and where it falls short
+- [`docs/architecture.md`](docs/architecture.md): layers, routes, error handling and the main workflows
 - [`database/schema.sql`](database/schema.sql): the full relational schema
-
-## Scope and roadmap
-
-ElectroStock is built for a **single administrator**. The first version intentionally excludes:
-
-- Multiple user accounts and roles
-- Customer management, returns and refunds
-- Partial sale handover
-- Operating-expense accounting
-- Landed-cost allocation
-- Manual exchange-rate entry and overrides
-
-These are candidates for future versions, along with remote deployment, which the client-server split is designed to allow.
+- [`database/SeedDemoData.java`](database/SeedDemoData.java): demo-data loader
