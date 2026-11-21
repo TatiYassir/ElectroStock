@@ -391,8 +391,9 @@ public final class StockView extends VBox {
         if (snapshot.isEmpty()) {
             setNotice("No active products yet. Add products to start tracking stock.", "info");
         } else if (out > 0) {
-            setNotice(plural(out, "product is", "products are") + " out of stock and "
-                    + plural(low, "1 other is", low + " others are") + " at or below threshold. "
+            String lowPart = low == 0 ? ""
+                    : " and " + plural(low, "1 other is", low + " others are") + " at or below threshold";
+            setNotice(plural(out, "1 product is", out + " products are") + " out of stock" + lowPart + ". "
                     + "Filter by Out of stock to act first.", "warn");
         } else if (low > 0) {
             setNotice(plural(low, "1 product is", low + " products are") + " at or below the reorder threshold.",
@@ -478,6 +479,7 @@ public final class StockView extends VBox {
         stockTable.setPlaceholder(stockPlaceholder);
         stockTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
         stockTable.setMinHeight(150);
+        stockTable.setFixedCellSize(54);
 
         SortedList<LowStockItem> sorted = new SortedList<>(visibleRows);
         sorted.comparatorProperty().bind(stockTable.comparatorProperty());
@@ -490,6 +492,7 @@ public final class StockView extends VBox {
         skuCol.setCellFactory(col -> new TableCell<>() {
             @Override protected void updateItem(String sku, boolean empty) {
                 super.updateItem(sku, empty);
+                setAlignment(Pos.CENTER_LEFT);
                 setGraphic(null);
                 setText(null);
                 if (empty) return;
@@ -510,6 +513,7 @@ public final class StockView extends VBox {
             { getStyleClass().add("stock-cell-strong"); }
             @Override protected void updateItem(String name, boolean empty) {
                 super.updateItem(name, empty);
+                setAlignment(Pos.CENTER_LEFT);
                 setText(empty ? null : name == null ? "—" : name);
                 setTooltip(name == null || name.length() < 24 ? null : new Tooltip(name));
             }
@@ -569,6 +573,7 @@ public final class StockView extends VBox {
         health.setCellFactory(column -> new TableCell<>() {
             @Override protected void updateItem(LowStockItem item, boolean empty) {
                 super.updateItem(item, empty);
+                setAlignment(Pos.CENTER_LEFT);
                 setGraphic(null);
                 setText(null);
                 if (empty || item == null) return;
